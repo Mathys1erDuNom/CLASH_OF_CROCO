@@ -45,7 +45,8 @@ export function villageMode(): Mode {
   const views = new Map<number, View>();
   let placing: string | null = null;
   let ghost: THREE.Group | null = null;
-  let movingId: number | null = null; // set while 'placing' an existing building somewhere else
+  let movingId: number | null = null;
+  let previewAt = ''; // tile where the placement ghost currently shows // set while 'placing' an existing building somewhere else
   let selected: number | null = null;
   let menu: 'build' | 'attack' | null = null; // which big menu is open in the panel
   let infoKind: string | null = null; // troop whose full stats are open in the barracks panel
@@ -114,6 +115,7 @@ export function villageMode(): Mode {
   function cancel() {
     placing = null;
     movingId = null;
+    previewAt = '';
     if (ghost) world.remove(ghost);
     ghost = null;
     grid.visible = footprint.visible = false;
@@ -139,6 +141,9 @@ export function villageMode(): Mode {
       world.add(ghost);
       grid.visible = true;
       hint = 'Clique sur la carte pour placer (Échap ou clic droit pour annuler).';
+    } else if (act === 'cancelPlace') {
+      cancel();
+      hint = 'Construction annulée.';
     } else if (act === 'move') {
       const b = save.buildings.find(b => b.id === selected);
       if (!b) return;
@@ -267,6 +272,7 @@ export function villageMode(): Mode {
       return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.mud} vase</small></button>`;
     }).join('');
     return `<h1>🐊 Clash of Croco</h1>
+      ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
       <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
       ${selectionHtml(now)}
       <div class="menus">
@@ -320,6 +326,7 @@ export function villageMode(): Mode {
     move(tile) {
       if (!placing || !ghost) return;
       const n = BUILDINGS[placing].size, { x, y } = spot(tile, n);
+      previewAt = `${x},${y}`;
       ghost.visible = footprint.visible = true;
       ghost.position.copy(center({ x, y }, n));
       footprint.position.copy(center({ x, y }, n)).setY(0.04);
@@ -328,6 +335,14 @@ export function villageMode(): Mode {
     },
     click(tile) {
       const now = Date.now();
+      if (placing) { // on touch screens there is no hover: the first tap shows where it goes, a second tap there confirms
+        const { x, y } = spot(tile, BUILDINGS[placing].size);
+        if (previewAt !== `${x},${y}`) {
+          this.move!(tile);
+          hint = 'Touche encore au même endroit pour confirmer.';
+          return;
+        }
+      }
       const moving = save.buildings.find(b => b.id === movingId);
       if (moving) {
         const n = BUILDINGS[moving.type].size, { x, y } = spot(tile, n);
