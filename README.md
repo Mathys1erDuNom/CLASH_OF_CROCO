@@ -67,6 +67,37 @@ laboratoire, étoiles des bases gobelines. Ouvre `https://<ton-domaine>/api/heal
 `"storage":"postgres"`. S'il répond `"file"`, la variable `DATABASE_URL` est absente et les sauvegardes seraient
 perdues à chaque redéploiement.
 
+## Connexion Discord (une base par joueur)
+
+Quand les variables Discord sont définies, chaque joueur se connecte avec Discord et retrouve sa propre base,
+sur n'importe quel appareil. Sans ces variables (en local), le jeu reste en mode invité, une base par navigateur.
+
+**1. Créer l'application Discord** sur https://discord.com/developers/applications
+- **New Application**, donne-lui un nom (ex. Clash of Croco).
+- Onglet **OAuth2** : copie le **Client ID**, puis **Reset Secret** pour obtenir le **Client Secret**
+  (ne le partage avec personne, ne le mets pas dans le code).
+- Toujours dans **OAuth2 → Redirects**, ajoute : `https://<ton-domaine-railway>/auth/discord/callback`
+  (et `http://localhost:3000/auth/discord/callback` pour tester en local).
+
+**2. Variables sur Railway** (service du jeu → **Variables**)
+| Variable | Valeur |
+|---|---|
+| `DISCORD_CLIENT_ID` | le Client ID |
+| `DISCORD_CLIENT_SECRET` | le Client Secret |
+| `DISCORD_REDIRECT_URI` | `https://<ton-domaine-railway>/auth/discord/callback` (exactement la même que sur Discord) |
+| `SESSION_SECRET` | une longue chaîne aléatoire (32 caractères minimum), par ex. générée avec `openssl rand -hex 32` |
+
+`/api/health` répond alors `"discord":true`.
+
+**Fonctionnement**
+- Au démarrage, la table `users` est créée si elle n'existe pas (id Discord, pseudo, avatar, dates).
+  La base d'un joueur est dans `saves` sous l'id `d-<id Discord>`.
+- La session est un cookie signé (HMAC avec `SESSION_SECRET`), `HttpOnly`, `SameSite=Lax`, `Secure` en https,
+  valable 30 jours. Le bouton « Se déconnecter » l'efface.
+- À la première connexion, si le navigateur avait déjà une base invitée, le jeu propose de la rattacher au
+  compte (ou d'en commencer une nouvelle).
+- Seul le scope `identify` est demandé (pseudo et avatar, pas l'email).
+
 ## Comment jouer
 
 - Clique sur une mine ou une pompe pour récolter (ou « Tout récolter »). La production continue hors ligne.

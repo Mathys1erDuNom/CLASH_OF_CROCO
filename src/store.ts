@@ -1,17 +1,45 @@
-// Loads/saves the village through the server API. The player id is a random UUID kept in localStorage.
+// Loads/saves the village through the server API.
+// With Discord login on, the save belongs to the logged-in account; otherwise to a random id kept in this browser.
 import { migrate, newSave, type Save } from './economy.ts';
 
-let id = localStorage.getItem('croco-id');
-if (!id) { id = crypto.randomUUID(); localStorage.setItem('croco-id', id); }
+export interface User { id: string; name: string; avatar: string }
+export interface Me { authEnabled: boolean; user?: User | null }
+
+const guestId = localStorage.getItem('croco-id');
+let url = ''; // where this player's save lives
 
 export let save: Save;
 export let saveError = false;
 
-export async function loadSave() {
-  const r = await fetch(`/api/save/${id}`);
-  if (r.ok) save = migrate(await r.json());
-  else if (r.status === 404) save = newSave(Date.now());
-  else throw new Error(`Chargement impossible (${r.status})`);
+export const fetchMe = async (): Promise<Me> => (await fetch('/api/me')).json();
+
+/** Loads the save. Returns 'claim' when a logged-in account has no save yet but this browser has a guest one. */
+export async function loadSave(me: Me): Promise<'ok' | 'claim'> {
+  if (me.authEnabled) url = '/api/save';
+  else {
+    let id = guestId;
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem('croco-id', id); }
+    url = `/api/save/${id}`;
+  }
+  const r = await fetch(url);
+  if (r.ok) { save = migrate(await r.json()); return 'ok'; }
+  if (r.status !== 404) throw new Error(`Chargement impossible (${r.status})`);
+  if (me.authEnabled && guestId) return 'claim';
+  startNewSave();
+  return 'ok';
+}
+
+export function startNewSave() {
+  save = newSave(Date.now());
+  persist();
+}
+
+/** Copies this browser's guest save to the logged-in account. */
+export async function claimGuestSave(): Promise<boolean> {
+  const r = await fetch('/api/save/claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ guestId }) });
+  if (!r.ok) return false;
+  localStorage.removeItem('croco-id'); // the base now lives in the account
+  return (await loadSave({ authEnabled: true })) === 'ok';
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -20,7 +48,7 @@ export function persist() {
   clearTimeout(timer);
   timer = setTimeout(async () => {
     try {
-      const r = await fetch(`/api/save/${id}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(save) });
+      const r = await fetch(url, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(save) });
       saveError = !r.ok;
     } catch { saveError = true; }
   }, 500);
