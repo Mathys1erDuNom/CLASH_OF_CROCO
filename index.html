@@ -53,6 +53,14 @@
     .menu-box { background: rgba(0,0,0,.25); border: 2px solid #6d4a26; border-radius: 10px; padding: 4px 8px 8px; margin-bottom: 8px; }
     button.cancel-x { display: block; text-align: center; background: #d23a2a; color: #fff; border-color: #6a1410; font-size: 16px; }
     button.cancel-x:hover:not(:disabled) { background: #e8503e; }
+    .menus .arr { font-style: normal; }
+    .drop { animation: drop .25s ease-out; transform-origin: top; }
+    @keyframes drop { from { opacity: 0; transform: scaleY(.6) translateY(-8px); } }
+    button.cat { display: flex; align-items: center; gap: 8px; margin-top: 6px; background: linear-gradient(#d6c08a, #b89a58); font-size: 15px; }
+    button.cat span { background: #2b1d14; color: #ffd84a; border-radius: 10px; padding: 0 7px; font-size: 12px; }
+    button.cat b { margin-left: auto; }
+    button.cat.open { background: #ffd84a; }
+    .cat-items { padding-left: 10px; border-left: 3px solid #6d4a26; margin-left: 6px; }
     .hint { color: #b8c890; font-style: italic; }
     .err { color: #ff9a8a; font-weight: bold; }
     .big { font-size: 32px; color: #ffd84a; margin: 4px 0; }
@@ -65,8 +73,7 @@
         border: 0; box-shadow: none; background: transparent; overflow-y: auto; pointer-events: none; -webkit-overflow-scrolling: touch; }
       #panel > * { pointer-events: auto; }
       #panel:has(.sel-box, .menu-box, .deploy, .result) { background: linear-gradient(rgba(58, 42, 26, .97), rgba(42, 29, 18, .97)); border: 4px solid #6d4a26; border-radius: 18px;
-        box-shadow: 0 6px 24px rgba(0, 0, 0, .5); animation: sheet .18s ease-out; }
-      @keyframes sheet { from { transform: translateY(24px); opacity: 0; } }
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .5); } /* no transform animation here: it would pull the fixed top/bottom bars inside the sheet */
       #panel > h1:first-child, #panel .extra { display: none; }
       .res { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 8px; margin: 0; gap: 6px; font-size: 15px; }
       .res span { background: rgba(28, 20, 12, .85); border: 2px solid #6d4a26; border-radius: 20px; padding: 3px 10px 3px 4px; display: flex; align-items: center; gap: 4px; }
@@ -80,6 +87,9 @@
       #account span { display: none; }
       #account button { min-height: 0; }
       .float { font-size: 18px; }
+      .menus .arr { display: none; }
+      .menu-box.drop { animation: rise .25s ease-out; }
+      @keyframes rise { from { opacity: 0; transform: translateY(40px); } }
       button.cancel-x { position: fixed; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); width: 64px; height: 64px; border-radius: 50%; padding: 0; font-size: 30px; line-height: 1; box-shadow: 0 4px 0 #6a1410, 0 6px 16px rgba(0,0,0,.4); }
       button.cancel-x span { display: none; }
       .deploy, #panel { touch-action: pan-x pan-y; }

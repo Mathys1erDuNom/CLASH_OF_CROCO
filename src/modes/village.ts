@@ -13,6 +13,13 @@ import { spriteUrl } from '../sprites.ts';
 import { refresh, secs, setPanel } from '../ui.ts';
 import { attackMode, flap } from './attack.ts';
 
+/** Build menu categories: [id, label, which buildings go in it] */
+const CATEGORIES: [string, string, (d: typeof BUILDINGS[string]) => boolean][] = [
+  ['res', '💰 Ressources', d => !!d.res],
+  ['army', '🪖 Armée', d => !!(d.trains || d.lab || d.levels[0].housing)],
+  ['def', '🛡️ Défenses', d => !!d.defense],
+];
+
 interface View { model: THREE.Group; shown: number; scaffold: THREE.Group; bar: Bar }
 
 const resName = (r?: string) => (r === 'gold' ? 'or' : 'vase');
@@ -49,6 +56,9 @@ export function villageMode(): Mode {
   let previewAt = ''; // tile where the placement ghost currently shows // set while 'placing' an existing building somewhere else
   let selected: number | null = null;
   let menu: 'build' | 'attack' | null = null; // which big menu is open in the panel
+  let buildCat: string | null = null; // open category of the build menu
+  let openedAt = 0; // when a menu last unfolded: plays the slide-down animation once
+  const dropping = () => Date.now() - openedAt < 300;
   let infoKind: string | null = null; // troop whose full stats are open in the barracks panel
   let hint = 'Clique sur un bâtiment pour le voir, récolter ou l’améliorer. Clic-glisser pour tourner la caméra, molette pour zoomer.';
   let t = 0;
@@ -164,7 +174,11 @@ export function villageMode(): Mode {
       }
     } else if (act === 'menu') {
       menu = menu === arg ? null : (arg as 'build' | 'attack');
+      openedAt = Date.now();
       select(null);
+    } else if (act === 'cat') {
+      buildCat = buildCat === arg ? null : arg;
+      openedAt = Date.now();
     } else if (act === 'info') {
       infoKind = infoKind === arg ? null : arg;
     } else if (act === 'deselect') {
@@ -260,9 +274,18 @@ export function villageMode(): Mode {
 
   function panelHtml(): string {
     const now = Date.now();
-    const builds = Object.entries(BUILDINGS).filter(([k]) => k !== 'hq' && unlocked(save, k, now)).map(([k, d]) => {
+    const buildBtn = ([k, d]: [string, typeof BUILDINGS[string]]) => {
       const c = d.levels[0].cost, ok = countOf(save, k) < d.max && canAfford(save, c);
       return `<button data-act="build" data-arg="${k}" ${ok ? '' : 'disabled'}><img src="${spriteUrl('b_' + k)}" alt="">${d.name}<small>${fmtCost(c)} · ${countOf(save, k)}/${d.max}</small></button>`;
+    };
+    // Build menu as collapsible categories (one open at a time)
+    const available = Object.entries(BUILDINGS).filter(([k]) => k !== 'hq' && unlocked(save, k, now));
+    const builds = CATEGORIES.map(([id, label, test]) => {
+      const list = available.filter(([, d]) => test(d));
+      if (!list.length) return '';
+      const open = buildCat === id;
+      return `<button data-act="cat" data-arg="${id}" class="cat ${open ? 'open' : ''}">${label} <span>${list.length}</span><b>${open ? '▴' : '▾'}</b></button>`
+        + (open ? `<div class="cat-items${dropping() ? ' drop' : ''}">${list.map(buildBtn).join('')}</div>` : '');
     }).join('');
     const cap = armyCap(save, now);
     const army = Object.entries(TROOPS).map(([k, d]) => `<span class="troop"><img src="${spriteUrl('t_' + k)}" alt="${d.name}" title="${d.name}"> ${save.troops[k] ?? 0} <small>niv ${troopLevel(save, k)}</small></span>`).join('');
@@ -276,12 +299,12 @@ export function villageMode(): Mode {
       <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
       ${selectionHtml(now)}
       <div class="menus">
-        <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire</button>
-        <button data-act="menu" data-arg="attack" class="menu-btn ${menu === 'attack' ? 'sel' : ''}">⚔️ Attaquer</button>
+        <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>
+        <button data-act="menu" data-arg="attack" class="menu-btn ${menu === 'attack' ? 'sel' : ''}">⚔️ Attaquer<i class="arr"> ${menu === 'attack' ? '▴' : '▾'}</i></button>
         <button data-act="collectAll" class="menu-btn">💰 Récolter</button>
       </div>
-      ${menu === 'build' ? `<div class="menu-box"><h2>Construire</h2>${builds}</div>` : ''}
-      ${menu === 'attack' ? `<div class="menu-box"><h2>Attaquer les gobelins</h2>${bases}${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
+      ${menu === 'build' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Construire</h2>${builds}</div>` : ''}
+      ${menu === 'attack' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer les gobelins</h2>${bases}${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
       <div class="extra">
         <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
         <p class="hint">Clique sur une caserne pour former des troupes.</p>
