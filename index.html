@@ -61,6 +61,16 @@
     button.cat b { margin-left: auto; }
     button.cat.open { background: #ffd84a; }
     .cat-items { padding-left: 10px; border-left: 3px solid #6d4a26; margin-left: 6px; }
+    /* scrollable lists: native scrollbar hidden, our own always-visible bar drawn beside it (see updateBars in ui.ts) */
+    .scroll-wrap { position: relative; }
+    .scroll { max-height: 46vh; overflow-y: auto; padding-right: 16px; overscroll-behavior: contain; scrollbar-width: none; }
+    .deploy { scrollbar-width: none; overscroll-behavior: contain; }
+    .scroll::-webkit-scrollbar, .deploy::-webkit-scrollbar { display: none; }
+    .sbar { position: absolute; top: 4px; bottom: 4px; right: 0; width: 8px; border-radius: 6px; background: #2b1d14; pointer-events: none; }
+    .sbar.h { top: auto; left: 4px; right: 4px; bottom: 0; width: auto; height: 8px; }
+    .sbar[hidden] { display: none; }
+    .sbar b { position: absolute; left: 0; right: 0; border-radius: 6px; background: #ffd84a; box-shadow: 0 0 0 1px #2b1d14; }
+    .sbar.h b { top: 0; bottom: 0; left: 0; right: auto; }
     .hint { color: #b8c890; font-style: italic; }
     .err { color: #ff9a8a; font-weight: bold; }
     .big { font-size: 32px; color: #ffd84a; margin: 4px 0; }
@@ -94,7 +104,8 @@
       button.cancel-x span { display: none; }
       .deploy, #panel { touch-action: pan-x pan-y; }
       /* attack: troops in one horizontal row, swipe to see more */
-      .deploy { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+      .deploy { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
+      .scroll { max-height: 30dvh; }
       .deploy button { flex: 0 0 auto; width: 128px; margin: 0; grid-template-columns: 1fr; text-align: center; font-size: 12px; }
       .deploy button img { grid-row: auto; justify-self: center; }
       #panel:has(.deploy) { bottom: calc(8px + env(safe-area-inset-bottom)); }

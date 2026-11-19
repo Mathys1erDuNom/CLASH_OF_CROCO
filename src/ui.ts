@@ -11,7 +11,16 @@ export function setPanel(r: () => string, a: (act: string, arg: string) => void)
 /** Re-renders only when the HTML changed, so buttons are not rebuilt every frame. */
 export function refresh() {
   const html = render();
-  if (html !== last) { panel.innerHTML = html; last = html; }
+  if (html === last) return;
+  // keep the scroll position of scrollable lists (data-scroll="name") across re-renders
+  const pos = new Map([...panel.querySelectorAll<HTMLElement>('[data-scroll]')].map(el => [el.dataset.scroll, [el.scrollTop, el.scrollLeft]]));
+  panel.innerHTML = html;
+  last = html;
+  for (const el of panel.querySelectorAll<HTMLElement>('[data-scroll]')) {
+    const p = pos.get(el.dataset.scroll);
+    if (p) [el.scrollTop, el.scrollLeft] = p;
+  }
+  updateBars();
 }
 
 // A tap fires on release only if the finger barely moved, so dragging to scroll a list never triggers a button.
@@ -26,6 +35,22 @@ panel.addEventListener('pointerup', e => {
   press = null;
 });
 panel.addEventListener('pointercancel', () => { press = null; }); // the browser took over to scroll
-panel.addEventListener('scroll', () => { press = null; }, true);
+panel.addEventListener('scroll', () => { press = null; updateBars(); }, true);
+addEventListener('resize', updateBars);
+
+/** Draws our own scrollbar next to each list (phones hide native scrollbars until you scroll). */
+function updateBars() {
+  for (const el of panel.querySelectorAll<HTMLElement>('[data-scroll]')) {
+    const bar = el.nextElementSibling as HTMLElement | null;
+    if (!bar?.classList.contains('sbar')) continue;
+    const h = bar.classList.contains('h');
+    const view = h ? el.clientWidth : el.clientHeight, full = h ? el.scrollWidth : el.scrollHeight, pos = h ? el.scrollLeft : el.scrollTop;
+    bar.hidden = full <= view + 1;
+    const size = Math.max(0.15, view / full), at = full > view ? (pos / (full - view)) * (1 - size) : 0;
+    const thumb = bar.firstElementChild as HTMLElement;
+    thumb.style[h ? 'width' : 'height'] = `${size * 100}%`;
+    thumb.style[h ? 'left' : 'top'] = `${at * 100}%`;
+  }
+}
 
 export const secs = (ms: number) => `${Math.max(0, Math.ceil(ms / 1000))}s`;

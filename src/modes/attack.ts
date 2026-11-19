@@ -108,7 +108,7 @@ export function attackMode(baseId: string, exit: () => void): Mode {
     const def = battle.structs.filter(s => BUILDINGS[s.type].defense && s.hp > 0).length;
     return `<h1>⚔ ${base.name}</h1>
       <p class="status">⏱ ${secs((DURATION - battle.time) * 1000)} · 💥 ${battle.destruction()} % · ${stars(battle.stars())} · 🛡 ${def}</p>
-      <h2>Déployer</h2><div class="deploy">${troops}</div>
+      <h2>Déployer</h2><div class="scroll-wrap"><div class="deploy" data-scroll="deploy">${troops}</div><i class="sbar h"><b></b></i></div>
       <p class="hint">Choisis une troupe puis touche la carte, hors des zones rouges.</p>
       <button data-act="retreat" class="retreat">🏳 Battre en retraite</button>`;
   }

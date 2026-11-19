@@ -246,12 +246,12 @@ export function villageMode(): Mode {
 
   /** Troop upgrade buttons, shown only in the panel of a working laboratory. */
   function labHtml(now: number, working: number): string {
-    return '<h2>Améliorer les troupes</h2>' + researchHtml(now) + Object.entries(TROOPS).map(([k, d]) => {
+    return '<h2>Améliorer les troupes</h2>' + researchHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="lab">' + Object.entries(TROOPS).map(([k, d]) => {
       const lvl = troopLevel(save, k), up = TROOP_LEVELS[lvl - 1].up;
       if (!up || lvl >= troopMaxLevel(k)) return `<button disabled><img src="${spriteUrl('t_' + k)}" alt="">${d.name} niv ${lvl}<small>niveau maximum</small></button>`;
       const need = labNeeded(k, lvl + 1), ok = !save.research && working >= need && canAfford(save, up.cost);
       return `<button data-act="troopUp" data-arg="${k}" ${ok ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} niv ${lvl} → ${lvl + 1}<small>${fmtCost(up.cost)} · ${secs(up.sec * 1000)}${upgradeStats(k, lvl)}${working < need ? `<br>⚠ laboratoire niveau ${need} requis` : ''}</small></button>`;
-    }).join('');
+    }).join('') + '</div><i class="sbar"><b></b></i></div>';
   }
 
   function selectionHtml(now: number): string {
@@ -303,8 +303,8 @@ export function villageMode(): Mode {
         <button data-act="menu" data-arg="attack" class="menu-btn ${menu === 'attack' ? 'sel' : ''}">⚔️ Attaquer<i class="arr"> ${menu === 'attack' ? '▴' : '▾'}</i></button>
         <button data-act="collectAll" class="menu-btn">💰 Récolter</button>
       </div>
-      ${menu === 'build' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Construire</h2>${builds}</div>` : ''}
-      ${menu === 'attack' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer les gobelins</h2>${bases}${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
+      ${menu === 'build' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Construire</h2><div class="scroll-wrap"><div class="scroll" data-scroll="build">${builds}</div><i class="sbar"><b></b></i></div></div>` : ''}
+      ${menu === 'attack' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer les gobelins</h2><div class="scroll-wrap"><div class="scroll" data-scroll="attack">${bases}</div><i class="sbar"><b></b></i></div>${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
       <div class="extra">
         <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
         <p class="hint">Clique sur une caserne pour former des troupes.</p>
