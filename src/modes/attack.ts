@@ -97,7 +97,7 @@ export function attackMode(baseId: string, exit: () => void): Mode {
   function panelHtml(): string {
     const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n);
     if (result) {
-      return `<h1>${result.stars ? 'Victoire !' : 'Défaite…'}</h1><p class="big">${stars(result.stars)}</p>
+      return `<h1 class="result">${result.stars ? 'Victoire !' : 'Défaite…'}</h1><p class="big">${stars(result.stars)}</p>
         <p>Destruction : ${battle.destruction()} %</p>
         <p>Butin : <img class="i" src="${spriteUrl('i_gold')}" alt="Or"> ${result.gold} · <img class="i" src="${spriteUrl('i_mud')}" alt="Vase"> ${result.mud}</p>
         <p class="hint">Les troupes engagées dans l’attaque sont perdues.</p>
@@ -107,11 +107,10 @@ export function attackMode(baseId: string, exit: () => void): Mode {
       `<button data-act="sel:${k}" class="${k === selected ? 'sel' : ''}" ${(save.troops[k] ?? 0) > 0 ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} Nv${troopLevel(save, k)} ×${save.troops[k] ?? 0}</button>`).join('');
     const def = battle.structs.filter(s => BUILDINGS[s.type].defense && s.hp > 0).length;
     return `<h1>⚔ ${base.name}</h1>
-      <p>Temps : ${secs((DURATION - battle.time) * 1000)} · Destruction : ${battle.destruction()} % · ${stars(battle.stars())}</p>
-      <p>Défenses restantes : ${def}</p>
-      <h2>Déployer</h2>${troops}
-      <p class="hint">Choisis une troupe puis clique sur la carte, hors des zones rouges.</p>
-      <button data-act="retreat">Battre en retraite</button>`;
+      <p class="status">⏱ ${secs((DURATION - battle.time) * 1000)} · 💥 ${battle.destruction()} % · ${stars(battle.stars())} · 🛡 ${def}</p>
+      <h2>Déployer</h2><div class="deploy">${troops}</div>
+      <p class="hint">Choisis une troupe puis touche la carte, hors des zones rouges.</p>
+      <button data-act="retreat" class="retreat">🏳 Battre en retraite</button>`;
   }
   setPanel(panelHtml, act => {
     if (act === 'retreat' && !result) finish();

@@ -47,6 +47,7 @@ export function villageMode(): Mode {
   let ghost: THREE.Group | null = null;
   let movingId: number | null = null; // set while 'placing' an existing building somewhere else
   let selected: number | null = null;
+  let menu: 'build' | 'attack' | null = null; // which big menu is open in the panel
   let infoKind: string | null = null; // troop whose full stats are open in the barracks panel
   let hint = 'Clique sur un bâtiment pour le voir, récolter ou l’améliorer. Clic-glisser pour tourner la caméra, molette pour zoomer.';
   let t = 0;
@@ -122,6 +123,7 @@ export function villageMode(): Mode {
 
   function select(b: Building | null) {
     selected = b?.id ?? null;
+    if (b) menu = null; // a building panel replaces the open menu
     ring.visible = !!b;
     if (b) { const n = BUILDINGS[b.type].size; ring.position.copy(center(b, n)).setY(0.05); ring.scale.setScalar(n); }
   }
@@ -130,6 +132,7 @@ export function villageMode(): Mode {
     const now = Date.now();
     if (act === 'build') {
       cancel(); select(null);
+      menu = null;
       placing = arg;
       ghost = ghostOf(building(arg, false));
       ghost.visible = false;
@@ -154,6 +157,9 @@ export function villageMode(): Mode {
         hint = `${BUILDINGS[b.type].name} : amélioration vers le niveau ${b.level} lancée.`;
         floatText(center(b, BUILDINGS[b.type].size).setY(BUILDING_TOP[b.type]), 'Amélioration !', '#9fd0ff');
       }
+    } else if (act === 'menu') {
+      menu = menu === arg ? null : (arg as 'build' | 'attack');
+      select(null);
     } else if (act === 'info') {
       infoKind = infoKind === arg ? null : arg;
     } else if (act === 'deselect') {
@@ -261,14 +267,20 @@ export function villageMode(): Mode {
       return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.mud} vase</small></button>`;
     }).join('');
     return `<h1>🐊 Clash of Croco</h1>
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
       ${selectionHtml(now)}
-      <button data-act="collectAll">Tout récolter</button>
-      <h2>Construire</h2>${builds}
-      <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
-      <p class="hint">Clique sur une caserne pour former des troupes.</p>
-      <h2>Attaquer les gobelins</h2>${bases}
-      <p class="hint">${hint}</p>${saveError ? '<p class="err">⚠ Sauvegarde échouée</p>' : ''}`;
+      <div class="menus">
+        <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire</button>
+        <button data-act="menu" data-arg="attack" class="menu-btn ${menu === 'attack' ? 'sel' : ''}">⚔️ Attaquer</button>
+        <button data-act="collectAll" class="menu-btn">💰 Récolter</button>
+      </div>
+      ${menu === 'build' ? `<div class="menu-box"><h2>Construire</h2>${builds}</div>` : ''}
+      ${menu === 'attack' ? `<div class="menu-box"><h2>Attaquer les gobelins</h2>${bases}${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
+      <div class="extra">
+        <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
+        <p class="hint">Clique sur une caserne pour former des troupes.</p>
+        <p class="hint">${hint}</p>
+      </div>${saveError ? '<p class="err">⚠ Sauvegarde échouée</p>' : ''}`;
   }
   setPanel(panelHtml, onAction);
 

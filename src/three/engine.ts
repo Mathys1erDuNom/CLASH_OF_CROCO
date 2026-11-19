@@ -14,8 +14,11 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 host.appendChild(renderer.domElement);
 
 camera.position.set(0, 21, 23);
+if (innerWidth < innerHeight) camera.position.set(0, 30, 17); // portrait phone: look down more so the village fills the tall screen
 export const controls = new OrbitControls(camera, renderer.domElement);
 Object.assign(controls, { enableDamping: true, maxPolarAngle: 1.25, minDistance: 8, maxDistance: 45, screenSpacePanning: false });
+// touch like a mobile game: one finger moves the map, two fingers pinch-zoom and turn
+controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
 const hemi = new THREE.HemisphereLight(0xdff2ff, 0x3a4a20, 1.4);
 const sun = new THREE.DirectionalLight(0xfff0d0, 2.6);
@@ -34,6 +37,7 @@ new ResizeObserver(() => {
   const w = host.clientWidth, h = host.clientHeight;
   renderer.setSize(w, h);
   camera.aspect = w / h;
+  camera.fov = w < h ? 50 : 38; // phones in portrait: wider view so the village fits across
   camera.updateProjectionMatrix();
 }).observe(host);
 
@@ -123,6 +127,8 @@ const v = new THREE.Vector3();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1);
   controls.update();
+  controls.target.x = THREE.MathUtils.clamp(controls.target.x, -GRID * 0.7, GRID * 0.7); // keep the village in view when panning
+  controls.target.z = THREE.MathUtils.clamp(controls.target.z, -GRID * 0.7, GRID * 0.7);
   mode?.update(dt);
   for (let i = anims.length - 1; i >= 0; i--) {
     const a = anims[i];

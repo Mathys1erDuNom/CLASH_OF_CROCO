@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a1d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Clash of Croco</title>
   <style>
     * { box-sizing: border-box; }
@@ -45,10 +48,46 @@
     #account { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 4px; border-radius: 24px; background: rgba(28, 20, 12, .8); }
     #account img { width: 32px; height: 32px; border-radius: 50%; }
     #account button { display: inline-block; width: auto; margin: 0; padding: 4px 8px; font-size: 12px; }
+    .menus { display: flex; gap: 8px; margin: 8px 0; }
+    .menus button.menu-btn { display: block; flex: 1; text-align: center; font-size: 16px; padding: 10px 6px; margin: 0; }
+    .menu-box { background: rgba(0,0,0,.25); border: 2px solid #6d4a26; border-radius: 10px; padding: 4px 8px 8px; margin-bottom: 8px; }
     .hint { color: #b8c890; font-style: italic; }
     .err { color: #ff9a8a; font-weight: bold; }
     .big { font-size: 32px; color: #ffd84a; margin: 4px 0; }
-    @media (max-width: 700px) { body { flex-direction: column; } #panel { width: auto; height: 45vh; border-left: 0; border-top: 3px solid #5c7a34; } }
+    /* ---- Mobile: full-screen map, resources on top, big buttons at the bottom, sheets that slide up */
+    @media (max-width: 700px), (pointer: coarse) and (max-height: 520px) {
+      html, body { height: 100%; overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+      body { display: block; }
+      #game { position: fixed; inset: 0; }
+      #panel { position: fixed; left: 8px; right: 8px; bottom: calc(86px + env(safe-area-inset-bottom)); width: auto; max-height: 52dvh; padding: 10px;
+        border: 0; box-shadow: none; background: transparent; overflow-y: auto; pointer-events: none; -webkit-overflow-scrolling: touch; }
+      #panel > * { pointer-events: auto; }
+      #panel:has(.sel-box, .menu-box, .deploy, .result) { background: linear-gradient(rgba(58, 42, 26, .97), rgba(42, 29, 18, .97)); border: 4px solid #6d4a26; border-radius: 18px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .5); animation: sheet .18s ease-out; }
+      @keyframes sheet { from { transform: translateY(24px); opacity: 0; } }
+      #panel > h1:first-child, #panel .extra { display: none; }
+      .res { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 8px; margin: 0; gap: 6px; font-size: 15px; }
+      .res span { background: rgba(28, 20, 12, .85); border: 2px solid #6d4a26; border-radius: 20px; padding: 3px 10px 3px 4px; display: flex; align-items: center; gap: 4px; }
+      .res img { width: 22px; height: 22px; }
+      .menus { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); margin: 0; gap: 8px; }
+      .menus button.menu-btn { min-height: 66px; font-size: 15px; border-radius: 16px; box-shadow: 0 4px 0 #2b1d14; }
+      .sel-box, .menu-box { margin: 0; border: 0; background: none; padding: 0; }
+      button { min-height: 48px; }
+      button.info { width: 44px; height: 44px; min-height: 44px; }
+      #account { top: calc(8px + env(safe-area-inset-top)); left: 8px; padding: 3px; }
+      #account span { display: none; }
+      #account button { min-height: 0; }
+      .float { font-size: 18px; }
+      /* attack: troops in one horizontal row, swipe to see more */
+      .deploy { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+      .deploy button { flex: 0 0 auto; width: 128px; margin: 0; grid-template-columns: 1fr; text-align: center; font-size: 12px; }
+      .deploy button img { grid-row: auto; justify-self: center; }
+      #panel:has(.deploy) { bottom: calc(8px + env(safe-area-inset-bottom)); }
+      #panel:has(.deploy) .hint, #panel:has(.deploy) h2 { display: none; }
+      #panel:has(.deploy) h1, #panel h1.result { display: block; font-size: 16px; margin: 0; }
+      .status { margin: 4px 0 8px; font-weight: 700; }
+      button.retreat { text-align: center; }
+    }
   </style>
 </head>
 <body>
