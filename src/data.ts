@@ -1,0 +1,164 @@
+export type Res = 'gold' | 'mud';
+export type Cost = Partial<Record<Res, number>>;
+
+export const GRID = 20; // tiles per side
+
+/** Stats of one building level. levels[0] is the initial construction. */
+export interface Level {
+  cost: Cost;
+  sec: number; // build / upgrade time
+  hp: number;
+  perMin?: number; cap?: number; // producers
+  dps?: number; range?: number; // defenses (range in tiles)
+  housing?: number; // camps: army places
+}
+
+export interface BuildingDef {
+  name: string;
+  size: number; // footprint in tiles
+  max: number; // how many the player may own
+  hutRequired?: number; // Chief's hut level needed to build it; hidden from the build menu until then (default 1)
+  res?: Res; // resource produced
+  defense?: boolean;
+  hitsAir?: boolean; // defense that can shoot flying troops (others only hit the ground)
+  airOnly?: boolean; // shoots flying troops only
+  trains?: boolean;
+  lab?: boolean; // upgrades troops
+  loot?: boolean; // goblin version holds loot
+  levels: Level[];
+}
+
+export const BUILDINGS: Record<string, BuildingDef> = {
+  hq: { name: 'Hutte du Chef', size: 3, max: 1, levels: [
+    { cost: {}, sec: 0, hp: 1500 },
+    { cost: { gold: 500, mud: 500 }, sec: 60, hp: 2200 },
+    { cost: { gold: 1500, mud: 1500 }, sec: 180, hp: 3200 },
+  ] },
+  goldMine: { name: "Mine d'or", size: 2, max: 4, res: 'gold', loot: true, levels: [
+    { cost: { mud: 60 }, sec: 10, hp: 400, perMin: 30, cap: 200 },
+    { cost: { mud: 200 }, sec: 40, hp: 550, perMin: 50, cap: 400 },
+    { cost: { mud: 600 }, sec: 120, hp: 750, perMin: 80, cap: 800 },
+  ] },
+  mudPump: { name: 'Pompe à vase', size: 2, max: 4, res: 'mud', loot: true, levels: [
+    { cost: { gold: 60 }, sec: 10, hp: 400, perMin: 30, cap: 200 },
+    { cost: { gold: 200 }, sec: 40, hp: 550, perMin: 50, cap: 400 },
+    { cost: { gold: 600 }, sec: 120, hp: 750, perMin: 80, cap: 800 },
+  ] },
+  barracks: { name: 'Caserne du marais', size: 2, max: 2, trains: true, levels: [
+    { cost: { gold: 120 }, sec: 20, hp: 500 },
+    { cost: { gold: 400 }, sec: 60, hp: 700 },
+    { cost: { gold: 1000 }, sec: 150, hp: 900 },
+  ] },
+  camp: { name: 'Camp des troupes', size: 3, max: 3, levels: [
+    { cost: { gold: 80 }, sec: 15, hp: 400, housing: 20 },
+    { cost: { gold: 350 }, sec: 50, hp: 550, housing: 35 },
+    { cost: { gold: 900 }, sec: 120, hp: 700, housing: 50 },
+  ] },
+  cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, levels: [
+    { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 4 },
+    { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 4.5 },
+    { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 5 },
+  ] },
+  reedTower: { name: 'Tour de roseaux', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
+    { cost: { gold: 100, mud: 50 }, sec: 25, hp: 450, dps: 22, range: 6 },
+    { cost: { gold: 300, mud: 150 }, sec: 60, hp: 600, dps: 32, range: 6.5 },
+    { cost: { gold: 800, mud: 400 }, sec: 150, hp: 800, dps: 45, range: 7 },
+  ] },
+  airDefense: { name: 'Lance-harpons anti-air', size: 2, max: 2, hutRequired: 3, defense: true, hitsAir: true, airOnly: true, levels: [
+    { cost: { gold: 300, mud: 100 }, sec: 40, hp: 500, dps: 110, range: 6 },
+    { cost: { gold: 700, mud: 300 }, sec: 90, hp: 700, dps: 160, range: 6.5 },
+    { cost: { gold: 1500, mud: 700 }, sec: 180, hp: 900, dps: 230, range: 7 },
+  ] },
+  lab: { name: 'Laboratoire', size: 2, max: 1, hutRequired: 2, lab: true, levels: [
+    { cost: { gold: 150, mud: 100 }, sec: 30, hp: 500 },
+    { cost: { gold: 500, mud: 400 }, sec: 90, hp: 700 },
+    { cost: { gold: 1200, mud: 1000 }, sec: 200, hp: 900 },
+  ] },
+};
+
+export interface TroopDef {
+  name: string;
+  hp: number;
+  dps: number; // average damage per second
+  hitEvery: number; // seconds between two attacks; damage per attack = dps * hitEvery
+  range: number; // tiles
+  speed: number; // tiles per second
+  space: number; // army places taken in camps
+  cost: Cost;
+  trainSec: number;
+  prefers?: 'defense' | 'resource'; // favourite targets; falls back to the nearest building once none are left
+  /** Laboratory level needed to research each troop level: { 2: 2 } = "level 2 needs a level-2 lab". */
+  labRequired: Record<number, number>;
+  barracksRequired?: number; // barracks level needed to train it (default 1)
+  maxLevel?: number; // highest level it can reach (default: every level of TROOP_LEVELS)
+  splash?: number; // area damage radius in tiles around the target (default: single target)
+  flying?: boolean; // flies over everything; only defenses with hitsAir can shoot it
+  resourceBonus?: number; // damage multiplier against gold mines and mud pumps
+}
+
+export const TROOPS: Record<string, TroopDef> = {
+  croco: { name: 'Croco Cogneur', hp: 320, dps: 26, range: 0.6, hitEvery: 1.0, speed: 1.1, space: 5, cost: { mud: 50 }, trainSec: 12, prefers: 'defense', labRequired: { 2: 2, 3: 3 } },
+  frog: { name: 'Grenouille Sarbacane', hp: 90, dps: 16, range: 3, hitEvery: 0.8, speed: 1.6, space: 2, cost: { mud: 30 }, trainSec: 8, labRequired: { 2: 2, 3: 3 } },
+  babyCroco: { name: 'Bébé Croco', hp: 70, dps: 12, range: 0.5, hitEvery: 0.5, speed: 2.4, space: 1, cost: { mud: 15 }, trainSec: 4, prefers: 'resource', labRequired: { 2: 2, 3: 3 }, resourceBonus: 3 },
+  crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { mud: 90 }, trainSec: 20, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2
+  flyingCroco: { name: 'Croco volant bombardier', hp: 300, dps: 42, range: 0, hitEvery: 1.5, speed: 1.4, space: 6, cost: { mud: 160 }, trainSec: 30, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1, flying: true }, // TEST: real value barracksRequired: 3
+};
+
+/** Each barracks level above 1 trains troops this much faster (level 2: x1.5, level 3: x2). */
+export const TRAIN_SPEEDUP_PER_LEVEL = 0.5;
+
+/** Troop levels by current level: mult scales hp and dps; up pays for the next level (lab level: see labRequired in TROOPS). */
+export const TROOP_LEVELS: { mult: number; up?: { cost: Cost; sec: number } }[] = [
+  { mult: 1, up: { cost: { mud: 100 }, sec: 60 } },
+  { mult: 1.3, up: { cost: { mud: 300, gold: 100 }, sec: 150 } },
+  { mult: 1.7 },
+];
+
+export interface Placement { type: string; x: number; y: number; level?: number }
+
+export interface GoblinBase { id: string; name: string; loot: Record<Res, number>; buildings: Placement[] }
+
+export const GOBLIN_BASES: GoblinBase[] = [
+  {
+    id: 'camp', name: 'Campement gobelin', loot: { gold: 300, mud: 300 },
+    buildings: [
+      { type: 'hq', x: 9, y: 9 }, { type: 'goldMine', x: 5, y: 9 }, { type: 'mudPump', x: 13, y: 9 },
+      { type: 'cannon', x: 9, y: 5 },
+    ],
+  },
+  {
+    id: 'fort', name: 'Fort des Verrues', loot: { gold: 700, mud: 600 },
+    buildings: [
+      { type: 'hq', x: 9, y: 9, level: 2 }, { type: 'cannon', x: 6, y: 6, level: 2 }, { type: 'cannon', x: 13, y: 13 },
+      { type: 'reedTower', x: 13, y: 6, level: 2 }, { type: 'goldMine', x: 6, y: 13 }, { type: 'goldMine', x: 9, y: 13 },
+      { type: 'mudPump', x: 9, y: 6 }, { type: 'barracks', x: 13, y: 9 }, { type: 'airDefense', x: 3, y: 9 },
+    ],
+  },
+  {
+    id: 'citadel', name: 'Citadelle du Roi Gobelin', loot: { gold: 1500, mud: 1400 },
+    buildings: [
+      { type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 6, y: 9, level: 3 }, { type: 'cannon', x: 13, y: 9, level: 3 },
+      { type: 'cannon', x: 9, y: 6, level: 2 }, { type: 'reedTower', x: 6, y: 6, level: 2 }, { type: 'reedTower', x: 13, y: 6, level: 2 },
+      { type: 'reedTower', x: 6, y: 13, level: 3 }, { type: 'reedTower', x: 13, y: 13, level: 3 }, { type: 'goldMine', x: 9, y: 13, level: 3 },
+      { type: 'mudPump', x: 3, y: 9, level: 2 }, { type: 'mudPump', x: 16, y: 9, level: 2 }, { type: 'goldMine', x: 9, y: 3, level: 2 }, { type: 'airDefense', x: 16, y: 3, level: 2 },
+    ],
+  },
+  {
+    id: 'swamp', name: 'Marais Maudit', loot: { gold: 2500, mud: 2200 },
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 5, y: 5, level: 3 }, { type: 'cannon', x: 14, y: 5, level: 3 }, { type: 'cannon', x: 5, y: 14, level: 3 }, { type: 'cannon', x: 14, y: 14, level: 3 }, { type: 'reedTower', x: 9, y: 5, level: 3 }, { type: 'reedTower', x: 9, y: 14, level: 2 }, { type: 'reedTower', x: 5, y: 9, level: 2 }, { type: 'reedTower', x: 14, y: 9, level: 3 }, { type: 'airDefense', x: 7, y: 7, level: 2 }, { type: 'airDefense', x: 12, y: 12, level: 2 }, { type: 'barracks', x: 12, y: 6, level: 3 }, { type: 'lab', x: 6, y: 12, level: 2 }, { type: 'goldMine', x: 2, y: 2, level: 3 }, { type: 'goldMine', x: 17, y: 17, level: 3 }, { type: 'mudPump', x: 17, y: 2, level: 3 }, { type: 'mudPump', x: 2, y: 17, level: 3 }],
+  },
+  {
+    id: 'warts', name: 'Repaire du Seigneur des Verrues', loot: { gold: 4000, mud: 3500 },
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 6, y: 6, level: 3 }, { type: 'cannon', x: 12, y: 6, level: 3 }, { type: 'cannon', x: 6, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 3, level: 3 }, { type: 'reedTower', x: 3, y: 9, level: 3 }, { type: 'reedTower', x: 15, y: 9, level: 3 }, { type: 'reedTower', x: 9, y: 15, level: 3 }, { type: 'reedTower', x: 3, y: 3, level: 3 }, { type: 'reedTower', x: 15, y: 15, level: 3 }, { type: 'airDefense', x: 9, y: 6, level: 3 }, { type: 'airDefense', x: 6, y: 9, level: 2 }, { type: 'airDefense', x: 12, y: 9, level: 2 }, { type: 'goldMine', x: 15, y: 3, level: 3 }, { type: 'goldMine', x: 3, y: 15, level: 3 }, { type: 'mudPump', x: 17, y: 6, level: 3 }, { type: 'mudPump', x: 6, y: 17, level: 3 }, { type: 'camp', x: 16, y: 12, level: 3 }],
+  },
+  {
+    id: 'throne', name: 'Trône du Roi Gobelin Suprême', loot: { gold: 6000, mud: 5000 },
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 7, y: 7, level: 3 }, { type: 'cannon', x: 12, y: 7, level: 3 }, { type: 'cannon', x: 7, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 4, level: 3 }, { type: 'cannon', x: 9, y: 14, level: 3 }, { type: 'cannon', x: 4, y: 9, level: 3 }, { type: 'cannon', x: 14, y: 9, level: 3 }, { type: 'reedTower', x: 4, y: 4, level: 3 }, { type: 'reedTower', x: 14, y: 4, level: 3 }, { type: 'reedTower', x: 4, y: 14, level: 3 }, { type: 'reedTower', x: 14, y: 14, level: 3 }, { type: 'reedTower', x: 1, y: 9, level: 3 }, { type: 'reedTower', x: 17, y: 9, level: 3 }, { type: 'airDefense', x: 9, y: 7, level: 3 }, { type: 'airDefense', x: 7, y: 9, level: 3 }, { type: 'airDefense', x: 12, y: 9, level: 3 }, { type: 'goldMine', x: 1, y: 1, level: 3 }, { type: 'goldMine', x: 17, y: 1, level: 3 }, { type: 'mudPump', x: 1, y: 17, level: 3 }, { type: 'mudPump', x: 17, y: 17, level: 3 }, { type: 'lab', x: 9, y: 17, level: 2 }, { type: 'barracks', x: 9, y: 1, level: 3 }],
+  },
+];
+
+export function fmtCost(c: Cost): string {
+  return [c.gold && `${c.gold} or`, c.mud && `${c.mud} vase`].filter(Boolean).join(' + ') || 'gratuit';
+}
+
+export const troopMaxLevel = (kind: string) => TROOPS[kind].maxLevel ?? TROOP_LEVELS.length;
