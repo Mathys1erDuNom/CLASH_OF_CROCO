@@ -54,7 +54,7 @@ export async function discordUser(code: string, cfg: { id: string; secret: strin
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ client_id: cfg.id, client_secret: cfg.secret, grant_type: 'authorization_code', code, redirect_uri: cfg.redirect }),
   });
-  if (!tok.ok) throw new Error(`discord token ${tok.status}`);
+  if (!tok.ok) throw new Error(`discord token ${tok.status}: ${await tok.text()}`); // e.g. invalid_client, invalid_grant (redirect mismatch)
   const { access_token } = await tok.json() as { access_token: string };
   const me = await fetch('https://discord.com/api/users/@me', { headers: { authorization: `Bearer ${access_token}` } });
   if (!me.ok) throw new Error(`discord user ${me.status}`);

@@ -3,7 +3,7 @@
 import { migrate, newSave, type Save } from './economy.ts';
 
 export interface User { id: string; name: string; avatar: string }
-export interface Me { authEnabled: boolean; user?: User | null }
+export interface Me { authEnabled: boolean; loginHost?: string; user?: User | null }
 
 const guestId = localStorage.getItem('croco-id');
 let url = ''; // where this player's save lives

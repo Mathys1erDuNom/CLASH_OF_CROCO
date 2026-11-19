@@ -23,10 +23,17 @@ function accountBar(u: User) {
 async function start() {
   const me = await fetchMe();
   if (me.authEnabled && !me.user) {
-    const err = new URLSearchParams(location.search).get('login');
+    // cookies only work on the address Discord sends players back to: always log in from there
+    if (me.loginHost && location.host !== me.loginHost) { location.href = `${location.protocol}//${me.loginHost}/`; return; }
+    const login = new URLSearchParams(location.search).get('login');
+    const why: Record<string, string> = {
+      state: 'Le retour de Discord n’a pas pu être vérifié (cookie absent). Vérifie que les cookies sont autorisés, puis réessaie.',
+      discord: 'Discord a refusé la connexion. Vérifie DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET et que l’adresse de redirection est identique sur Discord et dans DISCORD_REDIRECT_URI.',
+      ok: 'Connexion Discord réussie, mais ton navigateur n’a pas gardé le cookie de session. Vérifie que les cookies sont autorisés pour ce site.',
+    };
     screen(`<p>Connecte-toi pour retrouver ta base du marais.</p>
       <a class="discord" href="/auth/discord">Se connecter avec Discord</a>
-      ${err ? '<p class="err">La connexion a échoué, réessaie.</p>' : ''}`);
+      ${login && why[login] ? `<p class="err">${why[login]}</p>` : ''}`);
     panel.textContent = '';
     return;
   }

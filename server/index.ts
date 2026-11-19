@@ -95,16 +95,17 @@ app.get('/auth/discord', async (_req, reply) => {
 app.get<{ Querystring: { code?: string; state?: string } }>('/auth/discord/callback', async (req, reply) => {
   if (!discord) return reply.code(404).send({ error: 'discord login disabled' });
   const { code, state } = req.query;
-  if (!code || !state || state !== parseCookies(req.headers.cookie).croco_oauth_state) return reply.redirect('/?login=invalid');
+  // no state cookie = the player started the login on another address than DISCORD_REDIRECT_URI, or cookies are blocked
+  if (!code || !state || state !== parseCookies(req.headers.cookie).croco_oauth_state) return reply.redirect('/?login=state');
   try {
     const u = await discordUser(code, discord);
     await store.upsertUser({ id: u.id, name: u.global_name || u.username, avatar: avatarUrl(u) });
     const token = signSession({ uid: u.id, exp: Date.now() + SESSION_DAYS * 86_400_000 }, sessionSecret);
     reply.header('set-cookie', [cookie('croco_session', token, SESSION_DAYS * 86_400, secure), cookie('croco_oauth_state', '', 0, secure)]);
-    return reply.redirect('/');
+    return reply.redirect('/?login=ok');
   } catch (e) {
-    req.log.error(e);
-    return reply.redirect('/?login=error');
+    req.log.error(e, 'discord login failed');
+    return reply.redirect('/?login=discord');
   }
 });
 
@@ -113,10 +114,11 @@ app.post('/auth/logout', async (_req, reply) => {
   return { ok: true };
 });
 
-app.get('/api/me', async req => {
+app.get('/api/me', async (req, reply) => {
+  reply.header('cache-control', 'no-store');
   if (!discord) return { authEnabled: false };
   const s = sessionOf(req);
-  return { authEnabled: true, user: s ? await store.getUser(s.uid) : null };
+  return { authEnabled: true, loginHost: new URL(discord.redirect).host, user: s ? await store.getUser(s.uid) : null };
 });
 
 const isSave = (b: unknown) => !!b && typeof b === 'object' && !Array.isArray(b);
