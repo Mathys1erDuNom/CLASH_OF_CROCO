@@ -71,6 +71,10 @@
     .sbar[hidden] { display: none; }
     .sbar b { position: absolute; left: 0; right: 0; border-radius: 6px; background: #ffd84a; box-shadow: 0 0 0 1px #2b1d14; }
     .sbar.h b { top: 0; bottom: 0; left: 0; right: auto; }
+    .row { display: flex; gap: 8px; }
+    .row button { text-align: center; }
+    button.compact { padding: 4px 8px; font-size: 13px; }
+    button.compact small { display: inline; margin-left: 4px; }
     .hint { color: #b8c890; font-style: italic; }
     .err { color: #ff9a8a; font-weight: bold; }
     .big { font-size: 32px; color: #ffd84a; margin: 4px 0; }
@@ -106,6 +110,12 @@
       /* attack: troops in one horizontal row, swipe to see more */
       .deploy { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
       .scroll { max-height: 30dvh; }
+      /* building panels with a list (barracks, lab): the list takes all the room left in the sheet */
+      #panel:has(.sel-box .scroll) { height: 62dvh; max-height: 62dvh; overflow: hidden; display: flex; flex-direction: column; }
+      .sel-box:has(.scroll) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      .sel-box:has(.scroll) > p { margin: 4px 0; }
+      .sel-box .scroll-wrap { flex: 1; min-height: 0; }
+      .sel-box .scroll { max-height: 100%; height: 100%; }
       .deploy button { flex: 0 0 auto; width: 128px; margin: 0; grid-template-columns: 1fr; text-align: center; font-size: 12px; }
       .deploy button img { grid-row: auto; justify-self: center; }
       #panel:has(.deploy) { bottom: calc(8px + env(safe-area-inset-bottom)); }

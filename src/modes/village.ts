@@ -222,14 +222,14 @@ export function villageMode(): Mode {
 
   function trainHtml(now: number): string {
     const canTrain = hasBarracks(save, now);
-    return '<h2>Former des troupes</h2>' + Object.entries(TROOPS).map(([k, d]) => {
+    return '<h2>Former des troupes</h2><div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).map(([k, d]) => {
       const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now) < req;
       const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
       const info = `<button class="info" data-act="info" data-arg="${k}" aria-label="Stats de ${d.name}" title="Toutes les stats">${infoKind === k ? '✕' : 'i'}</button>`;
       const details = infoKind === k ? `<div class="stats"><b>${d.name}</b> · niveau ${troopLevel(save, k)}<br>Formation : ${secs(trainMs(save, k, now))}<br>${troopStats(k, troopLevel(save, k))}</div>` : '';
       return `<div class="train-row">${train}${info}</div>${details}`;
-    }).join('')
+    }).join('') + '</div><i class="sbar"><b></b></i></div>'
       + queueHtml(now) + (armySize(save) >= armyCap(save, now) ? '<p class="hint">Camps pleins : construis ou améliore un camp.</p>' : '');
   }
 
@@ -265,11 +265,13 @@ export function villageMode(): Mode {
       : `<p>${levelInfo(b.type, b.level)}</p>`;
     if (!busy && next) {
       const block = upgradeBlock(save, b, now);
-      body += `<button data-act="upgrade" ${block ? 'disabled' : ''}>Améliorer au niveau ${b.level + 1}<small>${fmtCost(next.cost)} · ${secs(next.sec * 1000)}<br>→ ${levelInfo(b.type, b.level + 1)}${block ? `<br>⚠ ${block}` : ''}</small></button>`;
+      body += d.trains || d.lab // these panels hold a long list below: keep the building upgrade on one short line
+        ? `<button data-act="upgrade" class="compact" ${block ? 'disabled' : ''}>⬆ Niveau ${b.level + 1} · ${fmtCost(next.cost)} · ${secs(next.sec * 1000)}${block ? `<small>⚠ ${block}</small>` : ''}</button>`
+        : `<button data-act="upgrade" ${block ? 'disabled' : ''}>Améliorer au niveau ${b.level + 1}<small>${fmtCost(next.cost)} · ${secs(next.sec * 1000)}<br>→ ${levelInfo(b.type, b.level + 1)}${block ? `<br>⚠ ${block}` : ''}</small></button>`;
     } else if (!busy) body += '<p class="hint">Niveau maximum atteint.</p>';
     if (d.trains && working > 0) body += trainHtml(now);
     if (d.lab && working > 0) body += labHtml(now, working);
-    return `<div class="sel-box"><h2>${d.name} <span class="lvl">${stars}</span></h2>${body}<button data-act="move">Déplacer</button><button data-act="deselect">Fermer</button></div>`;
+    return `<div class="sel-box"><h2>${d.name} <span class="lvl">${stars}</span></h2>${body}<div class="row"><button data-act="move">Déplacer</button><button data-act="deselect">Fermer</button></div></div>`;
   }
 
   function panelHtml(): string {

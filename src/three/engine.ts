@@ -13,8 +13,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 host.appendChild(renderer.domElement);
 
-camera.position.set(0, 21, 23);
-if (innerWidth < innerHeight) camera.position.set(0, 30, 17); // portrait phone: look down more so the village fills the tall screen
+camera.position.set(0, 12, 20); // tilted view (about 30° above the ground)
+if (innerWidth < innerHeight) camera.position.set(0, 19, 22); // portrait phone: a bit higher so the village fills the tall screen
 export const controls = new OrbitControls(camera, renderer.domElement);
 Object.assign(controls, { enableDamping: true, maxPolarAngle: 1.25, minDistance: 8, maxDistance: 45, screenSpacePanning: false });
 // touch like a mobile game: one finger moves the map, two fingers pinch-zoom and turn
