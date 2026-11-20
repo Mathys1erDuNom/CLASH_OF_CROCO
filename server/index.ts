@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import pg from 'pg';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { avatarUrl, cookie, discordUser, newState, parseCookies, signSession, verifySession } from './auth.ts';
@@ -12,6 +12,7 @@ interface Store {
   put(id: string, data: unknown): Promise<void>;
   getUser(id: string): Promise<User | null>;
   upsertUser(u: User): Promise<void>;
+  listPlayers(): Promise<User[]>; // Discord accounts that have a save
 }
 
 async function postgresStore(url: string): Promise<Store> {
@@ -45,6 +46,10 @@ async function postgresStore(url: string): Promise<Store> {
         [u.id, u.name, u.avatar],
       );
     },
+    async listPlayers() {
+      return (await pool.query(`SELECT u.id, u.name, u.avatar FROM users u
+        WHERE EXISTS (SELECT 1 FROM saves s WHERE s.id = 'd-' || u.id) ORDER BY u.name`)).rows;
+    },
   };
 }
 
@@ -59,6 +64,14 @@ async function fileStore(dir: string): Promise<Store> {
     async put(id, data) { await writeFile(join(dir, `${id}.json`), JSON.stringify(data)); },
     async getUser(id) { return await files.get(`user-${id}`) as User | null; },
     async upsertUser(u) { await files.put(`user-${u.id}`, u); },
+    async listPlayers() {
+      const out: User[] = [];
+      for (const f of await readdir(dir)) {
+        const m = /^user-(.+)\.json$/.exec(f);
+        if (m && await files.get(`d-${m[1]}`)) out.push(await files.get(`user-${m[1]}`) as User);
+      }
+      return out;
+    },
   };
   return files;
 }
@@ -137,6 +150,26 @@ app.put('/api/save', async (req, reply) => {
   if (!isSave(req.body)) return reply.code(400).send({ error: 'bad body' });
   await store.put(saveKey(s.uid), req.body);
   return { ok: true };
+});
+
+// Other players, for PvP. Only the names and the building layout are public: no stock, troops or stars.
+app.get('/api/players', async (req, reply) => {
+  const s = sessionOf(req);
+  if (!s) return reply.code(401).send({ error: 'not logged in' });
+  reply.header('cache-control', 'no-store');
+  return (await store.listPlayers()).filter(p => p.id !== s.uid);
+});
+
+app.get<{ Params: { uid: string } }>('/api/players/:uid/base', async (req, reply) => {
+  const s = sessionOf(req);
+  if (!s) return reply.code(401).send({ error: 'not logged in' });
+  const { uid } = req.params;
+  if (!ID.test(uid) || uid === s.uid) return reply.code(400).send({ error: 'bad id' });
+  const user = await store.getUser(uid);
+  const save = await store.get(saveKey(uid)) as { buildings?: { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }[] } | null;
+  if (!user || !save?.buildings) return reply.code(404).send({ error: 'not found' });
+  reply.header('cache-control', 'no-store');
+  return { name: user.name, buildings: save.buildings.map(({ id, type, x, y, level, readyAt, collectedAt }) => ({ id, type, x, y, level, readyAt, collectedAt })) };
 });
 
 /** First login: copies this browser's guest save to the account, if the account has none yet. */

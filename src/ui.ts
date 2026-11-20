@@ -53,4 +53,5 @@ function updateBars() {
   }
 }
 
+export const esc = (s: string) => s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 export const secs = (ms: number) => `${Math.max(0, Math.ceil(ms / 1000))}s`;

@@ -1,7 +1,7 @@
 import { claimGuestSave, fetchMe, loadSave, startNewSave, type User } from './store.ts';
+import { esc } from './ui.ts';
 
 const panel = document.getElementById('panel')!;
-const esc = (s: string) => s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 
 /** Full-screen card used for login and for the first-login question. */
 function screen(html: string) {

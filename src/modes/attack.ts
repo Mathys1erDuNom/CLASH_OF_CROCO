@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BUILDINGS, GOBLIN_BASES, TROOPS } from '../data.ts';
+import { BUILDINGS, TROOPS, type Placement, type Res } from '../data.ts';
 import { Battle, edgeDist } from '../combat.ts';
 import { Bar, animate, floatText, toWorld, world, type Mode } from '../three/engine.ts';
 import { BUILDING_TOP, ball, bombCroco, box, cyl } from '../three/models.ts';
@@ -52,8 +52,11 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
   });
 }
 
-export function attackMode(baseId: string, exit: () => void): Mode {
-  const base = GOBLIN_BASES.find(b => b.id === baseId)!;
+/** A base to attack or visit: a goblin camp (has loot) or another player's base (no loot, no stars). */
+export interface Target { id: string; name: string; buildings: Placement[]; loot?: Record<Res, number> }
+
+/** visit: read-only view of the base, no troops, no damage. */
+export function attackMode(base: Target, exit: () => void, visit = false): Mode {
   const battle = new Battle(base.buildings);
   let selected = Object.keys(TROOPS).find(k => (save.troops[k] ?? 0) > 0) ?? '';
   let acc = 0, t = 0;
@@ -72,6 +75,7 @@ export function attackMode(baseId: string, exit: () => void): Mode {
     const red = new THREE.Mesh(new THREE.PlaneGeometry(s.size + 2, s.size + 2).rotateX(-Math.PI / 2), zone);
     red.position.copy(toWorld(s.cx, s.cy, 0.03));
     world.add(model, bar.group, red);
+    red.visible = !visit;
     structs.set(s.id, { model, bar });
   }
   const units = new Map<number, { model: THREE.Group; bar: Bar; last: THREE.Vector3 }>();
@@ -84,9 +88,9 @@ export function attackMode(baseId: string, exit: () => void): Mode {
 
   function finish() {
     const stars = battle.stars(), f = battle.lootFraction();
-    result = { stars, gold: Math.floor(base.loot.gold * f), mud: Math.floor(base.loot.mud * f) };
+    result = { stars, gold: Math.floor((base.loot?.gold ?? 0) * f), mud: Math.floor((base.loot?.mud ?? 0) * f) };
     save.gold += result.gold; save.mud += result.mud;
-    save.stars[base.id] = Math.max(save.stars[base.id] ?? 0, stars);
+    if (base.loot) save.stars[base.id] = Math.max(save.stars[base.id] ?? 0, stars);
     persist();
   }
 
@@ -96,6 +100,7 @@ export function attackMode(baseId: string, exit: () => void): Mode {
 
   function panelHtml(): string {
     const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n);
+    if (visit) return `<h1>👁 ${base.name}</h1><p class="hint">Base en lecture seule.</p><button data-act="retreat" class="retreat">Retour au village</button>`;
     if (result) {
       return `<h1 class="result">${result.stars ? 'Victoire !' : 'Défaite…'}</h1><p class="big">${stars(result.stars)}</p>
         <p>Destruction : ${battle.destruction()} %</p>
@@ -113,14 +118,15 @@ export function attackMode(baseId: string, exit: () => void): Mode {
       <button data-act="retreat" class="retreat">🏳 Battre en retraite</button>`;
   }
   setPanel(panelHtml, act => {
-    if (act === 'retreat' && !result) finish();
+    if (act === 'retreat' && visit) exit();
+    else if (act === 'retreat' && !result) finish();
     else if (act === 'home') exit();
     else if (act.startsWith('sel:')) selected = act.slice(4);
   });
 
   return {
     click(tile) {
-      if (result || !selected || (save.troops[selected] ?? 0) <= 0) return;
+      if (visit || result || !selected || (save.troops[selected] ?? 0) <= 0) return;
       if (!battle.canDeploy(tile.x, tile.y)) return floatText(toWorld(tile.x, tile.y, 0.5), 'Trop près !', '#ff8080');
       const lvl = troopLevel(save, selected);
       const u = battle.deploy(selected, tile.x, tile.y, troopMult(save, selected));
@@ -137,7 +143,7 @@ export function attackMode(baseId: string, exit: () => void): Mode {
 
     update(dt) {
       t += dt;
-      if (!result) {
+      if (!result && !visit) {
         acc += dt;
         while (acc >= DT) { battle.step(DT); acc -= DT; }
         const noTroopsLeft = !battle.alive(battle.units).length && !Object.values(save.troops).some(n => n > 0);

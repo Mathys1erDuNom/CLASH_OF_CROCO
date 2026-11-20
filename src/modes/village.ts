@@ -10,7 +10,7 @@ import { building, troop } from '../three/assets.ts';
 import { swamp } from '../three/scenery.ts';
 import { persist, save, saveError } from '../store.ts';
 import { spriteUrl } from '../sprites.ts';
-import { refresh, secs, setPanel } from '../ui.ts';
+import { esc, refresh, secs, setPanel } from '../ui.ts';
 import { attackMode, flap } from './attack.ts';
 
 /** Build menu categories: [id, label, which buildings go in it] */
@@ -56,6 +56,9 @@ export function villageMode(): Mode {
   let previewAt = ''; // tile where the placement ghost currently shows // set while 'placing' an existing building somewhere else
   let selected: number | null = null;
   let menu: 'build' | 'attack' | null = null; // which big menu is open in the panel
+  let attackTab: 'goblin' | 'player' | null = null; // target list open in the attack menu
+  let players: { id: string; name: string; avatar: string }[] | null = null; // null while loading
+  let playersErr = '';
   let buildCat: string | null = null; // open category of the build menu
   let openedAt = 0; // when a menu last unfolded: plays the slide-down animation once
   const dropping = () => Date.now() - openedAt < 300;
@@ -140,6 +143,29 @@ export function villageMode(): Mode {
     if (b) { const n = BUILDINGS[b.type].size; ring.position.copy(center(b, n)).setY(0.05); ring.scale.setScalar(n); }
   }
 
+  async function loadPlayers() {
+    players = null; playersErr = '';
+    try {
+      const r = await fetch('/api/players');
+      if (!r.ok) throw new Error(String(r.status));
+      players = await r.json();
+    } catch { players = []; playersErr = 'Connecte-toi avec Discord pour voir les autres joueurs.'; }
+  }
+
+  /** Opens another player's base: visit = read-only, otherwise a real attack. */
+  async function openBase(uid: string, visit: boolean) {
+    const r = await fetch(`/api/players/${encodeURIComponent(uid)}/base`);
+    if (!r.ok) throw new Error(String(r.status));
+    const { name, buildings }: { name: string; buildings: Building[] } = await r.json();
+    const now = Date.now();
+    const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: b.type, x: b.x, y: b.y, level: workingLevel(b, now) })); // buildings still under construction are not targets
+    setMode(() => attackMode({ id: `p-${uid}`, name, buildings: layout }, () => setMode(villageMode), visit));
+  }
+
+  const playersHtml = (ready: boolean) => players === null ? '<p class="hint">Chargement…</p>'
+    : !players.length ? `<p class="hint">${playersErr || 'Aucun autre joueur pour l’instant.'}</p>`
+    : `<div class="scroll-wrap"><div class="scroll" data-scroll="players">${players.map(p => `<div class="player"><img src="${esc(p.avatar)}" alt=""><b>${esc(p.name)}</b><button data-act="visitPlayer" data-arg="${esc(p.id)}">👁 Voir la base</button><button data-act="attackPlayer" data-arg="${esc(p.id)}" ${ready ? '' : 'disabled'}>⚔ Attaquer</button></div>`).join('')}</div><i class="sbar"><b></b></i></div>`;
+
   function onAction(act: string, arg: string) {
     const now = Date.now();
     if (act === 'build') {
@@ -198,7 +224,12 @@ export function villageMode(): Mode {
       hint = total ? `Récolté ${total} ressources.` : 'Rien à récolter.';
       persist();
     } else if (act === 'attack') {
-      setMode(() => attackMode(arg, () => setMode(villageMode)));
+      setMode(() => attackMode(GOBLIN_BASES.find(b => b.id === arg)!, () => setMode(villageMode)));
+    } else if (act === 'tab') {
+      attackTab = attackTab === arg ? null : (arg as 'goblin' | 'player');
+      if (attackTab === 'player') loadPlayers();
+    } else if (act === 'attackPlayer' || act === 'visitPlayer') {
+      openBase(arg, act === 'visitPlayer').catch(() => { hint = 'Impossible d’ouvrir cette base.'; });
     }
   }
 
@@ -296,6 +327,12 @@ export function villageMode(): Mode {
       const s = save.stars[b.id] ?? 0;
       return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.mud} vase</small></button>`;
     }).join('');
+    const attackBox = `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer</h2>
+      <button data-act="tab" data-arg="goblin" class="${attackTab === 'goblin' ? 'sel' : ''}">👹 Attaquer gobelin</button>
+      <button data-act="tab" data-arg="player" class="${attackTab === 'player' ? 'sel' : ''}">🐊 Attaquer joueur</button>
+      ${attackTab === 'goblin' ? `<div class="scroll-wrap"><div class="scroll" data-scroll="attack">${bases}</div><i class="sbar"><b></b></i></div>` : ''}
+      ${attackTab === 'player' ? playersHtml(ready) : ''}
+      ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
       <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
@@ -306,7 +343,7 @@ export function villageMode(): Mode {
         <button data-act="collectAll" class="menu-btn">💰 Récolter</button>
       </div>
       ${menu === 'build' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Construire</h2><div class="scroll-wrap"><div class="scroll" data-scroll="build">${builds}</div><i class="sbar"><b></b></i></div></div>` : ''}
-      ${menu === 'attack' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer les gobelins</h2><div class="scroll-wrap"><div class="scroll" data-scroll="attack">${bases}</div><i class="sbar"><b></b></i></div>${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>` : ''}
+      ${menu === 'attack' ? attackBox : ''}
       <div class="extra">
         <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
         <p class="hint">Clique sur une caserne pour former des troupes.</p>

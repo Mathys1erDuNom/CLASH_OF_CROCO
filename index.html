@@ -67,6 +67,10 @@
     .scroll { max-height: 46vh; overflow-y: auto; padding-right: 16px; overscroll-behavior: contain; scrollbar-width: none; }
     .deploy { scrollbar-width: none; overscroll-behavior: contain; }
     .scroll::-webkit-scrollbar, .deploy::-webkit-scrollbar { display: none; }
+    .player { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 0; border-bottom: 1px solid #c8b080; }
+    .player img { width: 32px; height: 32px; border-radius: 50%; }
+    .player b { flex: 1; }
+    .player button { width: auto; margin: 0; flex: 1 0 auto; }
     .sbar { position: absolute; top: 4px; bottom: 4px; right: 0; width: 8px; border-radius: 6px; background: #2b1d14; pointer-events: none; }
     .sbar.h { top: auto; left: 4px; right: 4px; bottom: 0; width: auto; height: 8px; }
     .sbar[hidden] { display: none; }
