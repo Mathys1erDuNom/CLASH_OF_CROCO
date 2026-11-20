@@ -53,7 +53,7 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
 }
 
 /** A base to attack or visit: a goblin camp (has loot) or another player's base (no loot, no stars). */
-export interface Target { id: string; name: string; buildings: Placement[]; loot?: Record<Res, number> }
+export interface Target { id: string; name: string; goblin: boolean; buildings: Placement[]; loot?: Record<Res, number> }
 
 /** visit: read-only view of the base, no troops, no damage. */
 export function attackMode(base: Target, exit: () => void, visit = false): Mode {
@@ -63,11 +63,11 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
   let result: { stars: number; gold: number; mud: number } | null = null;
   const cd = new Map<number, number>(); // cosmetic shot timers
 
-  swamp(world, 42, true);
+  swamp(world, base.goblin ? 42 : 7, base.goblin); // same scenery as the village for players
   const structs = new Map<number, { model: THREE.Group; bar: Bar }>();
   const zone = new THREE.MeshBasicMaterial({ color: 0xff3020, transparent: true, opacity: 0.13, depthWrite: false });
   for (const s of battle.structs) {
-    const model = building(s.type, true, s.level);
+    const model = building(s.type, base.goblin, s.level);
     model.position.copy(toWorld(s.cx, s.cy));
     const bar = new Bar(s.size * 0.6, 0xe04040);
     bar.group.position.copy(toWorld(s.cx, s.cy, BUILDING_TOP[s.type]));

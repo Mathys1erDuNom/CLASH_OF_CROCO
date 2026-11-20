@@ -159,7 +159,7 @@ export function villageMode(): Mode {
     const { name, buildings }: { name: string; buildings: Building[] } = await r.json();
     const now = Date.now();
     const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: b.type, x: b.x, y: b.y, level: workingLevel(b, now) })); // buildings still under construction are not targets
-    setMode(() => attackMode({ id: `p-${uid}`, name, buildings: layout }, () => setMode(villageMode), visit));
+    setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout }, () => setMode(villageMode), visit));
   }
 
   const playersHtml = (ready: boolean) => players === null ? '<p class="hint">Chargement…</p>'
@@ -224,7 +224,7 @@ export function villageMode(): Mode {
       hint = total ? `Récolté ${total} ressources.` : 'Rien à récolter.';
       persist();
     } else if (act === 'attack') {
-      setMode(() => attackMode(GOBLIN_BASES.find(b => b.id === arg)!, () => setMode(villageMode)));
+      setMode(() => attackMode({ ...GOBLIN_BASES.find(b => b.id === arg)!, goblin: true }, () => setMode(villageMode)));
     } else if (act === 'tab') {
       attackTab = attackTab === arg ? null : (arg as 'goblin' | 'player');
       if (attackTab === 'player') loadPlayers();
