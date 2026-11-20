@@ -15,8 +15,13 @@ function screen(html: string) {
 function accountBar(u: User) {
   const el = document.createElement('div');
   el.id = 'account';
-  el.innerHTML = `<img src="${esc(u.avatar)}" alt=""><span>${esc(u.name)}</span><button type="button">Se déconnecter</button>`;
-  el.querySelector('button')!.addEventListener('click', async () => { await fetch('/auth/logout', { method: 'POST' }); location.href = '/'; });
+  el.innerHTML = `<img class="av" src="${esc(u.avatar)}" alt=""><span>${esc(u.name)}</span><div class="menu"><button type="button" class="out">Se déconnecter</button><button type="button" class="cancel">Annuler</button></div>`;
+  el.addEventListener('click', async e => {
+    const c = (e.target as HTMLElement).classList;
+    if (c.contains('av')) el.classList.toggle('open');
+    else if (c.contains('cancel')) el.classList.remove('open');
+    else if (c.contains('out')) { await fetch('/auth/logout', { method: 'POST' }); location.href = '/'; }
+  });
   document.getElementById('game')!.appendChild(el);
 }
 

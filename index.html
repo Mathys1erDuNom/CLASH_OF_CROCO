@@ -48,6 +48,7 @@
     #account { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 4px; border-radius: 24px; background: rgba(28, 20, 12, .8); }
     #account img { width: 32px; height: 32px; border-radius: 50%; }
     #account button { display: inline-block; width: auto; margin: 0; padding: 4px 8px; font-size: 12px; }
+    #account .menu { display: contents; } #account .cancel { display: none; }
     .menus { display: flex; gap: 8px; margin: 8px 0; }
     .menus button.menu-btn { display: block; flex: 1; text-align: center; font-size: 16px; padding: 10px 6px; margin: 0; }
     .menu-box { background: rgba(0,0,0,.25); border: 2px solid #6d4a26; border-radius: 10px; padding: 4px 8px 8px; margin-bottom: 8px; }
@@ -97,9 +98,13 @@
       .sel-box, .menu-box { margin: 0; border: 0; background: none; padding: 0; }
       button { min-height: 48px; }
       button.info { width: 44px; height: 44px; min-height: 44px; }
-      #account { top: calc(56px + env(safe-area-inset-top)); left: 8px; padding: 3px; } /* under the resource pills, never touching them */
+      #account { top: calc(8px + env(safe-area-inset-top)); left: 8px; padding: 3px; flex-direction: column; align-items: flex-start; } /* same top as the resource pills */
+      #account img.av { width: 26px; height: 26px; cursor: pointer; } /* 26px + padding = same height as a resource pill */
       #account span { display: none; }
-      #account button { min-height: 0; }
+      #account .menu { display: none; flex-direction: column; gap: 6px; }
+      #account.open .menu { display: flex; }
+      #account.open .cancel { display: inline-block; }
+      #account button { min-height: 0; padding: 8px 12px; font-size: 14px; white-space: nowrap; }
       .float { font-size: 18px; }
       .menus .arr { display: none; }
       .menu-box.drop { animation: rise .25s ease-out; }
