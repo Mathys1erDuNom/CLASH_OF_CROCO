@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle } from './combat.ts';
-import { GOBLIN_BASES, TROOPS } from './data.ts';
+import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
 import { canPlace, placeBuilding, addTroopsToQueue, armyCap, collect, migrate, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
@@ -104,7 +104,7 @@ test('buildings move only to free spots, and may overlap their own old footprint
   assert.equal(moveBuilding(s, mine, 8, 8), false); // on the hut
   assert.equal(moveBuilding(s, mine, 5, 9), true); // shifted by one, overlapping its old spot
   assert.deepEqual([mine.x, mine.y], [5, 9]);
-  assert.equal(moveBuilding(s, mine, 19, 0), false); // outside the grid
+  assert.equal(moveBuilding(s, mine, GRID - 1, 0), false); // a 2x2 hanging off the grid edge
 });
 
 test('explosive croco launcher: trains at the barracks, splashes nearby buildings, level 2 needs a level-3 lab', () => {

@@ -1,7 +1,7 @@
 export type Res = 'gold' | 'mud';
 export type Cost = Partial<Record<Res, number>>;
 
-export const GRID = 20; // tiles per side
+export const GRID = 35; // tiles per side (about 3x the area of the old 20)
 
 /** Stats of one building level. levels[0] is the initial construction. */
 export interface Level {
