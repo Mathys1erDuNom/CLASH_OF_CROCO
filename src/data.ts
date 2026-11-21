@@ -57,19 +57,19 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 900 }, sec: 120, hp: 700, housing: 50 },
   ] },
   cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, levels: [
-    { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 4 },
-    { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 4.5 },
-    { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 5 },
+    { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 6 },
+    { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 6 },
+    { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 6 },
   ] },
   reedTower: { name: 'Tour de roseaux', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
-    { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 6 },
-    { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 6.5 },
-    { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 7 },
+    { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 8 },
+    { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 8 },
+    { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 8 },
   ] },
   airDefense: { name: 'Lance-harpons anti-air', size: 2, max: 2, hutRequired: 3, defense: true, hitsAir: true, airOnly: true, levels: [
-    { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 6 },
-    { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 6.5 },
-    { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 7 },
+    { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 8 },
+    { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 8 },
+    { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 8 },
   ] },
   goldStore: { name: "Réserve d'or", size: 2, max: 4, store: 'gold', loot: true, levels: [
     { cost: { gold: 150 }, sec: 30, hp: 900, store: 1000 },
