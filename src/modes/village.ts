@@ -383,7 +383,7 @@ export function villageMode(): Mode {
       const now = Date.now();
       if (tick(save, now)) persist();
       for (const b of save.buildings) {
-        let v = views.get(b.id)!;
+        let v = views.get(b.id) ?? showLevel(b, undefined, false); // a rebuilt building has no model yet
         const d = BUILDINGS[b.type], busy = now < b.readyAt, lvl = Math.max(1, workingLevel(b, now));
         if (lvl !== v.shown) { v = showLevel(b, v, true); floatText(center(b, d.size).setY(BUILDING_TOP[b.type]), `Niveau ${b.level} !`, '#ffe066'); }
         const base = [1, 1.06, 1.12][v.shown - 1];
