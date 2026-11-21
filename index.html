@@ -31,6 +31,7 @@
     .sel-box h2 { margin-top: 0; }
     .lvl { color: #ffe066; letter-spacing: 2px; }
     .army { display: flex; gap: 14px; font-weight: bold; font-size: 16px; }
+    .troop { white-space: nowrap; } .troop small { display: inline; } /* count and "niv" stay on one line */
     .troop img { width: 30px; height: 30px; vertical-align: middle; }
     .train-row { display: flex; gap: 6px; align-items: stretch; }
     .train-row > button:first-child { flex: 1; }
@@ -61,6 +62,9 @@
     button.cat span { background: #2b1d14; color: #ffd84a; border-radius: 10px; padding: 0 7px; font-size: 12px; }
     button.cat b { margin-left: auto; }
     button.cat.open { background: #ffd84a; }
+    button.unlock { background: linear-gradient(#e6f7ff, #8fd0f5); border-color: #1d6fa3; } /* can be unlocked now */
+    button.unlock:disabled { opacity: .7; } /* still unlockable, just not affordable or busy */
+    button.off { background: #c9c3b4; border-color: #7a7468; opacity: .6; } /* barracks level too low */
     .cat-items { padding-left: 10px; border-left: 3px solid #6d4a26; margin-left: 6px; }
     /* scrollable lists: native scrollbar hidden, our own always-visible bar drawn beside it (see updateBars in ui.ts) */
     .scroll-wrap { position: relative; }
