@@ -181,8 +181,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (!target) continue;
         const turret = v.model.getObjectByName('turret');
         if (turret) turret.rotation.y = Math.atan2(target.x - s.cx, target.y - s.cy);
-        if (ready(s.id, dt, s.type === 'cannon' ? 0.9 : s.type === 'airDefense' ? 0.7 : 0.5))
-          projectile(s.type === 'cannon' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'airDefense' ? 1.4 : 2.6), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+        if (ready(s.id, dt, s.type === 'mortar' ? 1.2 : s.type === 'cannon' ? 0.9 : s.type === 'airDefense' ? 0.7 : 0.5))
+          projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6),toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
       }
 
       for (const u of battle.units) {

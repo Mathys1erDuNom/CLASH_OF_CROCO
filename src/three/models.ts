@@ -259,6 +259,32 @@ function cannon(goblin: boolean, level: number) {
   return g;
 }
 
+/** Short stone pit with a steep tube: it lobs shells far over the walls. */
+function mortar(goblin: boolean, level: number) {
+  const L2 = level >= 2, L3 = level >= 3;
+  const g = new THREE.Group();
+  const grow = 1 + (level - 1) * 0.15; // each level is a little wider and taller
+  g.add(cyl(0.7 * grow, 0.8 * grow, 0.4 * grow, goblin ? 0x8a7f73 : 0xb0a894, 0, 0.2 * grow, 0, 8));
+  if (L2) for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.add(box(0.22, 0.2, 0.18, goblin ? 0x6a6056 : 0x908870, Math.cos(a) * 0.78, 0.4, Math.sin(a) * 0.78)); } // stone blocks around the pit
+  const turret = new THREE.Group();
+  turret.add(box(0.5, 0.25, 0.5, WOOD, 0, 0.1, 0));
+  const tube = new THREE.Group();
+  tube.add(cyl(0.22, 0.28, 1.0, [0x34343c, 0x9a6a30, 0x23232e][level - 1], 0, 0.5, 0, 10));
+  if (L2) for (const y of [0.25, 0.7]) tube.add(cyl(0.3, 0.3, 0.07, IRON, 0, y, 0, 10)); // iron bands
+  tube.position.y = 0.3;
+  tube.rotation.x = -0.6; // tilted up
+  turret.add(tube);
+  if (L3) { // a second tube and a banner on a pole
+    const twin = tube.clone();
+    twin.position.x = 0.4;
+    turret.add(twin, cyl(0.03, 0.03, 0.9, DARK_WOOD, -0.35, 0.8, 0, 6), box(0.02, 0.3, 0.3, 0xc23b2b, -0.35, 1.2, 0.15));
+  }
+  turret.position.y = 0.4 * grow;
+  turret.name = 'turret';
+  g.add(turret);
+  return g;
+}
+
 function reedTower(goblin: boolean, level: number) {
   const g = new THREE.Group();
   for (const [x, z] of [[-0.55, -0.55], [0.55, -0.55], [-0.55, 0.55], [0.55, 0.55]]) {
@@ -420,13 +446,13 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : reedTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : reedTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

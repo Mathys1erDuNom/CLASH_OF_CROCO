@@ -135,7 +135,10 @@ export class Battle {
       let t = inRange.find(u => u.id === s.targetId);
       if (!t) t = nearest(inRange, u => Math.hypot(u.x - s.cx, u.y - s.cy));
       s.targetId = t?.id ?? null;
-      if (t) t.hp -= dps * dt;
+      if (t) { // area defences (mortar) hit every troop near the target, not only the target
+        const radius = BUILDINGS[s.type].splash;
+        for (const u of radius ? inRange.filter(u => Math.hypot(u.x - t.x, u.y - t.y) <= radius) : [t]) u.hp -= dps * dt;
+      }
     }
 
     // troops that overlap push each other apart, so none can stay stacked on another

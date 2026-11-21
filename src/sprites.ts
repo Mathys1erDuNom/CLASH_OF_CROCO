@@ -86,6 +86,17 @@ function cannon(g: boolean) {
     <circle cx="104" cy="132" r="8" fill="#7a4a24" ${sw}/><circle cx="116" cy="136" r="7" fill="#7a4a24" ${sw}/><circle cx="110" cy="124" r="7" fill="#8b5a2b" ${sw}/>`);
 }
 
+function mortarIcon(g: boolean) {
+  const stone = g ? ['#8a7f73', '#4f463d'] : ['#b0a894', '#6e6656'];
+  return svg(128, 160, `<defs>${grad('s', stone[0], stone[1])}${grad('i', '#5b5b66', '#16161c', false)}</defs>
+    ${shadow(64, 142, 52)}
+    <path d="M18 110 v22 a46 14 0 0 0 92 0 v-22" fill="url(#s)" ${sw}/>
+    <ellipse cx="64" cy="110" rx="46" ry="14" fill="${stone[0]}" ${sw}/>
+    <path d="M40 104 L88 104 L82 122 L46 122 z" fill="#7a5430" ${sw}/>
+    <g transform="rotate(-25 64 104)"><rect x="56" y="34" width="18" height="72" rx="8" fill="url(#i)" ${sw}/><ellipse cx="65" cy="34" rx="9" ry="4" fill="#23232e" ${sw}/></g>
+    <circle cx="36" cy="134" r="6" fill="#4a4a52" ${sw}/><circle cx="96" cy="134" r="6" fill="#4a4a52" ${sw}/>`);
+}
+
 function reedTower(g: boolean) {
   const roof = g ? ['#6e4f78', '#3a2844'] : ['#d6b45a', '#9a7428'];
   return svg(128, 192, `<defs>${grad('r', roof[0], roof[1])}${grad('l', '#c7b36a', '#8a7636', false)}</defs>
@@ -192,7 +203,7 @@ export const SPRITES: Record<string, string> = {
   b_goldMine: goldMine(), g_goldMine: goldMine(),
   b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(), b_goldStore: goldStoreIcon(), b_chickenStore: chickenStoreIcon(),
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
-  b_cannon: cannon(false), g_cannon: cannon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
+  b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
   t_croco: crocoBrute(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),

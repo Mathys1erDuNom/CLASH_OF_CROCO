@@ -23,6 +23,7 @@ export interface BuildingDef {
   store?: Res; // resource whose stock it raises the maximum of
   defense?: boolean;
   hitsAir?: boolean; // defense that can shoot flying troops (others only hit the ground)
+  splash?: number; // defense: each shot damages every troop within this radius (tiles) of its target
   airOnly?: boolean; // shoots flying troops only
   trains?: boolean;
   lab?: boolean; // upgrades troops
@@ -60,6 +61,11 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 6 },
     { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 6 },
     { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 6 },
+  ] },
+  mortar: { name: 'Mortier', size: 2, max: 2, hutRequired: 2, defense: true, splash: 1.5, levels: [
+    { cost: { gold: 400, chicken: 100 }, sec: 60, hp: 600, dps: 60, range: 17 },
+    { cost: { gold: 1000, chicken: 300 }, sec: 120, hp: 850, dps: 80, range: 17 },
+    { cost: { gold: 2200, chicken: 700 }, sec: 240, hp: 1100, dps: 100, range: 17 },
   ] },
   reedTower: { name: 'Tour de roseaux', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
     { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 8 },

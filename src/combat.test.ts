@@ -291,3 +291,12 @@ test('a bomb hurts every building in its blast, including two that touch', () =>
   assert.ok(b.structs[0].hp < b.structs[0].maxHp, 'the mine is hit');
   assert.ok(b.structs[1].hp < b.structs[1].maxHp, 'the store next to it is hit too');
 });
+
+test('a mortar reaches far and its shell hits every troop near the target', () => {
+  const b = new Battle([{ type: 'mortar', x: 0, y: 0, level: 1 }]);
+  b.deploy('croco', 12, 1); // 12 tiles away: within the mortar's reach, far beyond a cannon's
+  b.deploy('croco', 12.5, 1.5); // a second troop next to the first one
+  b.step(0.1);
+  assert.ok(b.units[0].hp < b.units[0].maxHp, 'first troop hit');
+  assert.ok(b.units[1].hp < b.units[1].maxHp, 'the troop beside it hit too');
+});
