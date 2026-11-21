@@ -5,7 +5,7 @@ import { Bar, animate, floatText, toWorld, world, type Mode } from '../three/eng
 import { BUILDING_TOP, ball, bombCroco, box, cyl } from '../three/models.ts';
 import { building, troop } from '../three/assets.ts';
 import { swamp } from '../three/scenery.ts';
-import { troopLevel, troopMult } from '../economy.ts';
+import { gain, troopLevel, troopMult } from '../economy.ts';
 import { persist, save } from '../store.ts';
 import { spriteUrl } from '../sprites.ts';
 import { refresh, secs, setPanel } from '../ui.ts';
@@ -88,8 +88,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
 
   function finish() {
     const stars = battle.stars(), f = battle.lootFraction();
-    result = { stars, gold: Math.floor((base.loot?.gold ?? 0) * f), chicken: Math.floor((base.loot?.chicken ?? 0) * f) };
-    save.gold += result.gold; save.chicken += result.chicken;
+    const now = Date.now(); // loot above the storage cap is lost
+    result = { stars, gold: gain(save, 'gold', Math.floor((base.loot?.gold ?? 0) * f), now), chicken: gain(save, 'chicken', Math.floor((base.loot?.chicken ?? 0) * f), now) };
     if (base.loot) save.stars[base.id] = Math.max(save.stars[base.id] ?? 0, stars);
     persist();
   }

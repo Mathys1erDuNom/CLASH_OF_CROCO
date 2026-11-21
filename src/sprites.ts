@@ -184,10 +184,13 @@ const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" w
 const coin = () => svg(32, 32, `<circle cx="16" cy="16" r="12" fill="#f2c230" ${sw}/><circle cx="16" cy="16" r="7" fill="none" stroke="#b38512" stroke-width="2.5"/><path d="M11 10 q3 -2 6 0" stroke="#fff6b0" stroke-width="2" fill="none"/>`);
 const chickenIcon = () => svg(32, 32, `<circle cx="15" cy="18" r="10" fill="#f4f0e6" ${sw}/><path d="M11 9 q2 -6 4 0 q2 -5 4 1" fill="#d42a2a" stroke="${O}" stroke-width="2"/><path d="M24 16 l6 2 l-6 2 z" fill="#f0a020" stroke="${O}" stroke-width="1.5"/><circle cx="19" cy="16" r="1.6" fill="${O}"/>`);
 
+const goldStoreIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="20" y="70" width="88" height="62" rx="6" fill="#9a958a" ${sw}/><path d="M12 74 Q64 20 116 74 z" fill="#8a5a2e" ${sw}/><rect x="50" y="98" width="28" height="34" rx="3" fill="#2b1d14"/>${[[40, 120], [56, 124], [72, 120], [64, 112]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#f2c230" stroke="${O}" stroke-width="2"/>`).join('')}`);
+const chickenStoreIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="72" width="84" height="66" rx="4" fill="#8a5a30" ${sw}/><path d="M12 76 L64 34 L116 76 z" fill="#c9443a" ${sw}/><ellipse cx="64" cy="98" rx="14" ry="18" fill="#f4f0e6" ${sw}/><rect x="40" y="112" width="48" height="26" rx="3" fill="#e8c86a" ${sw}/>`);
+
 export const SPRITES: Record<string, string> = {
   b_hq: hq(false), g_hq: hq(true),
   b_goldMine: goldMine(), g_goldMine: goldMine(),
-  b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(),
+  b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(), b_goldStore: goldStoreIcon(), b_chickenStore: chickenStoreIcon(),
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),

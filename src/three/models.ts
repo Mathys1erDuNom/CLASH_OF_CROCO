@@ -99,19 +99,130 @@ function goldMine(level: number) {
   return g;
 }
 
-/** Chicken farm: a hen house in a dirt yard, with hens pecking around and a feed trough. */
-function chickenFarm() {
+const RED = 0xb8402c, THATCH = 0xdcae4e, EGG = 0xf7f3e8, BASKET = 0xa8743e;
+
+/** Chicken farm: a thatched hen house in a fenced yard. Level 2 stands on stilts with a silo; level 3 adds a striped awning, a hay shed and a flag. */
+function chickenFarm(level: number) {
   const g = new THREE.Group();
-  g.add(cyl(0.88, 0.92, 0.12, 0x8a6a3c, 0, 0.06, 0, 12)); // dirt yard
-  g.add(fence(0.9, 12));
-  g.add(box(0.9, 0.7, 0.8, WOOD, -0.25, 0.47, -0.2)); // hen house
-  g.add(cone(0.75, 0.5, 0x9c3a2a, -0.25, 1.2, -0.2, 4).rotateY(Math.PI / 4));
-  g.add(box(0.22, 0.4, 0.03, DOOR, -0.25, 0.31, 0.21));
-  g.add(box(0.7, 0.12, 0.22, DARK_WOOD, 0.45, 0.16, 0.5)); // feed trough
-  for (const [x, z] of [[0.45, 0.1], [0.6, -0.25], [-0.6, 0.45], [0.2, 0.7]]) { // hens
-    g.add(ball(0.14, 0xf4f0e6, x, 0.2, z, 0), ball(0.08, 0xf4f0e6, x + 0.1, 0.34, z, 0));
-    g.add(ball(0.035, 0xd42a2a, x + 0.1, 0.42, z, 0), cone(0.03, 0.06, 0xf0a020, x + 0.17, 0.34, z, 4).rotateZ(-Math.PI / 2));
+  g.add(cyl(0.98, 1.0, 0.1, 0x8a6a3c, 0, 0.05, 0, 14)); // dirt yard
+  g.add(fence(0.95, 14));
+  const [w, h, d] = level === 1 ? [1.0, 0.6, 0.8] : level === 2 ? [1.1, 0.7, 0.9] : [1.2, 0.8, 1.0];
+  const hx = -0.25, hz = -0.15, y0 = level === 1 ? 0 : 0.4, front = hz + d / 2;
+
+  // hen house on stilts from level 2
+  if (y0) for (const sx of [-0.45, 0.45]) for (const sz of [-0.35, 0.35]) g.add(cyl(0.05, 0.05, y0, DARK_WOOD, hx + sx, y0 / 2, hz + sz, 5));
+  const house = hut(w, h, d);
+  house.position.set(hx, y0, hz);
+  g.add(house);
+  g.add(box(w * 0.5, 0.06, 0.25, STRAW, hx, y0 + 0.05, front + 0.14)); // straw nest by the door
+  if (y0) g.add(box(0.3, 0.04, 0.7, WOOD, hx - 0.35, y0 / 2, front + 0.35).rotateX(0.5)); // ramp to the door
+
+  if (level >= 2) {
+    // awning: solid red at level 2, red and cream stripes at level 3
+    const stripes = level === 3 ? 5 : 1;
+    for (let i = 0; i < stripes; i++) {
+      const x = stripes === 1 ? hx : hx - w * 0.4 + (i * w * 0.8) / (stripes - 1);
+      g.add(box(stripes === 1 ? w * 0.9 : (w * 0.8) / stripes, 0.04, 0.45, i % 2 ? EGG : RED, x, y0 + h * 0.7, front + 0.25).rotateX(-0.35));
+    }
+    // silo with iron bands and a red cap
+    const sh = level === 3 ? 1.6 : 1.2;
+    g.add(cyl(0.22, 0.24, sh, WOOD, 0.75, sh / 2, -0.5, 10));
+    for (const by of [0.2, sh * 0.5, sh - 0.2]) g.add(cyl(0.245, 0.245, 0.04, IRON, 0.75, by, -0.5, 10));
+    g.add(cone(0.28, 0.3, RED, 0.75, sh + 0.15, -0.5, 10));
+    g.add(ball(0.08, EGG, 0.75, sh * 0.6, -0.27, 0)); // egg emblem on the silo
+    g.add(hen(0.4, 0.6), hen(-0.7, 0.5));
   }
+  if (level === 3) {
+    // flag on the roof
+    const apex = y0 + h * 1.425;
+    g.add(cyl(0.02, 0.02, 1.0, DARK_WOOD, hx + 0.3, apex + 0.5, hz, 4));
+    g.add(box(0.4, 0.26, 0.02, RED, hx + 0.52, apex + 0.85, hz));
+    g.add(ball(0.06, EGG, hx + 0.5, apex + 0.85, hz + 0.02, 0));
+    // hay shed with a hay bale stack
+    g.add(box(0.6, 0.05, 0.7, THATCH, 0.7, 0.55, 0.2).rotateZ(-0.15));
+    for (const x of [0.4, 1.0]) g.add(cyl(0.04, 0.04, 0.55, DARK_WOOD, x, 0.27, 0.2, 4));
+    g.add(box(0.3, 0.22, 0.22, STRAW, 0.7, 0.11, 0.2), box(0.3, 0.22, 0.22, STRAW, 0.7, 0.11, 0.45));
+    g.add(lantern(-0.85, 0, 0.4));
+  }
+  if (level === 1) g.add(lantern(0.8, 0, 0.1));
+
+  g.add(eggBasket(0.55, 0.15), hen(0.1, 0.5), hen(-0.6, 0.55));
+  if (level === 3) g.add(eggBasket(-0.5, -0.7));
+  return g;
+}
+
+/** Thatched hen house with a carved crocodile plaque above the door, facing +Z. */
+function hut(w: number, h: number, d: number) {
+  const g = new THREE.Group();
+  g.add(box(w, h, d, WOOD, 0, h / 2, 0));
+  g.add(box(w * 0.4, h * 0.6, 0.03, DOOR, 0, h * 0.3, d / 2 + 0.01));
+  g.add(box(w * 0.5, 0.2, 0.05, CROCO, 0, h * 0.82, d / 2 + 0.03));
+  g.add(cone(w * 0.72, h * 0.85, THATCH, 0, h + h * 0.425, 0, 4).rotateY(Math.PI / 4));
+  return g;
+}
+
+/** Hen with a red comb and a beak, at ground level. */
+function hen(x: number, z: number) {
+  const g = new THREE.Group();
+  g.add(ball(0.14, 0xf4f0e6, 0, 0.2, 0, 0), ball(0.08, 0xf4f0e6, 0.1, 0.34, 0, 0));
+  g.add(ball(0.035, 0xd42a2a, 0.1, 0.42, 0, 0), cone(0.03, 0.06, 0xf0a020, 0.17, 0.34, 0, 4).rotateZ(-Math.PI / 2));
+  g.position.set(x, 0, z);
+  return g;
+}
+
+/** Gold reserve: a timber vault full of gold at level 1; a stone vault with a barrel roof and banners from level 2; corner towers with flames at level 3. */
+function goldStore(level: number) {
+  const g = new THREE.Group();
+  g.add(cyl(0.98, 1.0, 0.1, 0x7a9a3c, 0, 0.05, 0, 14));
+  if (level === 1) {
+    g.add(box(1.5, 0.8, 1.2, WOOD, 0, 0.4, 0), box(0.8, 0.5, 0.05, DOOR, 0, 0.3, 0.63));
+    g.add(cone(1.1, 0.5, 0x8a5a2e, 0, 1.05, 0, 4).rotateY(Math.PI / 4));
+    for (const [x, y] of [[-0.25, 0.15], [0.05, 0.15], [0.3, 0.15], [-0.1, 0.27]]) g.add(ball(0.12, GOLD, x, y, 0.5, 0));
+    g.add(lantern(0.8, 0, 0.6));
+  } else {
+    g.add(box(1.8, 1.0, 1.4, STONE, 0, 0.5, 0), box(0.9, 0.6, 0.05, DOOR, 0, 0.3, 0.71));
+    g.add(cyl(0.9, 0.9, 1.4, WOOD, 0, 1.5, 0, 10).rotateX(Math.PI / 2)); // barrel roof
+    for (let i = 0; i < 7; i++) g.add(ball(0.13, GOLD, -0.5 + i * 0.17, 0.15, 0.55, 0));
+    g.add(box(0.35, 0.6, 0.03, RED, 0.8, 0.75, 0.72), ball(0.08, GOLD, 0.8, 0.8, 0.74, 0));
+    g.add(box(0.9, 0.1, 0.3, STONE, 0, 0.05, 1.0), box(0.9, 0.1, 0.3, STONE, 0, 0.15, 0.85)); // stairs
+  }
+  if (level === 3) {
+    for (const x of [-0.95, 0.95]) {
+      g.add(cyl(0.25, 0.28, 1.5, STONE, x, 0.75, 0.6, 8), cone(0.3, 0.35, RED, x, 1.67, 0.6, 8));
+      g.add(mesh(new THREE.SphereGeometry(0.1, 8, 6), mat(0xffb030, { emissive: 0xff8a10, emissiveIntensity: 1 }), x, 2.0, 0.6));
+    }
+    g.add(box(0.3, 0.5, 0.03, RED, -0.95, 1.0, 0.92)); // banner on the tower
+  }
+  return g;
+}
+
+/** Chicken reserve: a red-roofed barn with an egg emblem and a nest of eggs; bigger with hay, a silo and a striped awning at higher levels. */
+function chickenStore(level: number) {
+  const g = new THREE.Group();
+  g.add(cyl(0.98, 1.0, 0.1, 0x7a9a3c, 0, 0.05, 0, 14));
+  const h = level === 1 ? 0.8 : 0.95;
+  g.add(box(1.4, h, 1.2, WOOD, 0, h / 2, 0), box(0.7, 0.5, 0.05, DOOR, 0, 0.3, 0.63));
+  g.add(cone(1.0, 0.6, RED, 0, h + 0.3, 0, 4).rotateY(Math.PI / 4));
+  g.add(scl(ball(0.2, EGG, 0, h * 0.6, 0.63, 0), 0.8, 1.1, 0.3)); // egg emblem
+  g.add(box(0.9, 0.12, 0.4, STRAW, 0, 0.1, 0.78));
+  for (const [x, z] of [[-0.25, 0.8], [0.05, 0.85], [0.3, 0.78]]) g.add(ball(0.12, EGG, x, 0.25, z, 0));
+  if (level >= 2) {
+    g.add(box(0.45, 0.3, 0.3, STRAW, 0.9, 0.15, 0.3), box(0.45, 0.3, 0.3, STRAW, 0.9, 0.15, -0.1));
+    g.add(cyl(0.3, 0.32, 1.4, STONE, -0.95, 0.7, -0.4, 10), cone(0.34, 0.3, RED, -0.95, 1.55, -0.4, 10));
+  }
+  if (level === 3) {
+    for (let i = 0; i < 5; i++) g.add(box(0.25, 0.04, 0.4, i % 2 ? EGG : RED, -0.5 + i * 0.25, 0.9, 0.85).rotateX(-0.3)); // awning
+    g.add(cyl(0.02, 0.02, 0.8, DARK_WOOD, 0.1, 1.35, -0.3, 4), box(0.35, 0.22, 0.02, RED, 0.3, 1.6, -0.3)); // flag
+    g.add(ball(0.09, EGG, 0.3, 1.6, -0.29, 0));
+  }
+  return g;
+}
+
+function eggBasket(x: number, z: number) {
+  const g = new THREE.Group();
+  g.add(cyl(0.2, 0.16, 0.16, BASKET, 0, 0.08, 0, 10));
+  for (let i = 0; i < 5; i++) g.add(ball(0.06, EGG, Math.cos(i * 1.26) * 0.09, 0.2, Math.sin(i * 1.26) * 0.09, 0));
+  g.position.set(x, 0, z);
   return g;
 }
 
@@ -225,16 +336,6 @@ function levelParts(g: THREE.Group, type: string, level: number, goblin: boolean
         g.add(gold(new THREE.IcosahedronGeometry(0.14, 0), 0, 1.1, -0.6));
       }
       break;
-    case 'chickenFarm':
-      if (L2) { // feed silo and more hens
-        g.add(cyl(0.22, 0.22, 0.9, 0xd9ae55, -0.75, 0.45, 0.65, 10), cone(0.24, 0.22, 0x9c3a2a, -0.75, 0.99, 0.65, 10));
-        for (const [x, z] of [[-0.55, -0.6], [0.7, 0.55]]) g.add(ball(0.14, 0xf4f0e6, x, 0.2, z, 0), ball(0.08, 0xf4f0e6, x + 0.1, 0.34, z, 0));
-      }
-      if (L3) { // second hen house with a nest of golden eggs
-        g.add(box(0.7, 0.55, 0.6, WOOD, 0.75, 0.28, -0.7), cone(0.5, 0.4, 0x9c3a2a, 0.75, 0.75, -0.7, 4).rotateY(Math.PI / 4));
-        g.add(ball(0.09, GOLD, 0.75, 0.12, -0.25, 0), ball(0.09, GOLD, 0.95, 0.12, -0.25, 0));
-      }
-      break;
     case 'barracks':
       if (L2) g.add(fence(1.15, 14, goblin ? 0x5a4026 : WOOD)); // palisade
       if (L3) { // weapon rack, shields, banners
@@ -318,14 +419,14 @@ function camp(level: number) {
 
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
-  const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm()
+  const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
     : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : reedTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 1.8, barracks: 2.0, cannon: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

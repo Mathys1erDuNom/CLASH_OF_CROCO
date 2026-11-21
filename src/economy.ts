@@ -1,5 +1,5 @@
 // Village state and timer logic. Timers are wall-clock timestamps so production continues while offline.
-import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, troopMaxLevel, type Cost, type Level } from './data.ts';
+import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
 
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
@@ -16,7 +16,7 @@ export interface Save {
 
 export function newSave(now: number): Save {
   const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 3, frog: 4 }, queue: [], troopLevel: {}, research: null, nextId: 1, stars: {} };
-  for (const [type, x, y] of [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13]] as const)
+  for (const [type, x, y] of [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const)
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
   return s;
 }
@@ -32,9 +32,10 @@ export function migrate(s: Save): Save {
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
   s.troopLevel ??= {};
   s.research ??= null;
-  if (!countOf(s, 'camp')) { // saves from before camps: give a free camp so the army keeps its places
-    const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, 'camp', x, y));
-    if (spot) s.buildings.push({ id: s.nextId++, type: 'camp', x: spot[0], y: spot[1], level: 1, readyAt: 0, collectedAt: 0 });
+  for (const type of ['camp', 'goldStore', 'chickenStore']) { // saves from before camps and storages: give a free one
+    if (countOf(s, type)) continue;
+    const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, type, x, y));
+    if (spot) s.buildings.push({ id: s.nextId++, type, x: spot[0], y: spot[1], level: 1, readyAt: 0, collectedAt: 0 });
   }
   return s;
 }
@@ -52,10 +53,22 @@ export function pending(b: Building, now: number): number {
   return Math.floor(Math.min(lv.cap!, (lv.perMin * since) / 60_000));
 }
 
+/** Largest stock of a resource: the sum of the storages' working levels. */
+export const storeCap = (s: Save, res: Res, now: number) =>
+  s.buildings.reduce((n, b) => n + (BUILDINGS[b.type].store === res && workingLevel(b, now) > 0 ? stats(b.type, workingLevel(b, now)).store! : 0), 0);
+
+/** Adds to a stock up to the storage cap. Returns what was actually added; the rest is lost. */
+export function gain(s: Save, res: Res, n: number, now: number): number {
+  const before = s[res];
+  s[res] = Math.min(Math.max(before, storeCap(s, res, now)), before + n);
+  return s[res] - before;
+}
+
 export function collect(s: Save, b: Building, now: number): number {
   const n = pending(b, now);
-  if (n > 0) { s[BUILDINGS[b.type].res!] += n; b.collectedAt = now; }
-  return n;
+  let got = 0;
+  if (n > 0) { got = gain(s, BUILDINGS[b.type].res!, n, now); b.collectedAt = now; }
+  return got;
 }
 
 export function canPlace(s: Save, type: string, x: number, y: number, ignoreId?: number): boolean {

@@ -11,6 +11,7 @@ export interface Level {
   perMin?: number; cap?: number; // producers
   dps?: number; range?: number; // defenses (range in tiles)
   housing?: number; // camps: army places
+  store?: number; // storage: max stock of its resource
 }
 
 export interface BuildingDef {
@@ -19,6 +20,7 @@ export interface BuildingDef {
   max: number; // how many the player may own
   hutRequired?: number; // Chief's hut level needed to build it; hidden from the build menu until then (default 1)
   res?: Res; // resource produced
+  store?: Res; // resource whose stock it raises the maximum of
   defense?: boolean;
   hitsAir?: boolean; // defense that can shoot flying troops (others only hit the ground)
   airOnly?: boolean; // shoots flying troops only
@@ -68,6 +70,16 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 6 },
     { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 6.5 },
     { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 7 },
+  ] },
+  goldStore: { name: "Réserve d'or", size: 2, max: 4, store: 'gold', loot: true, levels: [
+    { cost: { gold: 150 }, sec: 30, hp: 900, store: 1000 },
+    { cost: { gold: 600 }, sec: 90, hp: 1400, store: 2500 },
+    { cost: { gold: 1800 }, sec: 180, hp: 2000, store: 5000 },
+  ] },
+  chickenStore: { name: 'Réserve de poulets', size: 2, max: 4, store: 'chicken', loot: true, levels: [
+    { cost: { chicken: 150 }, sec: 30, hp: 900, store: 1000 },
+    { cost: { chicken: 600 }, sec: 90, hp: 1400, store: 2500 },
+    { cost: { chicken: 1800 }, sec: 180, hp: 2000, store: 5000 },
   ] },
   lab: { name: 'Laboratoire', size: 2, max: 1, hutRequired: 2, lab: true, levels: [
     { cost: { gold: 150, chicken: 100 }, sec: 30, hp: 500 },

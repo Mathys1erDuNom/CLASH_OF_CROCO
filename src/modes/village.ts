@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType,
+  currentType, storeCap,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -16,7 +16,7 @@ import { attackMode, flap } from './attack.ts';
 
 /** Build menu categories: [id, label, which buildings go in it] */
 const CATEGORIES: [string, string, (d: typeof BUILDINGS[string]) => boolean][] = [
-  ['res', '💰 Ressources', d => !!d.res],
+  ['res', '💰 Ressources', d => !!(d.res || d.store)],
   ['army', '🪖 Armée', d => !!(d.trains || d.lab || d.levels[0].housing)],
   ['def', '🛡️ Défenses', d => !!d.defense],
 ];
@@ -45,6 +45,7 @@ function levelInfo(type: string, level: number) {
     const news = level > 1 ? Object.values(BUILDINGS).filter(b => b.hutRequired === level).map(b => b.name) : [];
     return `débloque le niveau ${level} des bâtiments${news.length ? ` · nouveaux : ${news.join(', ')}` : ''}`;
   }
+  if (d.store) return `stock max ${lv.store}`;
   if (d.lab) return `débloque les améliorations de troupes demandant un labo niveau ${level}`;
   return '';
 }
@@ -336,7 +337,7 @@ export function villageMode(): Mode {
       ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
       ${selectionHtml(now)}
       <div class="menus">
         <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>

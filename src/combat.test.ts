@@ -57,10 +57,11 @@ test('producers accumulate up to their cap and training finishes on time', () =>
 test('upgrades cost resources, take time, need the hut level, then boost production', () => {
   const s = newSave(0);
   const mine = s.buildings.find(b => b.type === 'goldMine')!, hq = s.buildings.find(b => b.type === 'hq')!;
-  s.gold = s.chicken = 10_000;
+  s.buildings.find(b => b.type === 'goldStore')!.level = 3; // stock cap 5000, so the 50/min below is not lost
+  s.gold = 4_000; s.chicken = 10_000;
   assert.equal(upgradeBlock(s, mine, 0), 'Hutte du Chef niveau 2 requise');
   assert.equal(upgrade(s, hq, 0), true);
-  assert.equal(s.gold, 9_500);
+  assert.equal(s.gold, 3_500);
   assert.equal(upgradeBlock(s, hq, 1000), 'Travaux en cours');
   assert.equal(upgrade(s, mine, 60_000), true); // hut done at 60s
   assert.equal(collect(s, mine, 80_000), 0); // no production during works
