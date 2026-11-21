@@ -156,6 +156,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
       if (!result && !visit) {
         acc += dt;
         while (acc >= DT) { battle.step(DT); acc -= DT; }
+        for (const d of battle.drops) projectile('drop', toWorld(d.x, d.y, FLY_HEIGHT), toWorld(d.x, d.y, 0.3)); // bombs the bombers dropped
+        battle.drops.length = 0;
         const noTroopsLeft = !battle.alive(battle.units).length && !Object.values(save.troops).some(n => n > 0);
         if (battle.destruction() === 100 || battle.time >= DURATION || noTroopsLeft) finish();
       }
@@ -197,6 +199,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         v.last.copy(pos);
         const s = battle.structs.find(s => s.id === u.targetId && s.hp > 0);
         if (s) v.model.rotation.y = Math.atan2(-(s.cy - u.y), s.cx - u.x);
+        else if (u.wp) v.model.rotation.y = Math.atan2(-(u.wp.y - u.y), u.wp.x - u.x); // wanderers face where they fly
         const fly = TROOPS[u.kind].flying;
         v.model.position.copy(pos).setY(fly ? FLY_HEIGHT + Math.sin(t * 3 + u.id) * 0.12 : moving ? Math.abs(Math.sin(t * 12 + u.id)) * 0.08 : 0);
         flap(v.model, t + u.id);
@@ -207,7 +210,6 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));
-          else if (fly) projectile('drop', v.model.position.clone(), toWorld(s.cx, s.cy, 0.3));
           else if (u.kind === 'crocoLauncher') projectile('bomb', pos.clone().setY(0.8), toWorld(s.cx, s.cy, 0.4), troopLevel(save, u.kind));
           else puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
         }

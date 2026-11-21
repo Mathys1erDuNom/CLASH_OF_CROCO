@@ -282,3 +282,12 @@ test('loading a raided village does not hand back storages that were destroyed',
   assert.equal(countOf(s, 'goldStore'), 0);
   assert.equal(countOf(s, 'camp'), 0);
 });
+
+test('a bomb hurts every building in its blast, including two that touch', () => {
+  const b = new Battle([{ type: 'goldMine', x: 5, y: 5 }, { type: 'goldStore', x: 7, y: 5 }]);
+  b.deploy('flyingCroco', 6.5, 5.5); // over the mine, half a tile from the store
+  b.step(0.05);
+  assert.equal(b.drops.length, 1);
+  assert.ok(b.structs[0].hp < b.structs[0].maxHp, 'the mine is hit');
+  assert.ok(b.structs[1].hp < b.structs[1].maxHp, 'the store next to it is hit too');
+});

@@ -1,5 +1,5 @@
 // Pure battle simulation (no Phaser), positions in tiles.
-import { BUILDINGS, TROOPS, type Placement, type Res } from './data.ts';
+import { BUILDINGS, GRID, TROOPS, type Placement, type Res, type TroopDef } from './data.ts';
 
 export interface Struct {
   id: number; type: string; level: number; x: number; y: number; size: number;
@@ -10,6 +10,7 @@ export interface Struct {
 }
 export interface Unit {
   id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number;
+  wp: { x: number; y: number } | null; // wandering units: the spot they fly to next
 }
 
 const TROOP_SPACING = 0.7; // tiles between two freshly dropped troops
@@ -18,6 +19,7 @@ export class Battle {
   structs: Struct[];
   units: Unit[] = [];
   time = 0;
+  drops: { x: number; y: number }[] = []; // bombs dropped since the view last looked (it draws them)
   private nextId = 1000;
 
   /** stock: the gold and chicken stored in the base, split evenly between its storages (or its mines and farms if it has none). */
@@ -66,12 +68,32 @@ export class Battle {
 
   deploy(kind: string, x: number, y: number, mult = 1): Unit {
     const d = TROOPS[kind];
-    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0 };
+    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0, wp: null };
     this.units.push(u);
     return u;
   }
 
   alive<T extends { hp: number }>(list: T[]) { return list.filter(e => e.hp > 0); }
+
+  /** The bomber: flies to random spots near the buildings, and drops a bomb whenever it is over one. */
+  private bomb(u: Unit, d: TroopDef, structs: Struct[], dt: number) {
+    if (!structs.length) return;
+    if (!u.wp || Math.hypot(u.wp.x - u.x, u.wp.y - u.y) < 0.2) {
+      const s = structs[Math.floor(Math.random() * structs.length)], pad = 2; // spots up to 2 tiles around a building
+      const near = (v: number) => Math.min(GRID - 1, Math.max(0, v));
+      u.wp = { x: near(s.x - pad + Math.random() * (s.size + 2 * pad)), y: near(s.y - pad + Math.random() * (s.size + 2 * pad)) };
+    }
+    const dx = u.wp.x - u.x, dy = u.wp.y - u.y, len = Math.hypot(dx, dy);
+    const move = Math.min(d.speed * dt, len);
+    if (len > 1e-6) { u.x += (dx / len) * move; u.y += (dy / len) * move; }
+    u.cooldown -= dt;
+    if (u.cooldown <= 0 && structs.some(s => edgeDist(u, s) <= 0.5)) { // over a building: bomb
+      u.cooldown = d.hitEvery;
+      this.drops.push({ x: u.x, y: u.y });
+      const dmg = d.dps * d.hitEvery * u.mult;
+      for (const s of structs) if (s.hp > 0 && edgeDist(u, s) <= (d.splash ?? 0)) s.hp -= dmg; // every building in the blast takes the damage
+    }
+  }
 
   step(dt: number) {
     this.time += dt;
@@ -80,6 +102,7 @@ export class Battle {
 
     for (const u of units) {
       const d = TROOPS[u.kind];
+      if (d.wanders) { this.bomb(u, d, structs, dt); continue; }
       let t = structs.find(s => s.id === u.targetId && s.hp > 0);
       if (!t) {
         const fav = structs.filter(s => d.prefers === 'defense' ? BUILDINGS[s.type].defense : d.prefers === 'resource' && BUILDINGS[s.type].res);
