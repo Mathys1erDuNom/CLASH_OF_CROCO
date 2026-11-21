@@ -1,6 +1,6 @@
 // Loads/saves the village through the server API.
 // With Discord login on, the save belongs to the logged-in account; otherwise to a random id kept in this browser.
-import { migrate, newSave, type Save } from './economy.ts';
+import { centreBase, migrate, newSave, type Save } from './economy.ts';
 
 export interface User { id: string; name: string; avatar: string }
 export interface Me { authEnabled: boolean; loginHost?: string; user?: User | null }
@@ -39,7 +39,9 @@ export async function claimGuestSave(): Promise<boolean> {
   const r = await fetch('/api/save/claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ guestId }) });
   if (!r.ok) return false;
   localStorage.removeItem('croco-id'); // the base now lives in the account
-  return (await loadSave({ authEnabled: true })) === 'ok';
+  const ok = (await loadSave({ authEnabled: true })) === 'ok';
+  if (ok) { centreBase(save); persist(); } // a guest base may predate the centred start
+  return ok;
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;

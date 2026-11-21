@@ -170,7 +170,7 @@ const RAW_GOBLIN_BASES: GoblinBase[] = [
 ];
 
 /** Shifts a layout so that its footprint sits in the middle of the grid. */
-export function centred(list: Placement[]): Placement[] {
+export function centred<T extends Placement>(list: T[]): T[] {
   const xs = list.flatMap(p => [p.x, p.x + BUILDINGS[p.type].size]), ys = list.flatMap(p => [p.y, p.y + BUILDINGS[p.type].size]);
   const dx = Math.round((GRID - (Math.max(...xs) - Math.min(...xs))) / 2) - Math.min(...xs);
   const dy = Math.round((GRID - (Math.max(...ys) - Math.min(...ys))) / 2) - Math.min(...ys);

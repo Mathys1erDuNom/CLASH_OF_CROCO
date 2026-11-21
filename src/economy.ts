@@ -26,6 +26,12 @@ export function newSave(now: number): Save {
 export const currentType = (t: string) => (t === 'mudPump' ? 'chickenFarm' : t);
 
 /** Fills fields added after a save was written (saves from before upgrades had no level). */
+/** Moves the whole village to the middle of the grid, keeping its layout (used on first login). */
+export function centreBase(s: Save) {
+  const c = centred(s.buildings);
+  s.buildings.forEach((b, i) => { b.x = c[i].x; b.y = c[i].y; });
+}
+
 export function migrate(s: Save): Save {
   const old = s as Save & { mud?: number }; // saves from before the vase became chicken
   s.chicken ??= old.mud ?? 0;
