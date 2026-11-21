@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle } from './combat.ts';
 import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
-import { canPlace, placeBuilding, addTroopsToQueue, armyCap, collect, migrate, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
+import { canPlace, placeBuilding, addTroopsToQueue, armyCap, collect, migrate, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
   const s = newSave(0);
@@ -216,4 +216,21 @@ test('every goblin base fits the grid without overlapping buildings', () => {
       s.buildings.push({ id: s.nextId++, type: p.type, x: p.x, y: p.y, level: 1, readyAt: 0, collectedAt: 0 });
     }
   }
+});
+
+test('troops dropped on the same tile are spread out, not stacked', () => {
+  const b = new Battle([]);
+  const spots = Array.from({ length: 8 }, () => b.deploy('croco', 20, 20));
+  for (const [i, u] of spots.entries()) for (const o of spots.slice(i + 1)) assert.ok(Math.hypot(u.x - o.x, u.y - o.y) >= 0.7, 'two troops overlap');
+});
+
+test('a resource cannot be collected while its stock is at the storage cap', () => {
+  const s = newSave(0);
+  const mine = { id: s.nextId++, type: 'goldMine', x: 6, y: 6, level: 1, readyAt: 0, collectedAt: 0 };
+  s.buildings.push(mine);
+  s.gold = storeCap(s, 'gold', 0); // stock exactly at the cap
+  assert.equal(collect(s, mine, 60 * 60_000), 0); // full: nothing taken, production kept
+  assert.equal(mine.collectedAt, 0);
+  s.gold = 0;
+  assert.ok(collect(s, mine, 60 * 60_000) > 0); // room again: collectable
 });

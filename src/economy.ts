@@ -75,10 +75,12 @@ export function gain(s: Save, res: Res, n: number, now: number): number {
   return s[res] - before;
 }
 
+/** Nothing can be collected from a building while its resource is already at the storage cap. */
 export function collect(s: Save, b: Building, now: number): number {
   const n = pending(b, now);
+  const res = BUILDINGS[b.type].res;
   let got = 0;
-  if (n > 0) { got = gain(s, BUILDINGS[b.type].res!, n, now); b.collectedAt = now; }
+  if (n > 0 && res && s[res] < storeCap(s, res, now)) { got = gain(s, res, n, now); b.collectedAt = now; }
   return got;
 }
 

@@ -335,7 +335,7 @@ export function villageMode(): Mode {
         + (open ? `<div class="cat-items${dropping() ? ' drop' : ''}">${list.map(buildBtn).join('')}</div>` : '');
     }).join('');
     const cap = armyCap(save, now);
-    const army = Object.entries(TROOPS).map(([k, d]) => `<div class="troop"><div class="tbox"><img src="${spriteUrl('t_' + k)}" alt="${d.name}" title="${d.name}"><span><small>niv</small> ${troopLevel(save, k)}</span></div><b>${save.troops[k] ?? 0}</b></div>`).join('');
+    const army = Object.entries(TROOPS).filter(([k]) => troopUnlocked(save, k)).map(([k, d]) => `<div class="troop"><div class="tbox"><img src="${spriteUrl('t_' + k)}" alt="${d.name}" title="${d.name}"><span><small>niv</small> ${troopLevel(save, k)}</span></div><b>${save.troops[k] ?? 0}</b></div>`).join('');
     const ready = Object.values(save.troops).some(n => n > 0);
     const bases = GOBLIN_BASES.map(b => {
       const s = save.stars[b.id] ?? 0;

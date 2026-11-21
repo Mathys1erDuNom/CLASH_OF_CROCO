@@ -9,6 +9,8 @@ export interface Unit {
   id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number;
 }
 
+const TROOP_SPACING = 0.7; // tiles between two freshly dropped troops
+
 export class Battle {
   structs: Struct[];
   units: Unit[] = [];
@@ -27,9 +29,14 @@ export class Battle {
     return this.structs.every(s => s.hp <= 0 || x < s.x - 1 || x > s.x + s.size + 1 || y < s.y - 1 || y > s.y + s.size + 1);
   }
 
+  /** Troops dropped on the same spot fan out in a spiral so they never stack. */
   deploy(kind: string, x: number, y: number, mult = 1): Unit {
     const d = TROOPS[kind];
-    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0 };
+    const free = (px: number, py: number) => this.units.every(o => o.hp <= 0 || Math.hypot(o.x - px, o.y - py) >= TROOP_SPACING);
+    let px = x, py = y;
+    for (let i = 1; i < 40 && !free(px, py); i++) { px = x + Math.cos(i * 2.4) * 0.6 * Math.sqrt(i); py = y + Math.sin(i * 2.4) * 0.6 * Math.sqrt(i); }
+    // shortcut: if no free spot is found in 40 tries, the last candidate is used and may overlap, fine for a crowded drop
+    const u = { id: this.nextId++, kind, x: px, y: py, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0 };
     this.units.push(u);
     return u;
   }
