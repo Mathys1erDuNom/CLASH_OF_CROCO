@@ -21,10 +21,14 @@ test('troop research needs the lab level set in labRequired, takes time, then gi
   assert.equal(b.deploy('croco', 0, 0, 1.3).hp, 320 * 1.3);
 });
 
+/** How far a centred base moved from its hand-written layout (the hut was at 9,9). */
+const offset = (b: Battle) => { const hq = b.structs.find(s => s.type === 'hq')!; return { ox: hq.x - 9, oy: hq.y - 9 }; };
+
 test('a big croco army wipes the goblin camp for 3 stars', () => {
   const b = new Battle(GOBLIN_BASES[0].buildings);
-  assert.equal(b.canDeploy(10, 10), false);
-  for (let i = 0; i < 15; i++) b.deploy('croco', 0, i);
+  const { ox, oy } = offset(b); // layouts are centred on the grid: test positions are relative to the hut
+  assert.equal(b.canDeploy(10 + ox, 10 + oy), false);
+  for (let i = 0; i < 15; i++) b.deploy('croco', ox, i + oy);
   for (let t = 0; t < 180 && b.destruction() < 100; t += 0.1) b.step(0.1);
   assert.equal(b.destruction(), 100);
   assert.equal(b.stars(), 3);
@@ -33,7 +37,8 @@ test('a big croco army wipes the goblin camp for 3 stars', () => {
 
 test('a lone baby croco dies to the citadel defenses', () => {
   const b = new Battle(GOBLIN_BASES[2].buildings);
-  const u = b.deploy('babyCroco', 0, 10);
+  const { ox, oy } = offset(b);
+  const u = b.deploy('babyCroco', ox, 10 + oy);
   for (let t = 0; t < 60; t += 0.1) b.step(0.1);
   assert.ok(u.hp <= 0);
   assert.equal(b.stars(), 0);
@@ -71,7 +76,8 @@ test('upgrades cost resources, take time, need the hut level, then boost product
 
 test('crocos go for defenses, baby crocos for resources, frogs for the nearest building', () => {
   const b = new Battle(GOBLIN_BASES[0].buildings); // hq, goldMine, chickenFarm, cannon
-  const croco = b.deploy('croco', 9, 17), baby = b.deploy('babyCroco', 9, 17), frog = b.deploy('frog', 9, 17);
+  const { ox, oy } = offset(b);
+  const croco = b.deploy('croco', 9 + ox, 17 + oy), baby = b.deploy('babyCroco', 9 + ox, 17 + oy), frog = b.deploy('frog', 9 + ox, 17 + oy);
   b.step(0.01);
   const typeOf = (id: number | null) => b.structs.find(s => s.id === id)?.type;
   assert.equal(typeOf(croco.targetId), 'cannon');
@@ -101,10 +107,12 @@ test('camps give army places by level, old saves get a camp, barracks level spee
 
 test('buildings move only to free spots, and may overlap their own old footprint', () => {
   const s = newSave(0);
-  const mine = s.buildings.find(b => b.type === 'goldMine')!; // at 4,9 (2x2)
-  assert.equal(moveBuilding(s, mine, 8, 8), false); // on the hut
-  assert.equal(moveBuilding(s, mine, 5, 9), true); // shifted by one, overlapping its old spot
-  assert.deepEqual([mine.x, mine.y], [5, 9]);
+  const mine = s.buildings.find(b => b.type === 'goldMine')!; // 2x2
+  const hq = s.buildings.find(b => b.type === 'hq')!;
+  const [x0, y0] = [mine.x, mine.y];
+  assert.equal(moveBuilding(s, mine, hq.x, hq.y), false); // on the hut
+  assert.equal(moveBuilding(s, mine, x0 + 1, y0), true); // shifted by one, overlapping its old spot
+  assert.deepEqual([mine.x, mine.y], [x0 + 1, y0]);
   assert.equal(moveBuilding(s, mine, GRID - 1, 0), false); // a 2x2 hanging off the grid edge
 });
 
@@ -175,11 +183,11 @@ test('anti-air harpoon launcher shoots flyers only', () => {
 test('buildings with hutRequired cannot be built before the hut level', () => {
   const s = newSave(0);
   s.gold = s.chicken = 10_000;
-  assert.equal(placeBuilding(s, 'lab', 15, 15, 0), false); // hut level 1, lab needs 2
+  assert.equal(placeBuilding(s, 'lab', 30, 30, 0), false); // hut level 1, lab needs 2
   s.buildings.find(b => b.type === 'hq')!.level = 2;
-  assert.equal(placeBuilding(s, 'lab', 15, 15, 0), true);
-  assert.equal(placeBuilding(s, 'airDefense', 15, 2, 0), false); // needs hut 3
-  assert.equal(placeBuilding(s, 'cannon', 15, 2, 0), true); // no requirement
+  assert.equal(placeBuilding(s, 'lab', 30, 30, 0), true);
+  assert.equal(placeBuilding(s, 'airDefense', 30, 2, 0), false); // needs hut 3
+  assert.equal(placeBuilding(s, 'cannon', 30, 2, 0), true); // no requirement
 });
 
 test('troops hit once per hitEvery seconds for dps * hitEvery damage', () => {

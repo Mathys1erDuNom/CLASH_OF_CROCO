@@ -1,5 +1,5 @@
 // Village state and timer logic. Timers are wall-clock timestamps so production continues while offline.
-import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
+import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
 
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
@@ -16,7 +16,8 @@ export interface Save {
 
 export function newSave(now: number): Save {
   const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 3, frog: 4 }, queue: [], troopLevel: {}, research: null, nextId: 1, stars: {} };
-  for (const [type, x, y] of [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const)
+  const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const;
+  for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
   return s;
 }

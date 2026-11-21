@@ -130,7 +130,7 @@ export interface Placement { type: string; x: number; y: number; level?: number 
 
 export interface GoblinBase { id: string; name: string; loot: Record<Res, number>; buildings: Placement[] }
 
-export const GOBLIN_BASES: GoblinBase[] = [
+const RAW_GOBLIN_BASES: GoblinBase[] = [
   {
     id: 'camp', name: 'Campement gobelin', loot: { gold: 300, chicken: 300 },
     buildings: [
@@ -168,6 +168,16 @@ export const GOBLIN_BASES: GoblinBase[] = [
     buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 7, y: 7, level: 3 }, { type: 'cannon', x: 12, y: 7, level: 3 }, { type: 'cannon', x: 7, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 4, level: 3 }, { type: 'cannon', x: 9, y: 14, level: 3 }, { type: 'cannon', x: 4, y: 9, level: 3 }, { type: 'cannon', x: 14, y: 9, level: 3 }, { type: 'reedTower', x: 4, y: 4, level: 3 }, { type: 'reedTower', x: 14, y: 4, level: 3 }, { type: 'reedTower', x: 4, y: 14, level: 3 }, { type: 'reedTower', x: 14, y: 14, level: 3 }, { type: 'reedTower', x: 1, y: 9, level: 3 }, { type: 'reedTower', x: 17, y: 9, level: 3 }, { type: 'airDefense', x: 9, y: 7, level: 3 }, { type: 'airDefense', x: 7, y: 9, level: 3 }, { type: 'airDefense', x: 12, y: 9, level: 3 }, { type: 'goldMine', x: 1, y: 1, level: 3 }, { type: 'goldMine', x: 17, y: 1, level: 3 }, { type: 'chickenFarm', x: 1, y: 17, level: 3 }, { type: 'chickenFarm', x: 17, y: 17, level: 3 }, { type: 'lab', x: 9, y: 17, level: 2 }, { type: 'barracks', x: 9, y: 1, level: 3 }],
   },
 ];
+
+/** Shifts a layout so that its footprint sits in the middle of the grid. */
+export function centred(list: Placement[]): Placement[] {
+  const xs = list.flatMap(p => [p.x, p.x + BUILDINGS[p.type].size]), ys = list.flatMap(p => [p.y, p.y + BUILDINGS[p.type].size]);
+  const dx = Math.round((GRID - (Math.max(...xs) - Math.min(...xs))) / 2) - Math.min(...xs);
+  const dy = Math.round((GRID - (Math.max(...ys) - Math.min(...ys))) / 2) - Math.min(...ys);
+  return list.map(p => ({ ...p, x: p.x + dx, y: p.y + dy }));
+}
+
+export const GOBLIN_BASES: GoblinBase[] = RAW_GOBLIN_BASES.map(b => ({ ...b, buildings: centred(b.buildings) }));
 
 export function fmtCost(c: Cost): string {
   return [c.gold && `${c.gold} or`, c.chicken && `${c.chicken} poulet${c.chicken > 1 ? 's' : ''}`].filter(Boolean).join(' + ') || 'gratuit';
