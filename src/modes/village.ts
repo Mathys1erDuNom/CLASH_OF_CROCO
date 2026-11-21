@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType, storeCap, troopUnlocked, unlockTroop,
+  currentType, storeCap, troopUnlocked, unlockTroop, rebuild,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -159,10 +159,11 @@ export function villageMode(): Mode {
   async function openBase(uid: string, visit: boolean) {
     const r = await fetch(`/api/players/${encodeURIComponent(uid)}/base`);
     if (!r.ok) throw new Error(String(r.status));
-    const { name, buildings }: { name: string; buildings: Building[] } = await r.json();
+    const { name, gold, chicken, buildings }: { name: string; gold: number; chicken: number; buildings: Building[] } = await r.json();
     const now = Date.now();
-    const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: currentType(b.type), x: b.x, y: b.y, level: workingLevel(b, now) })); // buildings still under construction are not targets
-    setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout }, () => setMode(villageMode), visit));
+    // buildings still under construction are not targets; a mine or farm holds what it has produced and not collected yet
+    const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: currentType(b.type), x: b.x, y: b.y, level: workingLevel(b, now), ref: b.id, held: BUILDINGS[b.type].res ? pending(b, now) : 0 }));
+    setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout, loot: { gold, chicken }, uid }, () => setMode(villageMode), visit));
   }
 
   const playersHtml = (ready: boolean) => players === null ? '<p class="hint">Chargement…</p>'
@@ -226,6 +227,13 @@ export function villageMode(): Mode {
     } else if (act === 'troopUp') {
       if (upgradeTroop(save, arg, now)) { persist(); hint = `${TROOPS[arg].name} : recherche lancée.`; }
       else hint = 'Recherche impossible (laboratoire, ressources ou recherche déjà en cours).';
+    } else if (act === 'clearRaids') {
+      save.raids = [];
+      persist();
+    } else if (act === 'rebuild') {
+      const n = rebuild(save, now);
+      persist();
+      hint = n ? `${n} bâtiment(s) reconstruit(s).` : 'Pas la place de reconstruire : libère l’emplacement.';
     } else if (act === 'collectAll') {
       let total = 0;
       for (const b of save.buildings) {
@@ -351,6 +359,8 @@ export function villageMode(): Mode {
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
       <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
       ${selectionHtml(now)}
+      ${save.raids.length ? `<div class="sel-box"><h2>🚩 Vous avez été attaqué</h2>${save.raids.slice(-3).reverse().map(r => `<p>${esc(r.by)} : ${r.buildings} bâtiment${r.buildings > 1 ? 's' : ''} détruit${r.buildings > 1 ? 's' : ''} · −${r.gold} or · −${r.chicken} poulets</p>`).join('')}<button data-act="clearRaids">OK</button></div>` : ''}
+      ${save.ruins.length ? `<button data-act="rebuild" class="unlock">🔨 Reconstruire (${save.ruins.length} bâtiment${save.ruins.length > 1 ? 's' : ''} détruit${save.ruins.length > 1 ? 's' : ''})</button>` : ''}
       <div class="menus">
         <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>
         <button data-act="menu" data-arg="attack" class="menu-btn ${menu === 'attack' ? 'sel' : ''}">⚔️ Attaquer<i class="arr"> ${menu === 'attack' ? '▴' : '▾'}</i></button>

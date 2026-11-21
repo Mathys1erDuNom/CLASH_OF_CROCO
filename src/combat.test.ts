@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle } from './combat.ts';
 import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
-import { canPlace, placeBuilding, addTroopsToQueue, armyCap, collect, migrate, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
+import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
   const s = newSave(0);
@@ -25,14 +25,43 @@ test('troop research needs the lab level set in labRequired, takes time, then gi
 const offset = (b: Battle) => { const hq = b.structs.find(s => s.type === 'hq')!; return { ox: hq.x - 9, oy: hq.y - 9 }; };
 
 test('a big croco army wipes the goblin camp for 3 stars', () => {
-  const b = new Battle(GOBLIN_BASES[0].buildings);
+  const b = new Battle(GOBLIN_BASES[0].buildings, GOBLIN_BASES[0].loot);
   const { ox, oy } = offset(b); // layouts are centred on the grid: test positions are relative to the hut
   assert.equal(b.canDeploy(10 + ox, 10 + oy), false);
   for (let i = 0; i < 15; i++) b.deploy('croco', ox, i + oy);
   for (let t = 0; t < 180 && b.destruction() < 100; t += 0.1) b.step(0.1);
   assert.equal(b.destruction(), 100);
   assert.equal(b.stars(), 3);
-  assert.equal(b.lootFraction(), 1);
+  assert.equal(b.taken('gold'), GOBLIN_BASES[0].loot.gold); // everything destroyed: all the gold is stolen
+  assert.equal(b.taken('chicken'), GOBLIN_BASES[0].loot.chicken);
+  assert.equal(b.left('gold'), 0);
+});
+
+test('stored gold sits in the storages, and a mine or farm holds its own production', () => {
+  const b = new Battle([{ type: 'goldMine', x: 5, y: 5, held: 40 }, { type: 'goldStore', x: 10, y: 5, ref: 7 }], { gold: 101 });
+  assert.equal(b.total('gold'), 141); // 101 stored + 40 in the mine
+  b.structs[0].hp = 0; // the mine falls: its 40 are stolen, the stored gold stays
+  assert.equal(b.taken('gold'), 40);
+  assert.equal(b.stockTaken('gold'), 0);
+  assert.deepEqual(b.destroyedRefs(), []); // the mine had no ref
+  b.structs[1].hp = 0; // the storage falls: its 101 are stolen and it must be removed from the owner's save
+  assert.equal(b.stockTaken('gold'), 101);
+  assert.equal(b.left('gold'), 0);
+  assert.deepEqual(b.destroyedRefs(), [7]);
+});
+
+test('a raid removes the destroyed buildings to ruins, takes the stored stock, and rebuild brings them back', () => {
+  const s = newSave(0);
+  s.gold = 500;
+  const store = s.buildings.find(b => b.type === 'goldStore')!;
+  applyRaid(s, [store.id], 200, 0, 'Attaquant');
+  assert.equal(s.gold, 300);
+  assert.deepEqual(s.raids, [{ by: 'Attaquant', buildings: 1, gold: 200, chicken: 0 }]);
+  assert.ok(!s.buildings.some(b => b.id === store.id));
+  assert.equal(s.ruins.length, 1);
+  assert.equal(rebuild(s, 0), 1); // free, same place
+  assert.equal(s.ruins.length, 0);
+  assert.ok(s.buildings.some(b => b.type === 'goldStore' && b.x === store.x && b.y === store.y));
 });
 
 test('a lone baby croco dies to the citadel defenses', () => {

@@ -14,10 +14,14 @@ export interface Save {
   research: { kind: string; doneAt: number } | null; // one troop upgrade at a time
   nextId: number;
   stars: Record<string, number>; // best stars per goblin base
+  ruins: Ruin[]; // buildings destroyed in a raid, waiting to be rebuilt for free
+  raids: Raid[]; // attacks this village suffered, shown to the owner until dismissed
 }
+export interface Raid { by: string; buildings: number; gold: number; chicken: number }
+export interface Ruin { type: string; x: number; y: number; level: number }
 
 export function newSave(now: number): Save {
-  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, troopLevel: {}, research: null, nextId: 1, stars: {} };
+  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
   const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const;
   for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
@@ -43,6 +47,8 @@ export function migrate(s: Save): Save {
   s.research ??= null;
   s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
   s.unlocking ??= null;
+  s.ruins ??= [];
+  s.raids ??= [];
   for (const type of ['camp', 'goldStore', 'chickenStore']) { // saves from before camps and storages: give a free one
     if (countOf(s, type)) continue;
     const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, type, x, y));
@@ -209,4 +215,27 @@ export function tick(s: Save, now: number): boolean {
     changed = true;
   }
   return changed;
+}
+
+/** A raid on this village: the destroyed buildings become ruins and the stolen stock leaves the stock. */
+export function applyRaid(s: Save, destroyed: number[], gold: number, chicken: number, by: string) {
+  const hit = s.buildings.filter(b => destroyed.includes(b.id));
+  s.buildings = s.buildings.filter(b => !destroyed.includes(b.id));
+  s.ruins = [...(s.ruins ?? []), ...hit.map(({ type, x, y, level }) => ({ type, x, y, level }))];
+  const lostGold = Math.min(s.gold, gold), lostChicken = Math.min(s.chicken, chicken); // what was really there to lose
+  s.gold -= lostGold;
+  s.chicken -= lostChicken;
+  if (hit.length || lostGold || lostChicken) s.raids = [...(s.raids ?? []), { by, buildings: hit.length, gold: lostGold, chicken: lostChicken }];
+}
+
+/** Rebuilds ruins for free where there is room. Returns how many came back; the others stay ruins. */
+export function rebuild(s: Save, now: number): number {
+  let n = 0;
+  s.ruins = s.ruins.filter(r => {
+    if (!canPlace(s, r.type, r.x, r.y)) return true;
+    s.buildings.push({ id: s.nextId++, type: r.type, x: r.x, y: r.y, level: r.level, readyAt: now, collectedAt: now });
+    n++;
+    return false;
+  });
+  return n;
 }

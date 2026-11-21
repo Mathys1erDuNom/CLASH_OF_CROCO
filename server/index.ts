@@ -5,6 +5,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { avatarUrl, cookie, discordUser, newState, parseCookies, signSession, verifySession } from './auth.ts';
+import { applyRaid, type Save } from '../src/economy.ts';
 
 interface User { id: string; name: string; avatar: string }
 interface Store {
@@ -152,7 +153,8 @@ app.put('/api/save', async (req, reply) => {
   return { ok: true };
 });
 
-// Other players, for PvP. Only the names and the building layout are public: no stock, troops or stars.
+// Other players, for PvP. Only the names and the building layout are public: no troops or stars.
+// The base endpoint also gives the gold and chicken, which an attacker can steal.
 app.get('/api/players', async (req, reply) => {
   const s = sessionOf(req);
   if (!s) return reply.code(401).send({ error: 'not logged in' });
@@ -166,10 +168,28 @@ app.get<{ Params: { uid: string } }>('/api/players/:uid/base', async (req, reply
   const { uid } = req.params;
   if (!ID.test(uid) || uid === s.uid) return reply.code(400).send({ error: 'bad id' });
   const user = await store.getUser(uid);
-  const save = await store.get(saveKey(uid)) as { buildings?: { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }[] } | null;
+  const save = await store.get(saveKey(uid)) as { gold?: number; chicken?: number; buildings?: { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }[] } | null;
   if (!user || !save?.buildings) return reply.code(404).send({ error: 'not found' });
   reply.header('cache-control', 'no-store');
-  return { name: user.name, buildings: save.buildings.map(({ id, type, x, y, level, readyAt, collectedAt }) => ({ id, type, x, y, level, readyAt, collectedAt })) };
+  return { name: user.name, gold: save.gold ?? 0, chicken: save.chicken ?? 0, buildings: save.buildings.map(({ id, type, x, y, level, readyAt, collectedAt }) => ({ id, type, x, y, level, readyAt, collectedAt })) };
+});
+
+// An attack on another player's base: their destroyed buildings become ruins and the stolen stock leaves their save.
+// Trusts the attacker's report of the battle (there is no server-side battle), so it only checks the shape of the numbers.
+app.post<{ Params: { uid: string }; Body: { destroyed?: unknown; gold?: unknown; chicken?: unknown } }>('/api/players/:uid/raid', async (req, reply) => {
+  const s = sessionOf(req);
+  if (!s) return reply.code(401).send({ error: 'not logged in' });
+  const { uid } = req.params;
+  if (!ID.test(uid) || uid === s.uid) return reply.code(400).send({ error: 'bad id' });
+  const { destroyed, gold, chicken } = req.body ?? {};
+  const count = (n: unknown) => Number.isInteger(n) && (n as number) >= 0 && (n as number) <= 1e9;
+  if (!Array.isArray(destroyed) || !destroyed.every(count) || !count(gold) || !count(chicken)) return reply.code(400).send({ error: 'bad body' });
+  const save = await store.get(saveKey(uid)) as Save | null;
+  if (!save?.buildings) return reply.code(404).send({ error: 'not found' });
+  const attacker = (await store.getUser(s.uid))?.name ?? 'Un joueur'; // the name comes from the session, not from the request
+  applyRaid(save, destroyed as number[], gold as number, chicken as number, attacker);
+  await store.put(saveKey(uid), save);
+  return { ok: true };
 });
 
 /** First login: copies this browser's guest save to the account, if the account has none yet. */

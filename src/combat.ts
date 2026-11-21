@@ -1,9 +1,12 @@
 // Pure battle simulation (no Phaser), positions in tiles.
-import { BUILDINGS, TROOPS, type Placement } from './data.ts';
+import { BUILDINGS, TROOPS, type Placement, type Res } from './data.ts';
 
 export interface Struct {
   id: number; type: string; level: number; x: number; y: number; size: number;
   cx: number; cy: number; hp: number; maxHp: number; targetId: number | null;
+  stock: number; // part of the base's stored gold or chicken that this storage holds
+  held: number; // what this mine or farm holds (uncollected production): stolen when it is destroyed
+  ref: number | null; // the building's id in its owner's save
 }
 export interface Unit {
   id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number;
@@ -17,11 +20,43 @@ export class Battle {
   time = 0;
   private nextId = 1000;
 
-  constructor(layout: Placement[]) {
+  /** stock: the gold and chicken stored in the base, split evenly between its storages (or its mines and farms if it has none). */
+  constructor(layout: Placement[], stock: Partial<Record<Res, number>> = {}) {
     this.structs = layout.map((p, i) => {
       const d = BUILDINGS[p.type], level = p.level ?? 1, hp = d.levels[level - 1].hp;
-      return { id: i, type: p.type, level, x: p.x, y: p.y, size: d.size, cx: p.x + d.size / 2, cy: p.y + d.size / 2, hp, maxHp: hp, targetId: null };
+      return { id: i, type: p.type, level, x: p.x, y: p.y, size: d.size, cx: p.x + d.size / 2, cy: p.y + d.size / 2, hp, maxHp: hp, targetId: null, stock: 0, held: p.held ?? 0, ref: p.ref ?? null };
     });
+    for (const res of ['gold', 'chicken'] as Res[]) {
+      const stores = this.structs.filter(s => BUILDINGS[s.type].store === res);
+      const holders = stores.length ? stores : this.structs.filter(s => BUILDINGS[s.type].res === res);
+      const total = Math.floor(stock[res] ?? 0);
+      holders.forEach((s, i) => { s.stock = Math.floor(total / holders.length) + (i === 0 ? total % holders.length : 0); });
+    }
+  }
+
+  /** Everything the base holds in a resource (storage stock plus what its mines and farms hold). */
+  total(res: Res): number {
+    return this.structs.filter(s => holds(s, res)).reduce((n, s) => n + s.stock + s.held, 0);
+  }
+
+  /** What has been stolen so far: the contents of every destroyed building that held the resource. */
+  taken(res: Res): number {
+    return this.structs.filter(s => s.hp <= 0 && holds(s, res)).reduce((n, s) => n + s.stock + s.held, 0);
+  }
+
+  /** Stored stock (not mine or farm contents) stolen so far: this is what leaves the owner's storage. */
+  stockTaken(res: Res): number {
+    return this.structs.filter(s => s.hp <= 0 && holds(s, res)).reduce((n, s) => n + s.stock, 0);
+  }
+
+  /** What is still in the base: the total minus what has been stolen. */
+  left(res: Res): number {
+    return this.total(res) - this.taken(res);
+  }
+
+  /** Ids (in the owner's save) of the buildings destroyed in this attack. */
+  destroyedRefs(): number[] {
+    return this.structs.filter(s => s.hp <= 0 && s.ref !== null).map(s => s.ref!);
   }
 
   /** Troops may not be dropped on or right next to a building. */
@@ -102,11 +137,11 @@ export class Battle {
     return (pct >= 50 ? 1 : 0) + (hqDown ? 1 : 0) + (pct === 100 ? 1 : 0);
   }
 
-  /** Fraction of loot-holding buildings destroyed (0..1). */
-  lootFraction(): number {
-    const loot = this.structs.filter(s => BUILDINGS[s.type].loot || s.type === 'hq');
-    return loot.length ? loot.filter(s => s.hp <= 0).length / loot.length : 0;
-  }
+}
+
+/** A mine, farm or storage that holds this resource. */
+function holds(s: Struct, res: Res): boolean {
+  return BUILDINGS[s.type].res === res || BUILDINGS[s.type].store === res;
 }
 
 export function edgeDist(u: { x: number; y: number }, s: Struct): number {

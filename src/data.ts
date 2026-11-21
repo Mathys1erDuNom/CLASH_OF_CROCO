@@ -127,7 +127,8 @@ export const TROOP_LEVELS: { mult: number; up?: { cost: Cost; sec: number } }[] 
   { mult: 1.7 },
 ];
 
-export interface Placement { type: string; x: number; y: number; level?: number }
+/** ref: the building's id in its owner's save (a raid needs it); held: what a mine or farm holds right now, stealable. */
+export interface Placement { type: string; x: number; y: number; level?: number; ref?: number; held?: number }
 
 export interface GoblinBase { id: string; name: string; loot: Record<Res, number>; buildings: Placement[] }
 
