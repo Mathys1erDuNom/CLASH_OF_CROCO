@@ -50,7 +50,7 @@ export function migrate(s: Save): Save {
   s.ruins ??= [];
   s.raids ??= [];
   for (const type of ['camp', 'goldStore', 'chickenStore']) { // saves from before camps and storages: give a free one
-    if (countOf(s, type)) continue;
+    if (countOf(s, type) || s.ruins.some(r => r.type === type)) continue; // a destroyed one is a ruin to rebuild, not a missing one
     const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, type, x, y));
     if (spot) s.buildings.push({ id: s.nextId++, type, x: spot[0], y: spot[1], level: 1, readyAt: 0, collectedAt: 0 });
   }

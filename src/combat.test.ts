@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle } from './combat.ts';
 import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
-import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, hqLevel, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
+import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, countOf, hqLevel, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
   const s = newSave(0);
@@ -273,4 +273,12 @@ test('a village whose HQ was destroyed still loads, and the HQ comes back with t
   assert.equal(hqLevel(s, 0), 0); // no crash: the village just has no HQ level
   assert.equal(rebuild(s, 0), 1);
   assert.equal(hqLevel(s, 0), 1);
+});
+
+test('loading a raided village does not hand back storages that were destroyed', () => {
+  const s = newSave(0);
+  applyRaid(s, s.buildings.filter(b => b.type === 'goldStore' || b.type === 'camp').map(b => b.id), 0, 0, 'Attaquant');
+  migrate(s);
+  assert.equal(countOf(s, 'goldStore'), 0);
+  assert.equal(countOf(s, 'camp'), 0);
 });
