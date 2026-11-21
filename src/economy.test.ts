@@ -1,6 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { collect, gain, migrate, newSave, storeCap, type Save } from './economy.ts';
+import { addTroopsToQueue, collect, gain, migrate, newSave, storeCap, tick, unlockTroop, type Save } from './economy.ts';
+
+test('other troops are paid for and wait in the barracks before training', () => {
+  const s = newSave(0);
+  s.chicken = 1000;
+  assert.equal(addTroopsToQueue(s, 'frog', 0), false); // not unlocked yet
+  assert.equal(unlockTroop(s, 'frog', 0), true);
+  assert.equal(s.chicken, 900); // frog unlock costs 100
+  assert.equal(unlockTroop(s, 'babyCroco', 0), false); // one unlock at a time
+  tick(s, 59_999);
+  assert.equal(addTroopsToQueue(s, 'frog', 59_999), false); // still unlocking
+  tick(s, 60_000);
+  assert.equal(addTroopsToQueue(s, 'frog', 60_000), true);
+  assert.equal(addTroopsToQueue(s, 'croco', 60_000), true); // the croco needs no unlock
+});
 
 test('stock is capped by the storages: overflow is lost, storage levels raise the cap', () => {
   const s = newSave(0);

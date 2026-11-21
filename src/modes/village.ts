@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType, storeCap,
+  currentType, storeCap, troopUnlocked, unlockTroop,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -211,6 +211,9 @@ export function villageMode(): Mode {
       infoKind = infoKind === arg ? null : arg;
     } else if (act === 'deselect') {
       select(null);
+    } else if (act === 'unlock') {
+      if (unlockTroop(save, arg, now)) { persist(); hint = `${TROOPS[arg].name} : déblocage lancé.`; }
+      else hint = 'Déblocage impossible (poulets ou déblocage déjà en cours).';
     } else if (act === 'train') {
       if (!addTroopsToQueue(save, arg, now)) hint = 'Formation impossible (caserne, poulets ou place).';
       else persist();
@@ -255,16 +258,19 @@ export function villageMode(): Mode {
 
   function trainHtml(now: number): string {
     const canTrain = hasBarracks(save, now);
-    return '<h2>Former des troupes</h2><div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).map(([k, d]) => {
+    return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).map(([k, d]) => {
       const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now) < req;
       const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
+      const unlockBtn = `<button data-act="unlock" data-arg="${k}" ${save.unlocking || !d.unlock || !canAfford(save, d.unlock.cost) ? 'disabled' : ''}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} · à débloquer<small>${d.unlock ? fmtCost(d.unlock.cost) : ''} · ${d.unlock ? secs(d.unlock.sec * 1000) : ''}</small></button>`;
       const info = `<button class="info" data-act="info" data-arg="${k}" aria-label="Stats de ${d.name}" title="Toutes les stats">${infoKind === k ? '✕' : 'i'}</button>`;
       const details = infoKind === k ? `<div class="stats"><b>${d.name}</b> · niveau ${troopLevel(save, k)}<br>Formation : ${secs(trainMs(save, k, now))}<br>${troopStats(k, troopLevel(save, k))}</div>` : '';
-      return `<div class="train-row">${train}${info}</div>${details}`;
+      return `<div class="train-row">${troopUnlocked(save, k) ? train : unlockBtn}${info}</div>${details}`;
     }).join('') + '</div><i class="sbar"><b></b></i></div>'
       + queueHtml(now) + (armySize(save) >= armyCap(save, now) ? '<p class="hint">Camps pleins : construis ou améliore un camp.</p>' : '');
   }
+
+  const unlockingHtml = (now: number) => (save.unlocking ? `<p>Déblocage : ${TROOPS[save.unlocking.kind].name}, encore ${secs(save.unlocking.doneAt - now)}</p>` : '');
 
   const researchHtml = (now: number) => (save.research
     ? `<p>Recherche : ${TROOPS[save.research.kind].name} niv ${troopLevel(save, save.research.kind) + 1} · encore ${secs(save.research.doneAt - now)}</p>` : '');

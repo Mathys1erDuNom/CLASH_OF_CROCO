@@ -98,6 +98,7 @@ export interface TroopDef {
   space: number; // army places taken in camps
   cost: Cost;
   trainSec: number;
+  unlock?: { cost: Cost; sec: number }; // paid once in the barracks, then wait; without it the troop is available from the start
   prefers?: 'defense' | 'resource'; // favourite targets; falls back to the nearest building once none are left
   /** Laboratory level needed to research each troop level: { 2: 2 } = "level 2 needs a level-2 lab". */
   labRequired: Record<number, number>;
@@ -110,10 +111,10 @@ export interface TroopDef {
 
 export const TROOPS: Record<string, TroopDef> = {
   croco: { name: 'Croco Cogneur', hp: 320, dps: 26, range: 0.6, hitEvery: 1.0, speed: 1.1, space: 5, cost: { chicken: 50 }, trainSec: 12, prefers: 'defense', labRequired: { 2: 2, 3: 3 } },
-  frog: { name: 'Grenouille Sarbacane', hp: 90, dps: 16, range: 3, hitEvery: 0.8, speed: 1.6, space: 2, cost: { chicken: 30 }, trainSec: 8, labRequired: { 2: 2, 3: 3 } },
-  babyCroco: { name: 'Bébé Croco', hp: 70, dps: 12, range: 0.5, hitEvery: 0.5, speed: 2.4, space: 1, cost: { chicken: 15 }, trainSec: 4, prefers: 'resource', labRequired: { 2: 2, 3: 3 }, resourceBonus: 3 },
-  crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { chicken: 90 }, trainSec: 20, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2
-  flyingCroco: { name: 'Croco volant bombardier', hp: 300, dps: 42, range: 0, hitEvery: 1.5, speed: 1.4, space: 6, cost: { chicken: 160 }, trainSec: 30, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1, flying: true }, // TEST: real value barracksRequired: 3
+  frog: { name: 'Grenouille Sarbacane', hp: 90, dps: 16, range: 3, hitEvery: 0.8, speed: 1.6, space: 2, cost: { chicken: 30 }, trainSec: 8, unlock: { cost: { chicken: 100 }, sec: 60 }, labRequired: { 2: 2, 3: 3 } },
+  babyCroco: { name: 'Bébé Croco', hp: 70, dps: 12, range: 0.5, hitEvery: 0.5, speed: 2.4, space: 1, cost: { chicken: 15 }, trainSec: 4, unlock: { cost: { chicken: 150 }, sec: 90 }, prefers: 'resource', labRequired: { 2: 2, 3: 3 }, resourceBonus: 3 },
+  crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { chicken: 90 }, trainSec: 20, unlock: { cost: { chicken: 400 }, sec: 180 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2
+  flyingCroco: { name: 'Croco volant bombardier', hp: 300, dps: 42, range: 0, hitEvery: 1.5, speed: 1.4, space: 6, cost: { chicken: 160 }, trainSec: 30, unlock: { cost: { chicken: 600 }, sec: 240 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1, flying: true }, // TEST: real value barracksRequired: 3
 };
 
 /** Each barracks level above 1 trains troops this much faster (level 2: x1.5, level 3: x2). */

@@ -52,6 +52,7 @@ test('producers accumulate up to their cap and training finishes on time', () =>
   s.chicken = 1000;
   s.troops = {}; // the starting army (23 places) would fill the 20-place camp
   const before = s.troops.frog ?? 0;
+  s.unlockedTroops.push('frog');
   assert.equal(addTroopsToQueue(s, 'frog', 0), true);
   tick(s, 7_999);
   assert.equal(s.troops.frog ?? 0, before);
@@ -121,6 +122,7 @@ test('explosive croco launcher: trains at the barracks, splashes nearby building
   s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3; // room for 4 more places
   s.buildings.find(b => b.type === 'barracks')!.level = TROOPS.crocoLauncher.barracksRequired ?? 1;
+  s.unlockedTroops.push('crocoLauncher');
   assert.equal(addTroopsToQueue(s, 'crocoLauncher', 0), true);
 
   const b = new Battle([{ type: 'goldMine', x: 5, y: 5 }, { type: 'goldMine', x: 7, y: 5 }, { type: 'goldMine', x: 15, y: 15 }]);
@@ -144,6 +146,7 @@ test('flying bomber: trains at the barracks, cannons cannot hit it, reed towers 
   s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3;
   s.buildings.find(b => b.type === 'barracks')!.level = TROOPS.flyingCroco.barracksRequired ?? 1;
+  s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
 
   const b = new Battle([{ type: 'cannon', x: 5, y: 5 }, { type: 'reedTower', x: 15, y: 15 }]);
@@ -163,8 +166,10 @@ test('barracksRequired blocks training until the barracks level is reached', () 
   s.buildings.find(b => b.type === 'camp')!.level = 3;
   const real = TROOPS.flyingCroco.barracksRequired;
   TROOPS.flyingCroco.barracksRequired = 3; // the real value, temporarily lowered for testing
+  s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), false);
   s.buildings.find(b => b.type === 'barracks')!.level = 3;
+  s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
   TROOPS.flyingCroco.barracksRequired = real;
 });

@@ -8,6 +8,8 @@ export interface Save {
   buildings: Building[];
   troops: Record<string, number>;
   queue: { kind: string; doneAt: number }[];
+  unlockedTroops: string[]; // troops paid for in the barracks (troops with a unlock cost)
+  unlocking: { kind: string; doneAt: number } | null; // one unlock at a time
   troopLevel: Record<string, number>; // missing = level 1
   research: { kind: string; doneAt: number } | null; // one troop upgrade at a time
   nextId: number;
@@ -15,7 +17,7 @@ export interface Save {
 }
 
 export function newSave(now: number): Save {
-  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 3, frog: 4 }, queue: [], troopLevel: {}, research: null, nextId: 1, stars: {} };
+  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, troopLevel: {}, research: null, nextId: 1, stars: {} };
   const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const;
   for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
@@ -39,6 +41,8 @@ export function migrate(s: Save): Save {
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
   s.troopLevel ??= {};
   s.research ??= null;
+  s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
+  s.unlocking ??= null;
   for (const type of ['camp', 'goldStore', 'chickenStore']) { // saves from before camps and storages: give a free one
     if (countOf(s, type)) continue;
     const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, type, x, y));
@@ -164,9 +168,20 @@ export const hasBarracks = (s: Save, now: number) => s.buildings.some(b => BUILD
 /** Best working barracks level (0 = none). */
 export const barracksLevel = (s: Save, now: number) => Math.max(0, ...s.buildings.filter(b => BUILDINGS[b.type].trains).map(b => workingLevel(b, now)));
 
+export const troopUnlocked = (s: Save, kind: string) => !TROOPS[kind].unlock || s.unlockedTroops.includes(kind);
+
+/** Pays to unlock a troop; it can be trained once the unlock time has passed. */
+export function unlockTroop(s: Save, kind: string, now: number): boolean {
+  const u = TROOPS[kind].unlock;
+  if (!u || troopUnlocked(s, kind) || s.unlocking || !canAfford(s, u.cost)) return false;
+  pay(s, u.cost);
+  s.unlocking = { kind, doneAt: now + u.sec * 1000 };
+  return true;
+}
+
 export function addTroopsToQueue(s: Save, kind: string, now: number): boolean {
   const d = TROOPS[kind];
-  if (barracksLevel(s, now) < (d.barracksRequired ?? 1) || armySize(s) + d.space > armyCap(s, now) || !canAfford(s, d.cost)) return false;
+  if (!troopUnlocked(s, kind) || barracksLevel(s, now) < (d.barracksRequired ?? 1) || armySize(s) + d.space > armyCap(s, now) || !canAfford(s, d.cost)) return false;
   pay(s, d.cost);
   const start = Math.max(now, s.queue.at(-1)?.doneAt ?? 0);
   s.queue.push({ kind, doneAt: start + trainMs(s, kind, now) });
@@ -176,6 +191,11 @@ export function addTroopsToQueue(s: Save, kind: string, now: number): boolean {
 /** Moves finished troops from the training queue into the army. Returns true if anything changed. */
 export function tick(s: Save, now: number): boolean {
   let changed = false;
+  if (s.unlocking && s.unlocking.doneAt <= now) {
+    s.unlockedTroops.push(s.unlocking.kind);
+    s.unlocking = null;
+    changed = true;
+  }
   while (s.queue.length && s.queue[0].doneAt <= now) {
     const { kind } = s.queue.shift()!;
     s.troops[kind] = (s.troops[kind] ?? 0) + 1;
