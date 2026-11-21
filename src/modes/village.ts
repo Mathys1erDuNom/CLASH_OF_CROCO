@@ -53,6 +53,7 @@ function levelInfo(type: string, level: number) {
 export function villageMode(): Mode {
   const views = new Map<number, View>();
   let placing: string | null = null;
+  let placingLevel = 1; // level of the building being placed or moved: a defence's range depends on it
   let ghost: THREE.Group | null = null;
   let movingId: number | null = null;
   let previewAt = ''; // tile where the placement ghost currently shows // set while 'placing' an existing building somewhere else
@@ -78,7 +79,13 @@ export function villageMode(): Mode {
   footprint.visible = false;
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.72, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0.9 }));
   ring.visible = false;
-  world.add(grid, footprint, ring);
+  // a defence's attack range, drawn on the ground: a translucent disc with an edge, scaled to the range in tiles
+  const rangeArea = new THREE.Mesh(new THREE.CircleGeometry(1, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x60c8ff, transparent: true, opacity: 0.12, depthWrite: false }));
+  const rangeEdge = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 96).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x60c8ff, transparent: true, opacity: 0.8, depthWrite: false }));
+  const rangeZone = new THREE.Group();
+  rangeZone.add(rangeArea, rangeEdge);
+  rangeZone.visible = false;
+  world.add(grid, footprint, ring, rangeZone);
 
   const center = (b: { x: number; y: number }, n: number) => toWorld(b.x + n / 2, b.y + n / 2);
 
@@ -134,16 +141,26 @@ export function villageMode(): Mode {
     previewAt = '';
     if (ghost) world.remove(ghost);
     ghost = null;
-    grid.visible = footprint.visible = false;
+    grid.visible = footprint.visible = rangeZone.visible = false;
   }
 
   const spot = (tile: Tile, n: number) => ({ x: Math.round(tile.x - n / 2), y: Math.round(tile.y - n / 2) }); // cursor at the footprint centre
+
+  /** Draws the attack range of a defence at tiles (x, y); hides it for buildings that have none. */
+  function showRange(type: string, level: number, x: number, y: number) {
+    const range = BUILDINGS[type].levels[level - 1]?.range;
+    rangeZone.visible = !!range;
+    if (!range) return;
+    rangeZone.position.copy(center({ x, y }, BUILDINGS[type].size)).setY(0.03);
+    rangeZone.scale.set(range, 1, range);
+  }
 
   function select(b: Building | null) {
     selected = b?.id ?? null;
     if (b) { menu = null; showArmy = false; } // a building panel replaces the open menu
     ring.visible = !!b;
     if (b) { const n = BUILDINGS[b.type].size; ring.position.copy(center(b, n)).setY(0.05); ring.scale.setScalar(n); }
+    if (b) showRange(b.type, b.level, b.x, b.y); else rangeZone.visible = false;
   }
 
   async function loadPlayers() {
@@ -176,6 +193,7 @@ export function villageMode(): Mode {
       cancel(); select(null);
       menu = null;
       placing = arg;
+      placingLevel = 1;
       ghost = ghostOf(building(arg, false));
       ghost.visible = false;
       world.add(ghost);
@@ -189,6 +207,7 @@ export function villageMode(): Mode {
       if (!b) return;
       cancel();
       placing = b.type;
+      placingLevel = Math.max(1, workingLevel(b, now));
       movingId = b.id;
       ghost = ghostOf(building(b.type, false, Math.max(1, workingLevel(b, now))));
       ghost.visible = false;
@@ -417,6 +436,7 @@ export function villageMode(): Mode {
       ghost.visible = footprint.visible = true;
       ghost.position.copy(center({ x, y }, n));
       footprint.position.copy(center({ x, y }, n)).setY(0.04);
+      showRange(placing, placingLevel, x, y);
       footprint.scale.set(n, 1, n);
       (footprint.material as THREE.MeshBasicMaterial).color.setHex(canPlace(save, placing, x, y, movingId ?? undefined) ? 0x44ff44 : 0xff4444);
     },
