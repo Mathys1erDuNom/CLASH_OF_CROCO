@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle } from './combat.ts';
 import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
-import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
+import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, hqLevel, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
   const s = newSave(0);
@@ -264,4 +264,13 @@ test('a resource cannot be collected while its stock is at the storage cap', () 
   assert.equal(mine.collectedAt, 0);
   s.gold = 0;
   assert.ok(collect(s, mine, 60 * 60_000) > 0); // room again: collectable
+});
+
+test('a village whose HQ was destroyed still loads, and the HQ comes back with the rebuild', () => {
+  const s = newSave(0);
+  const hq = s.buildings.find(b => b.type === 'hq')!;
+  applyRaid(s, [hq.id], 0, 0, 'Attaquant');
+  assert.equal(hqLevel(s, 0), 0); // no crash: the village just has no HQ level
+  assert.equal(rebuild(s, 0), 1);
+  assert.equal(hqLevel(s, 0), 1);
 });

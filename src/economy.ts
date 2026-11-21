@@ -120,7 +120,8 @@ export function placeBuilding(s: Save, type: string, x: number, y: number, now: 
   return true;
 }
 
-export const hqLevel = (s: Save, now: number) => workingLevel(s.buildings.find(b => b.type === 'hq')!, now);
+/** 0 when the HQ is gone (a raid can destroy it): the village then has no level until it is rebuilt. */
+export const hqLevel = (s: Save, now: number) => { const hq = s.buildings.find(b => b.type === 'hq'); return hq ? workingLevel(hq, now) : 0; };
 
 /** Why the building cannot be upgraded right now, or null if it can. */
 export function upgradeBlock(s: Save, b: Building, now: number): string | null {
