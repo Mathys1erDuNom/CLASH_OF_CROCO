@@ -218,10 +218,12 @@ test('every goblin base fits the grid without overlapping buildings', () => {
   }
 });
 
-test('troops dropped on the same tile are spread out, not stacked', () => {
+test('troops dropped on the same tile appear there, then push apart instead of stacking', () => {
   const b = new Battle([]);
   const spots = Array.from({ length: 8 }, () => b.deploy('croco', 20, 20));
-  for (const [i, u] of spots.entries()) for (const o of spots.slice(i + 1)) assert.ok(Math.hypot(u.x - o.x, u.y - o.y) >= 0.7, 'two troops overlap');
+  assert.equal(spots[0].x, 20); // dropped exactly where clicked
+  for (let i = 0; i < 200; i++) b.step(0.05);
+  for (const [i, u] of spots.entries()) for (const o of spots.slice(i + 1)) assert.ok(Math.hypot(u.x - o.x, u.y - o.y) >= 0.69, 'two troops overlap');
 });
 
 test('a resource cannot be collected while its stock is at the storage cap', () => {

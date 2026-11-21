@@ -29,14 +29,9 @@ export class Battle {
     return this.structs.every(s => s.hp <= 0 || x < s.x - 1 || x > s.x + s.size + 1 || y < s.y - 1 || y > s.y + s.size + 1);
   }
 
-  /** Troops dropped on the same spot fan out in a spiral so they never stack. */
   deploy(kind: string, x: number, y: number, mult = 1): Unit {
     const d = TROOPS[kind];
-    const free = (px: number, py: number) => this.units.every(o => o.hp <= 0 || Math.hypot(o.x - px, o.y - py) >= TROOP_SPACING);
-    let px = x, py = y;
-    for (let i = 1; i < 40 && !free(px, py); i++) { px = x + Math.cos(i * 2.4) * 0.6 * Math.sqrt(i); py = y + Math.sin(i * 2.4) * 0.6 * Math.sqrt(i); }
-    // shortcut: if no free spot is found in 40 tries, the last candidate is used and may overlap, fine for a crowded drop
-    const u = { id: this.nextId++, kind, x: px, y: py, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0 };
+    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0 };
     this.units.push(u);
     return u;
   }
@@ -83,6 +78,17 @@ export class Battle {
       if (!t) t = nearest(inRange, u => Math.hypot(u.x - s.cx, u.y - s.cy));
       s.targetId = t?.id ?? null;
       if (t) t.hp -= dps * dt;
+    }
+
+    // troops that overlap push each other apart, so none can stay stacked on another
+    for (let i = 0; i < units.length; i++) for (let j = i + 1; j < units.length; j++) {
+      const a = units[i], b = units[j];
+      let dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+      if (len >= TROOP_SPACING) continue;
+      if (len < 1e-6) { dx = 1; dy = 0; len = 1; } // same point: split sideways
+      const push = (TROOP_SPACING - len) / 2;
+      a.x -= (dx / len) * push; a.y -= (dy / len) * push;
+      b.x += (dx / len) * push; b.y += (dy / len) * push;
     }
   }
 
