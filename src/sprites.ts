@@ -49,16 +49,15 @@ function goldMine() {
     <path d="M24 104 l3 -7 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 z M100 62 l2 -5 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 z" fill="#fff6b0"/>`);
 }
 
-function mudPump() {
-  return svg(128, 160, `<defs>${grad('p', '#8a5f35', '#4b301a')}${grad('b', '#a87a46', '#6e4a26', false)}</defs>
+function chickenFarm() {
+  return svg(128, 160, `<defs>${grad('w', '#b08050', '#7a5030', false)}</defs>
     ${shadow(64, 140, 58)}
-    <ellipse cx="60" cy="122" rx="52" ry="24" fill="url(#p)" ${sw}/>
-    <ellipse cx="54" cy="118" rx="34" ry="13" fill="#6a4524"/>
-    <circle cx="40" cy="116" r="4" fill="#9c7046" stroke="${O}" stroke-width="2"/><circle cx="64" cy="122" r="3" fill="#9c7046" stroke="${O}" stroke-width="2"/><circle cx="74" cy="112" r="2.5" fill="#9c7046"/>
-    <path d="M70 120 L86 40 L104 120" fill="none" stroke="#7a5430" stroke-width="9"/><path d="M70 120 L86 40 L104 120" fill="none" stroke="${O}" stroke-width="2" opacity=".5"/>
-    <path d="M40 34 L120 52" stroke="#5b3a1e" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="42" r="6" fill="#999" ${sw}/>
-    <rect x="44" y="34" width="10" height="66" fill="#8e8e8e" ${sw}/><path d="M54 92 q16 2 18 16" fill="none" stroke="#8e8e8e" stroke-width="9"/><path d="M68 108 q4 10 -4 14" fill="none" stroke="#5a3a1c" stroke-width="7"/>
-    <rect x="98" y="104" width="24" height="32" rx="5" fill="url(#b)" ${sw}/><path d="M98 114 h24 M98 126 h24" stroke="${O}" stroke-width="2.5"/>`);
+    <ellipse cx="64" cy="124" rx="56" ry="20" fill="#8a6a3c" ${sw}/>
+    <rect x="28" y="62" width="72" height="56" rx="4" fill="url(#w)" ${sw}/>
+    <path d="M18 66 L64 26 L110 66 z" fill="#9c3a2a" ${sw}/>
+    <rect x="54" y="86" width="20" height="32" rx="3" fill="#2b1d14"/>
+    <ellipse cx="34" cy="120" rx="12" ry="9" fill="#f4f0e6" ${sw}/><path d="M30 112 q2 -5 4 0 q2 -4 4 1" fill="#d42a2a"/>
+    <ellipse cx="100" cy="118" rx="12" ry="9" fill="#f4f0e6" ${sw}/><path d="M96 110 q2 -5 4 0 q2 -4 4 1" fill="#d42a2a"/>`);
 }
 
 function barracks(g: boolean) {
@@ -183,19 +182,19 @@ const rubble = () => svg(96, 64, `<ellipse cx="48" cy="40" rx="42" ry="18" fill=
   `<circle cx="${x}" cy="${y}" r="${r}" fill="#6e6658" stroke="${O}" stroke-width="2"/>`).join('')}<path d="M18 30 L40 44 M60 32 L78 46" stroke="#6d4526" stroke-width="5"/>`);
 const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" width="84" height="56" rx="6" fill="#9a8fb0" ${sw}/><path d="M14 80 L64 34 L114 80 z" fill="#6a3a8a" ${sw}/><rect x="54" y="104" width="20" height="28" rx="3" fill="#2b1d14"/><path d="M92 92 h16 l-4 6 v12 l10 18 H82 l10 -18 v-12 z" fill="#cfe6f0" ${sw}/><path d="M86 124 h28 l-3 8 H89 z" fill="#7dff6a"/>`);
 const coin = () => svg(32, 32, `<circle cx="16" cy="16" r="12" fill="#f2c230" ${sw}/><circle cx="16" cy="16" r="7" fill="none" stroke="#b38512" stroke-width="2.5"/><path d="M11 10 q3 -2 6 0" stroke="#fff6b0" stroke-width="2" fill="none"/>`);
-const mudDrop = () => svg(32, 32, `<path d="M16 3 Q27 17 26 21 A10 10 0 0 1 6 21 Q5 17 16 3 z" fill="#8a5a30" ${sw}/><circle cx="12" cy="19" r="2.5" fill="#c49a6a"/>`);
+const chickenIcon = () => svg(32, 32, `<circle cx="15" cy="18" r="10" fill="#f4f0e6" ${sw}/><path d="M11 9 q2 -6 4 0 q2 -5 4 1" fill="#d42a2a" stroke="${O}" stroke-width="2"/><path d="M24 16 l6 2 l-6 2 z" fill="#f0a020" stroke="${O}" stroke-width="1.5"/><circle cx="19" cy="16" r="1.6" fill="${O}"/>`);
 
 export const SPRITES: Record<string, string> = {
   b_hq: hq(false), g_hq: hq(true),
   b_goldMine: goldMine(), g_goldMine: goldMine(),
-  b_mudPump: mudPump(), g_mudPump: mudPump(),
+  b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(),
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
   t_croco: crocoBrute(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
-  i_gold: coin(), i_mud: mudDrop(),
+  i_gold: coin(), i_chicken: chickenIcon(),
 };
 
 export const spriteUrl = (key: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(SPRITES[key])}`;

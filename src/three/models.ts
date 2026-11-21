@@ -99,23 +99,19 @@ function goldMine(level: number) {
   return g;
 }
 
-function mudPump() {
+/** Chicken farm: a hen house in a dirt yard, with hens pecking around and a feed trough. */
+function chickenFarm() {
   const g = new THREE.Group();
-  g.add(cyl(0.88, 0.92, 0.14, 0x5a3e22, 0, 0.07, 0, 12));
-  g.add(cyl(0.72, 0.72, 0.15, 0x7a5530, -0.05, 0.08, 0, 12));
-  for (const [x, z, r] of [[-0.3, 0.2, 0.07], [0.1, -0.3, 0.05], [0.25, 0.25, 0.06]]) g.add(ball(r, 0x9c7046, x, 0.17, z, 0));
-  g.add(rot(box(0.08, 1.4, 0.08, WOOD, 0.35, 0.65, -0.25), 0, 0, 0.3), rot(box(0.08, 1.4, 0.08, WOOD, 0.75, 0.65, -0.25), 0, 0, -0.3));
-  const lever = new THREE.Group();
-  lever.add(box(1.4, 0.07, 0.07, DARK_WOOD, -0.2, 0, 0));
-  lever.position.set(0.55, 1.3, -0.25);
-  lever.name = 'lever';
-  g.add(lever);
-  g.add(cyl(0.07, 0.07, 1.2, 0x8e8e8e, -0.45, 0.6, -0.25, 6));
-  g.add(box(0.5, 0.06, 0.06, 0x8e8e8e, -0.25, 0.25, -0.25));
-  const barrel = new THREE.Group();
-  barrel.add(cyl(0.22, 0.25, 0.5, 0x9c6a3c, 0, 0.25, 0, 10), cyl(0.255, 0.255, 0.05, 0x333333, 0, 0.12, 0, 10), cyl(0.235, 0.235, 0.05, 0x333333, 0, 0.4, 0, 10));
-  barrel.position.set(0.65, 0, 0.6);
-  g.add(barrel);
+  g.add(cyl(0.88, 0.92, 0.12, 0x8a6a3c, 0, 0.06, 0, 12)); // dirt yard
+  g.add(fence(0.9, 12));
+  g.add(box(0.9, 0.7, 0.8, WOOD, -0.25, 0.47, -0.2)); // hen house
+  g.add(cone(0.75, 0.5, 0x9c3a2a, -0.25, 1.2, -0.2, 4).rotateY(Math.PI / 4));
+  g.add(box(0.22, 0.4, 0.03, DOOR, -0.25, 0.31, 0.21));
+  g.add(box(0.7, 0.12, 0.22, DARK_WOOD, 0.45, 0.16, 0.5)); // feed trough
+  for (const [x, z] of [[0.45, 0.1], [0.6, -0.25], [-0.6, 0.45], [0.2, 0.7]]) { // hens
+    g.add(ball(0.14, 0xf4f0e6, x, 0.2, z, 0), ball(0.08, 0xf4f0e6, x + 0.1, 0.34, z, 0));
+    g.add(ball(0.035, 0xd42a2a, x + 0.1, 0.42, z, 0), cone(0.03, 0.06, 0xf0a020, x + 0.17, 0.34, z, 4).rotateZ(-Math.PI / 2));
+  }
   return g;
 }
 
@@ -229,15 +225,14 @@ function levelParts(g: THREE.Group, type: string, level: number, goblin: boolean
         g.add(gold(new THREE.IcosahedronGeometry(0.14, 0), 0, 1.1, -0.6));
       }
       break;
-    case 'mudPump':
-      if (L2) { // iron pipes, extra barrel, stone rim
-        for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; g.add(ball(0.13, STONE, Math.cos(a) * 0.92, 0.1, Math.sin(a) * 0.92, 0)); }
-        g.add(cyl(0.2, 0.22, 0.45, 0x9c6a3c, -0.75, 0.22, 0.65, 10), rot(cyl(0.05, 0.05, 1.0, IRON, -0.45, 1.2, 0.2, 6), 0.6, 0, 0));
+    case 'chickenFarm':
+      if (L2) { // feed silo and more hens
+        g.add(cyl(0.22, 0.22, 0.9, 0xd9ae55, -0.75, 0.45, 0.65, 10), cone(0.24, 0.22, 0x9c3a2a, -0.75, 0.99, 0.65, 10));
+        for (const [x, z] of [[-0.55, -0.6], [0.7, 0.55]]) g.add(ball(0.14, 0xf4f0e6, x, 0.2, z, 0), ball(0.08, 0xf4f0e6, x + 0.1, 0.34, z, 0));
       }
-      if (L3) { // big storage tank with gauge
-        g.add(cyl(0.38, 0.38, 0.9, IRON, -0.7, 0.45, -0.7, 10), cyl(0.4, 0.4, 0.06, 0x2a2a30, -0.7, 0.92, -0.7, 10));
-        g.add(cyl(0.12, 0.12, 0.03, 0xffffff, -0.7, 0.55, -0.31, 10).rotateX(Math.PI / 2));
-        g.add(cone(0.2, 0.25, 0x7a5530, -0.7, 1.1, -0.7, 8)); // overflowing mud
+      if (L3) { // second hen house with a nest of golden eggs
+        g.add(box(0.7, 0.55, 0.6, WOOD, 0.75, 0.28, -0.7), cone(0.5, 0.4, 0x9c3a2a, 0.75, 0.75, -0.7, 4).rotateY(Math.PI / 4));
+        g.add(ball(0.09, GOLD, 0.75, 0.12, -0.25, 0), ball(0.09, GOLD, 0.95, 0.12, -0.25, 0));
       }
       break;
     case 'barracks':
@@ -323,14 +318,14 @@ function camp(level: number) {
 
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
-  const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'mudPump' ? mudPump()
+  const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm()
     : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : reedTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, mudPump: 1.8, barracks: 2.0, cannon: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 1.8, barracks: 2.0, cannon: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

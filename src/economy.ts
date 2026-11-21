@@ -4,7 +4,7 @@ import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, troopMa
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
 export interface Save {
-  v: 1; gold: number; mud: number;
+  v: 1; gold: number; chicken: number;
   buildings: Building[];
   troops: Record<string, number>;
   queue: { kind: string; doneAt: number }[];
@@ -15,15 +15,21 @@ export interface Save {
 }
 
 export function newSave(now: number): Save {
-  const s: Save = { v: 1, gold: 250, mud: 250, buildings: [], troops: { croco: 3, frog: 4 }, queue: [], troopLevel: {}, research: null, nextId: 1, stars: {} };
-  for (const [type, x, y] of [['hq', 8, 8], ['goldMine', 4, 9], ['mudPump', 14, 9], ['barracks', 9, 13], ['camp', 4, 13]] as const)
+  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 3, frog: 4 }, queue: [], troopLevel: {}, research: null, nextId: 1, stars: {} };
+  for (const [type, x, y] of [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13]] as const)
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
   return s;
 }
 
+/** Building type as it is named now: 'mudPump' was renamed 'chickenFarm'. Also used for other players' bases. */
+export const currentType = (t: string) => (t === 'mudPump' ? 'chickenFarm' : t);
+
 /** Fills fields added after a save was written (saves from before upgrades had no level). */
 export function migrate(s: Save): Save {
-  for (const b of s.buildings) b.level ??= 1;
+  const old = s as Save & { mud?: number }; // saves from before the vase became chicken
+  s.chicken ??= old.mud ?? 0;
+  delete old.mud;
+  for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
   s.troopLevel ??= {};
   s.research ??= null;
   if (!countOf(s, 'camp')) { // saves from before camps: give a free camp so the army keeps its places
@@ -33,8 +39,8 @@ export function migrate(s: Save): Save {
   return s;
 }
 
-export const canAfford = (s: Save, c: Cost) => (c.gold ?? 0) <= s.gold && (c.mud ?? 0) <= s.mud;
-const pay = (s: Save, c: Cost) => { s.gold -= c.gold ?? 0; s.mud -= c.mud ?? 0; };
+export const canAfford = (s: Save, c: Cost) => (c.gold ?? 0) <= s.gold && (c.chicken ?? 0) <= s.chicken;
+const pay = (s: Save, c: Cost) => { s.gold -= c.gold ?? 0; s.chicken -= c.chicken ?? 0; };
 
 export const workingLevel = (b: Building, now: number) => (now < b.readyAt ? b.level - 1 : b.level);
 export const stats = (type: string, level: number): Level => BUILDINGS[type].levels[Math.max(0, level - 1)];

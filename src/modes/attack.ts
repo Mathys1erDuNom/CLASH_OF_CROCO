@@ -60,7 +60,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
   const battle = new Battle(base.buildings);
   let selected = Object.keys(TROOPS).find(k => (save.troops[k] ?? 0) > 0) ?? '';
   let acc = 0, t = 0;
-  let result: { stars: number; gold: number; mud: number } | null = null;
+  let result: { stars: number; gold: number; chicken: number } | null = null;
   const cd = new Map<number, number>(); // cosmetic shot timers
 
   swamp(world, base.goblin ? 42 : 7, base.goblin); // same scenery as the village for players
@@ -88,8 +88,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
 
   function finish() {
     const stars = battle.stars(), f = battle.lootFraction();
-    result = { stars, gold: Math.floor((base.loot?.gold ?? 0) * f), mud: Math.floor((base.loot?.mud ?? 0) * f) };
-    save.gold += result.gold; save.mud += result.mud;
+    result = { stars, gold: Math.floor((base.loot?.gold ?? 0) * f), chicken: Math.floor((base.loot?.chicken ?? 0) * f) };
+    save.gold += result.gold; save.chicken += result.chicken;
     if (base.loot) save.stars[base.id] = Math.max(save.stars[base.id] ?? 0, stars);
     persist();
   }
@@ -104,7 +104,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
     if (result) {
       return `<h1 class="result">${result.stars ? 'Victoire !' : 'Défaite…'}</h1><p class="big">${stars(result.stars)}</p>
         <p>Destruction : ${battle.destruction()} %</p>
-        <p>Butin : <img class="i" src="${spriteUrl('i_gold')}" alt="Or"> ${result.gold} · <img class="i" src="${spriteUrl('i_mud')}" alt="Vase"> ${result.mud}</p>
+        <p>Butin : <img class="i" src="${spriteUrl('i_gold')}" alt="Or"> ${result.gold} · <img class="i" src="${spriteUrl('i_chicken')}" alt="Poulet"> ${result.chicken}</p>
         <p class="hint">Les troupes engagées dans l’attaque sont perdues.</p>
         <button data-act="home">Retour au village</button>`;
     }

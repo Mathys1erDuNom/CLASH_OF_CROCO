@@ -6,7 +6,7 @@ import { canPlace, placeBuilding, addTroopsToQueue, armyCap, collect, migrate, m
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
   const s = newSave(0);
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   assert.equal(upgradeTroop(s, 'croco', 0), false); // no lab yet
   s.buildings.push({ id: s.nextId++, type: 'lab', x: 15, y: 15, level: 1, readyAt: 0, collectedAt: 0 });
   assert.equal(upgradeTroop(s, 'croco', 0), false); // croco level 2 needs a level-2 lab
@@ -44,7 +44,7 @@ test('producers accumulate up to their cap and training finishes on time', () =>
   const mine = s.buildings.find(b => b.type === 'goldMine')!;
   assert.equal(collect(s, mine, 60_000), 30);
   assert.equal(collect(s, mine, 60_000 * 100), 200); // capped
-  s.mud = 1000;
+  s.chicken = 1000;
   s.troops = {}; // the starting army (23 places) would fill the 20-place camp
   const before = s.troops.frog ?? 0;
   assert.equal(addTroopsToQueue(s, 'frog', 0), true);
@@ -57,7 +57,7 @@ test('producers accumulate up to their cap and training finishes on time', () =>
 test('upgrades cost resources, take time, need the hut level, then boost production', () => {
   const s = newSave(0);
   const mine = s.buildings.find(b => b.type === 'goldMine')!, hq = s.buildings.find(b => b.type === 'hq')!;
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   assert.equal(upgradeBlock(s, mine, 0), 'Hutte du Chef niveau 2 requise');
   assert.equal(upgrade(s, hq, 0), true);
   assert.equal(s.gold, 9_500);
@@ -69,14 +69,14 @@ test('upgrades cost resources, take time, need the hut level, then boost product
 });
 
 test('crocos go for defenses, baby crocos for resources, frogs for the nearest building', () => {
-  const b = new Battle(GOBLIN_BASES[0].buildings); // hq, goldMine, mudPump, cannon
+  const b = new Battle(GOBLIN_BASES[0].buildings); // hq, goldMine, chickenFarm, cannon
   const croco = b.deploy('croco', 9, 17), baby = b.deploy('babyCroco', 9, 17), frog = b.deploy('frog', 9, 17);
   b.step(0.01);
   const typeOf = (id: number | null) => b.structs.find(s => s.id === id)?.type;
   assert.equal(typeOf(croco.targetId), 'cannon');
-  assert.ok(['goldMine', 'mudPump'].includes(typeOf(baby.targetId)!));
+  assert.ok(['goldMine', 'chickenFarm'].includes(typeOf(baby.targetId)!));
   assert.equal(typeOf(frog.targetId), 'hq');
-  for (const s of b.structs) if (s.type === 'goldMine' || s.type === 'mudPump') s.hp = 0;
+  for (const s of b.structs) if (s.type === 'goldMine' || s.type === 'chickenFarm') s.hp = 0;
   baby.targetId = null;
   b.step(0.01);
   assert.ok(['hq', 'cannon'].includes(typeOf(baby.targetId)!)); // no resources left: hits the rest
@@ -85,7 +85,7 @@ test('crocos go for defenses, baby crocos for resources, frogs for the nearest b
 test('camps give army places by level, old saves get a camp, barracks level speeds training', () => {
   const s = newSave(0);
   const camp = s.buildings.find(b => b.type === 'camp')!;
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   upgrade(s, s.buildings.find(b => b.type === 'hq')!, 0);
   assert.equal(upgrade(s, camp, 60_000), true);
   assert.equal(armyCap(s, 60_001), 20); // during works the camp keeps its old level
@@ -109,7 +109,7 @@ test('buildings move only to free spots, and may overlap their own old footprint
 
 test('explosive croco launcher: trains at the barracks, splashes nearby buildings, level 2 needs a level-3 lab', () => {
   const s = newSave(0);
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3; // room for 4 more places
   s.buildings.find(b => b.type === 'barracks')!.level = TROOPS.crocoLauncher.barracksRequired ?? 1;
   assert.equal(addTroopsToQueue(s, 'crocoLauncher', 0), true);
@@ -132,7 +132,7 @@ test('explosive croco launcher: trains at the barracks, splashes nearby building
 
 test('flying bomber: trains at the barracks, cannons cannot hit it, reed towers can', () => {
   const s = newSave(0);
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3;
   s.buildings.find(b => b.type === 'barracks')!.level = TROOPS.flyingCroco.barracksRequired ?? 1;
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
@@ -150,7 +150,7 @@ test('flying bomber: trains at the barracks, cannons cannot hit it, reed towers 
 
 test('barracksRequired blocks training until the barracks level is reached', () => {
   const s = newSave(0);
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3;
   const real = TROOPS.flyingCroco.barracksRequired;
   TROOPS.flyingCroco.barracksRequired = 3; // the real value, temporarily lowered for testing
@@ -173,7 +173,7 @@ test('anti-air harpoon launcher shoots flyers only', () => {
 
 test('buildings with hutRequired cannot be built before the hut level', () => {
   const s = newSave(0);
-  s.gold = s.mud = 10_000;
+  s.gold = s.chicken = 10_000;
   assert.equal(placeBuilding(s, 'lab', 15, 15, 0), false); // hut level 1, lab needs 2
   s.buildings.find(b => b.type === 'hq')!.level = 2;
   assert.equal(placeBuilding(s, 'lab', 15, 15, 0), true);

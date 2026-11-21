@@ -1,7 +1,7 @@
 # 🐊 Clash of Croco
 
 Prototype de jeu de construction de base et d'attaque dans un marais. Construis ton village
-(mines d'or, pompes à vase, casernes, défenses), forme des troupes (Croco Cogneur, Grenouille
+(mines d'or, élevages de poulets, casernes, défenses), forme des troupes (Croco Cogneur, Grenouille
 Sarbacane, Bébé Croco) et attaque les bases des gobelins.
 
 Le jeu est en **3D** (Three.js) : clic-glisser pour tourner la caméra, clic droit-glisser pour la déplacer, molette pour zoomer.
@@ -111,7 +111,7 @@ sur n'importe quel appareil. Sans ces variables (en local), le jeu reste en mode
   (production et stock pour les mines/pompes, dégâts et portée pour les défenses, places d'armée
   pour la caserne). Un bâtiment ne peut pas dépasser le niveau de la Hutte du Chef. Pendant les
   travaux, le bâtiment ne produit pas. Tout se règle dans `levels` de `src/data.ts`.
-- Forme des troupes avec la vase : clique sur une caserne terminée, les boutons de formation sont dans son panneau. Les troupes logent dans les **Camps des troupes** :
+- Forme des troupes avec les poulets : clique sur une caserne terminée, les boutons de formation sont dans son panneau. Les troupes logent dans les **Camps des troupes** :
   20, 35 puis 50 places par camp selon son niveau, et on les voit marcher en rond autour du feu de camp. Chaque niveau de
   caserne accélère la formation (x1,5 puis x2).
 - **Lanceur de croco explosif** : tire de loin (portée 4,5) des crocos explosifs qui font des dégâts de zone

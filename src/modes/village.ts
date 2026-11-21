@@ -3,6 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
+  currentType,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -22,7 +23,7 @@ const CATEGORIES: [string, string, (d: typeof BUILDINGS[string]) => boolean][] =
 
 interface View { model: THREE.Group; shown: number; scaffold: THREE.Group; bar: Bar }
 
-const resName = (r?: string) => (r === 'gold' ? 'or' : 'vase');
+const resName = (r?: string) => (r === 'gold' ? 'or' : 'poulets');
 const resColor = (r?: string) => (r === 'gold' ? '#ffd84a' : '#e0b080');
 
 function scaffolding(n: number) {
@@ -158,7 +159,7 @@ export function villageMode(): Mode {
     if (!r.ok) throw new Error(String(r.status));
     const { name, buildings }: { name: string; buildings: Building[] } = await r.json();
     const now = Date.now();
-    const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: b.type, x: b.x, y: b.y, level: workingLevel(b, now) })); // buildings still under construction are not targets
+    const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: currentType(b.type), x: b.x, y: b.y, level: workingLevel(b, now) })); // buildings still under construction are not targets
     setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout }, () => setMode(villageMode), visit));
   }
 
@@ -210,7 +211,7 @@ export function villageMode(): Mode {
     } else if (act === 'deselect') {
       select(null);
     } else if (act === 'train') {
-      if (!addTroopsToQueue(save, arg, now)) hint = 'Formation impossible (caserne, vase ou place).';
+      if (!addTroopsToQueue(save, arg, now)) hint = 'Formation impossible (caserne, poulets ou place).';
       else persist();
     } else if (act === 'troopUp') {
       if (upgradeTroop(save, arg, now)) { persist(); hint = `${TROOPS[arg].name} : recherche lancée.`; }
@@ -325,7 +326,7 @@ export function villageMode(): Mode {
     const ready = Object.values(save.troops).some(n => n > 0);
     const bases = GOBLIN_BASES.map(b => {
       const s = save.stars[b.id] ?? 0;
-      return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.mud} vase</small></button>`;
+      return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.chicken} poulets</small></button>`;
     }).join('');
     const attackBox = `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer</h2>
       <button data-act="tab" data-arg="goblin" class="${attackTab === 'goblin' ? 'sel' : ''}">👹 Attaquer gobelin</button>
@@ -335,7 +336,7 @@ export function villageMode(): Mode {
       ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_mud')}" alt="Vase"> ${save.mud}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
       ${selectionHtml(now)}
       <div class="menus">
         <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>
