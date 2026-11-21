@@ -58,6 +58,7 @@ export function villageMode(): Mode {
   let previewAt = ''; // tile where the placement ghost currently shows // set while 'placing' an existing building somewhere else
   let selected: number | null = null;
   let menu: 'build' | 'attack' | null = null; // which big menu is open in the panel
+  let showArmy = false; // mobile: army sheet opened from the 🪖 pill
   let attackTab: 'goblin' | 'player' | null = null; // target list open in the attack menu
   let players: { id: string; name: string; avatar: string }[] | null = null; // null while loading
   let playersErr = '';
@@ -140,7 +141,7 @@ export function villageMode(): Mode {
 
   function select(b: Building | null) {
     selected = b?.id ?? null;
-    if (b) menu = null; // a building panel replaces the open menu
+    if (b) { menu = null; showArmy = false; } // a building panel replaces the open menu
     ring.visible = !!b;
     if (b) { const n = BUILDINGS[b.type].size; ring.position.copy(center(b, n)).setY(0.05); ring.scale.setScalar(n); }
   }
@@ -201,11 +202,16 @@ export function villageMode(): Mode {
         floatText(center(b, BUILDINGS[b.type].size).setY(BUILDING_TOP[b.type]), 'Amélioration !', '#9fd0ff');
       }
     } else if (act === 'menu') {
+      showArmy = false;
       menu = menu === arg ? null : (arg as 'build' | 'attack');
       openedAt = Date.now();
       select(null);
     } else if (act === 'cat') {
       buildCat = buildCat === arg ? null : arg;
+      openedAt = Date.now();
+    } else if (act === 'army') {
+      showArmy = !showArmy;
+      if (showArmy) { menu = null; select(null); }
       openedAt = Date.now();
     } else if (act === 'info') {
       infoKind = infoKind === arg ? null : arg;
@@ -329,7 +335,7 @@ export function villageMode(): Mode {
         + (open ? `<div class="cat-items${dropping() ? ' drop' : ''}">${list.map(buildBtn).join('')}</div>` : '');
     }).join('');
     const cap = armyCap(save, now);
-    const army = Object.entries(TROOPS).map(([k, d]) => `<span class="troop"><img src="${spriteUrl('t_' + k)}" alt="${d.name}" title="${d.name}"> ${save.troops[k] ?? 0} <small>niv ${troopLevel(save, k)}</small></span>`).join('');
+    const army = Object.entries(TROOPS).map(([k, d]) => `<div class="troop"><div class="tbox"><img src="${spriteUrl('t_' + k)}" alt="${d.name}" title="${d.name}"><span><small>niv</small> ${troopLevel(save, k)}</span></div><b>${save.troops[k] ?? 0}</b></div>`).join('');
     const ready = Object.values(save.troops).some(n => n > 0);
     const bases = GOBLIN_BASES.map(b => {
       const s = save.stars[b.id] ?? 0;
@@ -343,7 +349,7 @@ export function villageMode(): Mode {
       ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><span title="Armée">🪖 ${armySize(save)}/${cap}</span></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
       ${selectionHtml(now)}
       <div class="menus">
         <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>
@@ -352,6 +358,7 @@ export function villageMode(): Mode {
       </div>
       ${menu === 'build' ? `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Construire</h2><div class="scroll-wrap"><div class="scroll" data-scroll="build">${builds}</div><i class="sbar"><b></b></i></div></div>` : ''}
       ${menu === 'attack' ? attackBox : ''}
+      ${showArmy ? `<div class="menu-box army-sheet${dropping() ? ' drop' : ''}"><h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div><button data-act="army" class="compact">Fermer</button></div>` : ''}
       <div class="extra">
         <h2>Armée ${armySize(save)}/${cap}</h2><div class="army">${army}</div>${queueHtml(now)}${researchHtml(now)}
         <p class="hint">Clique sur une caserne pour former des troupes.</p>
