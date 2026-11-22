@@ -211,7 +211,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));
           else if (u.kind === 'crocoLauncher') projectile('bomb', pos.clone().setY(0.8), toWorld(s.cx, s.cy, 0.4), troopLevel(save, u.kind));
-          else puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
+          else puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), u.kind === 'fireCroco' ? 0xff7a20 : 0xffe08a, 3, 0.07); // fire is orange
         }
       }
       refresh();

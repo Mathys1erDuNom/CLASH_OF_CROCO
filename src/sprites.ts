@@ -159,6 +159,10 @@ const crocoLauncherIcon = () => svg(80, 80, `${shadow(40, 72, 30, 6)}
   <path d="M48 50 L30 18" stroke="#5a4026" stroke-width="6" stroke-linecap="round"/><path d="M48 50 L30 18" stroke="${O}" stroke-width="1.5" opacity=".5"/>
   <path d="M14 18 q8 -8 20 -2 l8 2 q-2 6 -10 6 q-12 2 -18 -6 z" fill="#d0402a" ${sw}/><path d="M18 12 l-4 -8" stroke="#222" stroke-width="2"/><circle cx="13" cy="4" r="3" fill="#ffa020"/>
   <rect x="4" y="36" width="16" height="24" rx="4" fill="#5a9a3f" ${sw}/><path d="M8 34 q8 -10 18 -4 l4 4 q-8 4 -22 0 z" fill="#5a9a3f" ${sw}/><circle cx="14" cy="30" r="2.5" fill="#f5e663"/>`);
+const fireCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 22, 5)}
+  <rect x="18" y="40" width="22" height="24" rx="6" fill="#c0602a" ${sw}/><ellipse cx="44" cy="40" rx="16" ry="9" fill="#c0602a" ${sw}/>
+  <circle cx="50" cy="37" r="2" fill="#f5e663"/>
+  <path d="M56 42 q10 -6 20 -14 q-4 8 0 10 q6 -4 8 -4 q-4 12 -18 16 z" fill="#ff7a20" ${sw}/><path d="M58 40 q8 -2 14 -6 q-2 6 -6 8 z" fill="#ffd060"/>`);
 const flyingCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 18, 4)}
   <path d="M30 34 L6 14 L10 30 L2 32 L22 42 z" fill="#8fbf6a" ${sw}/><path d="M44 34 L66 10 L64 28 L76 28 L54 42 z" fill="#8fbf6a" ${sw}/>
   <path d="M14 44 Q30 32 52 36 L72 38 Q74 46 64 48 L40 50 Q22 52 14 44 z" fill="#4c9a6a" ${sw}/><circle cx="56" cy="36" r="4" fill="#f5e663" ${sw}/>
@@ -205,7 +209,7 @@ export const SPRITES: Record<string, string> = {
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
-  t_croco: crocoBrute(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
+  t_croco: crocoBrute(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
   i_gold: coin(), i_chicken: chickenIcon(),

@@ -607,6 +607,20 @@ function crocoLauncher(level: number) {
   return g;
 }
 
+/** Fire-spitting croco: crocoHead faces +x, the flame comes out of its mouth. */
+function fireCroco(level: number) {
+  const skin = 0xc0602a;
+  const g = new THREE.Group();
+  for (const z of [-0.08, 0.08]) g.add(box(0.11, 0.22, 0.11, skin, 0, 0.11, z));
+  g.add(box(0.3, 0.36, 0.28, skin, 0, 0.4, 0), box(0.05, 0.26, 0.2, BELLY, 0.14, 0.4, 0));
+  const head = crocoHead(0.6, skin); head.position.set(0.22, 0.68, 0); g.add(head);
+  const flame = new THREE.Group();
+  flame.add(ball(0.1, 0xff7a20, 0.55, 0.66, 0), ball(0.14, 0xff9a30, 0.7, 0.7, 0), ball(0.08, 0xffd060, 0.86, 0.72, 0));
+  flame.name = 'flame';
+  g.add(flame);
+  return g;
+}
+
 /** Flying bomber croco: long body, bat wings (wingL/wingR pivot at the shoulders), bombs strapped underneath. */
 function flyingCroco(level: number) {
   const skin = level === 1 ? 0x4c9a6a : 0x6a4a9a, dark = level === 1 ? 0x2f7a4a : 0x4a2f7a, wing = level === 1 ? 0x8fbf6a : 0xb07ad8;
@@ -635,7 +649,7 @@ function flyingCroco(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */
