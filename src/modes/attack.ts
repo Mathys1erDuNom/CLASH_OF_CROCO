@@ -62,10 +62,10 @@ function heart() {
   return g;
 }
 
-function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? heart() : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart' | 'shot', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
+  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? heart() : kind === 'shot' ? ball(0.13, 0x3a3a44, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
-  const arc = kind === 'drop' || kind === 'heart' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
+  const arc = kind === 'drop' || kind === 'heart' || kind === 'shot' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
   if (kind === 'bomb') p.rotation.y = Math.atan2(-dir.z, dir.x); // the bomb-croco flies head first
   else p.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
@@ -212,8 +212,13 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (!target) continue;
         const turret = v.model.getObjectByName('turret');
         if (turret) turret.rotation.y = Math.atan2(target.x - s.cx, target.y - s.cy);
-        if (ready(s.id, dt, s.type === 'mortar' ? 1.2 : s.type === 'cannon' ? 0.9 : s.type === 'airDefense' ? 0.7 : 0.5))
-          projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6),toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+        if (ready(s.id, dt, s.type === 'mortar' ? 1.2 : s.type === 'cannon' ? 0.9 : s.type === 'airDefense' ? 0.7 : 0.5)) {
+          const muzzle = v.model.getObjectByName('muzzle');
+          if (s.type === 'cannon' && muzzle) { // a straight shot, from the end of the barrel
+            v.model.updateWorldMatrix(true, true);
+            projectile('shot', muzzle.getWorldPosition(new THREE.Vector3()), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+          } else projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+        }
       }
 
       for (const u of battle.units) {
@@ -241,10 +246,10 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         const attacking = s && edgeDist(u, s) <= TROOPS[u.kind].range;
         const arm = v.model.getObjectByName('arm');
         if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
-        if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.1)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
+        if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.05)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
           const tip = toWorld(u.x + (dx / len) * 0.6, u.y + (dy / len) * 0.6, 0.65), aim = toWorld(s.cx, s.cy, 0.5); // the snout tip
-          for (const color of [0xff5a20, 0xa02818]) smoke(tip, aim, color);
+          for (const color of [0xff5a20, 0xa02818, 0x4a3a34]) smoke(tip, aim, color); // orange, red, then dark smoke
         }
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));

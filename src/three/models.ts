@@ -249,6 +249,10 @@ function cannon(goblin: boolean, level: number) {
   const barrel = new THREE.Group();
   barrel.add(rot(cyl(0.16, 0.22, 1.0, [0x34343c, 0x9a6a30, 0x23232e][level - 1], 0, 0, 0.35, 10), Math.PI / 2, 0, 0));
   barrel.add(rot(cyl(0.21, 0.21, 0.1, 0x22222a, 0, 0, 0.85, 10), Math.PI / 2, 0, 0));
+  const muzzle = new THREE.Object3D(); // the end of the barrel: shots leave from here
+  muzzle.name = 'muzzle';
+  muzzle.position.z = 0.95;
+  barrel.add(muzzle);
   barrel.position.y = 0.38;
   barrel.rotation.x = -0.35;
   turret.add(barrel);
@@ -621,8 +625,12 @@ function healer(level: number) {
   g.add(head);
   for (const side of [1, -1]) {
     const w = new THREE.Group();
-    w.add(box(0.04, 0.02, 0.6, 0xf4a6d8, -0.05, 0, side * 0.32), box(0.5, 0.02, 0.6, 0xc9a0f0, -0.25, 0, side * 0.3)); // translucent pink and lilac membranes
-    w.position.set(-0.05, 0.56, side * 0.16);
+    // butterfly wings: a big upper pair and a small lower pair, thin flat ellipsoids spread sideways, with an eyespot
+    const upper = ball(1, 0xf4a6d8, 0, 0.06, side * 0.3, 1); upper.scale.set(0.05, 0.22, 0.34);
+    const lower = ball(1, 0xc9a0f0, 0, -0.08, side * 0.2, 1); lower.scale.set(0.05, 0.13, 0.2);
+    const eye = ball(1, 0x6a3a9a, 0.02, -0.08, side * 0.2, 1); eye.scale.set(0.03, 0.05, 0.06);
+    w.add(upper, lower, eye);
+    w.position.set(0, 0.58, side * 0.12); // middle of the back
     w.name = side > 0 ? 'wingL' : 'wingR';
     g.add(w);
   }
