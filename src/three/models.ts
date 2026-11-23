@@ -695,8 +695,8 @@ function colossus(level: number) {
   const g = new THREE.Group();
   g.add(box(0.7, 0.3, 0.6, skin, 0, 0.3, 0)); // low, wide body
   g.add(box(0.6, 0.12, 0.5, belly, 0.02, 0.16, 0)); // belly
-  for (let i = 0; i < 4; i++) g.add(box(0.2, 0.12, 0.58, shell, -0.24 + i * 0.16, 0.5, 0)); // stone plates over the back
-  for (let i = 0; i < 4; i++) g.add(cone(0.05, 0.18, spike, -0.24 + i * 0.16, 0.66, 0, 4)); // spikes on the shell
+  for (let i = 0; i < 4; i++) g.add(box(0.2, 0.3, 0.58, shell, -0.24 + i * 0.16, 0.6, 0)); // tall stone plates over the back
+  for (let i = 0; i < 4; i++) g.add(cone(0.06, 0.32, spike, -0.24 + i * 0.16, 0.92, 0, 4)); // tall spikes on the shell
   for (const x of [-0.22, 0.22]) for (const z of [-0.3, 0.3]) { // legs with stone bands
     g.add(box(0.2, 0.3, 0.2, skin, x, 0.15, z), box(0.24, 0.07, 0.24, stone, x, 0.24, z), box(0.22, 0.05, 0.22, 0x22201c, x, 0.02, z));
   }
