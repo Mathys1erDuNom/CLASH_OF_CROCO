@@ -689,7 +689,7 @@ function flyingCroco(level: number) {
   return g;
 }
 
-/** The colossus: a stone-shelled tank, built at normal size then scaled to three times a brawler. Faces +x. */
+/** The colossus: a stone-shelled tank, built at normal size then scaled up (see the setScalar below). Faces +x. */
 function colossus(level: number) {
   const skin = 0x4f7a3a, stone = 0x3a322c, shell = 0x5a4a40, spike = 0xc9b48a, belly = 0xd8c28a;
   const g = new THREE.Group();
