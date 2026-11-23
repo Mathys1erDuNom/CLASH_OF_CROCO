@@ -20,6 +20,18 @@ export function flap(model: THREE.Object3D, t: number) {
   if (l && r) { l.rotation.x = -Math.sin(t * 10) * 0.6; r.rotation.x = Math.sin(t * 10) * 0.6; }
 }
 
+/** A puff of smoke that leaves `from` as a thin line and widens as it reaches `to`. */
+function smoke(from: THREE.Vector3, to: THREE.Vector3, color: number) {
+  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshBasicMaterial({ color, transparent: true }));
+  const side = new THREE.Vector3(-(to.z - from.z), 0, to.x - from.x).normalize().multiplyScalar((Math.random() - 0.5) * 2); // sideways, across the stream
+  world.add(m);
+  animate(0.6 + Math.random() * 0.2, k => {
+    m.position.copy(from).lerp(to, k).addScaledVector(side, k * 1.2); // thin at the snout, wide on the target
+    m.scale.setScalar(1 + k * 2.5);
+    (m.material as THREE.MeshBasicMaterial).opacity = 1 - k;
+  }, () => { world.remove(m); m.geometry.dispose(); (m.material as THREE.Material).dispose(); });
+}
+
 function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   for (let i = 0; i < n; i++) {
     const m = new THREE.Mesh(new THREE.IcosahedronGeometry(size * (0.6 + Math.random()), 0), new THREE.MeshBasicMaterial({ color, transparent: true }));
@@ -34,8 +46,24 @@ function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   }
 }
 
+const HEART_MAT = new THREE.MeshBasicMaterial({ color: 0xff3d7a });
+/** A heart: two round lobes and a point underneath. */
+function heart() {
+  const g = new THREE.Group();
+  for (const x of [-0.05, 0.05]) {
+    const lobe = new THREE.Mesh(new THREE.IcosahedronGeometry(0.07, 1), HEART_MAT);
+    lobe.position.set(x, 0.05, 0);
+    g.add(lobe);
+  }
+  const point = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.16, 8), HEART_MAT);
+  point.position.y = -0.04;
+  point.rotation.z = Math.PI; // point down
+  g.add(point);
+  return g;
+}
+
 function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? ball(0.11, 0xff5c8a, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? heart() : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
   const arc = kind === 'drop' || kind === 'heart' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
@@ -215,8 +243,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
         if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.1)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
-          const mouth = toWorld(u.x + (dx / len) * 0.4, u.y + (dy / len) * 0.4, 0.6), aim = toWorld(s.cx, s.cy, 0.5);
-          for (const color of [0xff5a20, 0xa02818]) puff(mouth.clone().lerp(aim, Math.random()), color, 2, 0.16);
+          const tip = toWorld(u.x + (dx / len) * 0.6, u.y + (dy / len) * 0.6, 0.65), aim = toWorld(s.cx, s.cy, 0.5); // the snout tip
+          for (const color of [0xff5a20, 0xa02818]) smoke(tip, aim, color);
         }
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));

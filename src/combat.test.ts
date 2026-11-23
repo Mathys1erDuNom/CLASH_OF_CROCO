@@ -110,13 +110,13 @@ test('crocos go for defenses, baby crocos for resources, frogs for the nearest b
   const croco = b.deploy('croco', 9 + ox, 17 + oy), baby = b.deploy('babyCroco', 9 + ox, 17 + oy), frog = b.deploy('frog', 9 + ox, 17 + oy);
   b.step(0.01);
   const typeOf = (id: number | null) => b.structs.find(s => s.id === id)?.type;
-  assert.equal(typeOf(croco.targetId), 'cannon');
+  assert.ok(['cannon', 'mortar'].includes(typeOf(croco.targetId)!)); // a defence, the nearest one
   assert.ok(['goldMine', 'chickenFarm'].includes(typeOf(baby.targetId)!));
-  assert.equal(typeOf(frog.targetId), 'hq');
+  assert.equal(typeOf(frog.targetId), 'mortar'); // the nearest building
   for (const s of b.structs) if (s.type === 'goldMine' || s.type === 'chickenFarm') s.hp = 0;
   baby.targetId = null;
   b.step(0.01);
-  assert.ok(['hq', 'cannon'].includes(typeOf(baby.targetId)!)); // no resources left: hits the rest
+  assert.ok(['hq', 'cannon', 'mortar'].includes(typeOf(baby.targetId)!)); // no resources left: hits the rest
 });
 
 test('camps give army places by level, old saves get a camp, barracks level speeds training', () => {

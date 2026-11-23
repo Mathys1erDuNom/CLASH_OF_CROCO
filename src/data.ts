@@ -147,7 +147,7 @@ const RAW_GOBLIN_BASES: GoblinBase[] = [
     id: 'camp', name: 'Campement gobelin', loot: { gold: 300, chicken: 300 },
     buildings: [
       { type: 'hq', x: 9, y: 9 }, { type: 'goldMine', x: 5, y: 9 }, { type: 'chickenFarm', x: 13, y: 9 },
-      { type: 'cannon', x: 9, y: 5 },
+      { type: 'cannon', x: 9, y: 5 }, { type: 'mortar', x: 9, y: 13 },
     ],
   },
   {
