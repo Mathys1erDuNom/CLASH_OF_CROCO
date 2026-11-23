@@ -104,13 +104,14 @@ test('upgrades cost resources, take time, need the hut level, then boost product
   assert.equal(armyCap(s, 0), 20); // one level-1 camp
 });
 
-test('crocos go for defenses, baby crocos for resources, frogs for the nearest building', () => {
+test('crocos go for the nearest building, baby crocos for resources, frogs for the nearest building', () => {
   const b = new Battle(GOBLIN_BASES[0].buildings); // hq, goldMine, chickenFarm, cannon
   const { ox, oy } = offset(b);
   const croco = b.deploy('croco', 9 + ox, 17 + oy), baby = b.deploy('babyCroco', 9 + ox, 17 + oy), frog = b.deploy('frog', 9 + ox, 17 + oy);
   b.step(0.01);
   const typeOf = (id: number | null) => b.structs.find(s => s.id === id)?.type;
-  assert.ok(['cannon', 'mortar'].includes(typeOf(croco.targetId)!)); // a defence, the nearest one
+  const nearest = b.structs.reduce((a, s) => (edgeDist(croco, s) < edgeDist(croco, a) ? s : a));
+  assert.equal(croco.targetId, nearest.id); // no preference any more: the nearest building
   assert.ok(['goldMine', 'chickenFarm'].includes(typeOf(baby.targetId)!));
   assert.equal(typeOf(frog.targetId), 'mortar'); // the nearest building
   for (const s of b.structs) if (s.type === 'goldMine' || s.type === 'chickenFarm') s.hp = 0;

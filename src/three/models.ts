@@ -689,8 +689,26 @@ function flyingCroco(level: number) {
   return g;
 }
 
+/** The colossus: a stone-shelled tank, built at normal size then scaled to three times a brawler. Faces +x. */
+function colossus(level: number) {
+  const skin = 0x4f7a3a, stone = 0x3a322c, shell = 0x5a4a40, spike = 0xc9b48a, belly = 0xd8c28a;
+  const g = new THREE.Group();
+  g.add(box(0.7, 0.3, 0.6, skin, 0, 0.3, 0)); // low, wide body
+  g.add(box(0.6, 0.12, 0.5, belly, 0.02, 0.16, 0)); // belly
+  for (let i = 0; i < 4; i++) g.add(box(0.2, 0.12, 0.58, shell, -0.24 + i * 0.16, 0.5, 0)); // stone plates over the back
+  for (let i = 0; i < 4; i++) g.add(cone(0.05, 0.18, spike, -0.24 + i * 0.16, 0.66, 0, 4)); // spikes on the shell
+  for (const x of [-0.22, 0.22]) for (const z of [-0.3, 0.3]) { // legs with stone bands
+    g.add(box(0.2, 0.3, 0.2, skin, x, 0.15, z), box(0.24, 0.07, 0.24, stone, x, 0.24, z), box(0.22, 0.05, 0.22, 0x22201c, x, 0.02, z));
+  }
+  const head = crocoHead(1, skin); head.position.set(0.5, 0.42, 0); g.add(head);
+  g.add(box(0.3, 0.14, 0.36, stone, 0.46, 0.6, 0)); // armoured brow
+  g.add(box(0.4, 0.14, 0.18, skin, -0.55, 0.22, 0), box(0.25, 0.1, 0.12, stone, -0.8, 0.2, 0)); // tail with a stone tip
+  g.scale.setScalar(3);
+  return g;
+}
+
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */

@@ -241,7 +241,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         const fly = TROOPS[u.kind].flying;
         v.model.position.copy(pos).setY(fly ? FLY_HEIGHT + Math.sin(t * 3 + u.id) * 0.12 : moving ? Math.abs(Math.sin(t * 12 + u.id)) * 0.08 : 0);
         flap(v.model, t + u.id);
-        v.bar.group.position.copy(pos).setY(fly ? FLY_HEIGHT + 0.9 : u.kind === 'croco' ? 1.25 : 0.85);
+        v.bar.group.position.copy(pos).setY(fly ? FLY_HEIGHT + 0.9 : u.kind === 'colossus' ? 2.6 : u.kind === 'croco' ? 1.25 : 0.85);
         v.bar.set(u.hp / u.maxHp);
         const attacking = s && edgeDist(u, s) <= TROOPS[u.kind].range;
         const arm = v.model.getObjectByName('arm');

@@ -167,6 +167,13 @@ const fireCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 24, 5)}
   <path d="M50 46 h18 l-3 4 h-15 z" fill="#f5e6c0" ${sw}/>
   <circle cx="60" cy="38" r="2" fill="#ffd060"/>
   <path d="M16 62 l-4 6 M24 62 v6 M44 62 v6 M52 62 l4 6" stroke="#3a0c08" stroke-width="3" stroke-linecap="round"/>`);
+const colossusIcon = () => svg(80, 80, `${shadow(40, 72, 30, 6)}
+  <ellipse cx="40" cy="50" rx="30" ry="18" fill="#5a4a40" ${sw}/>
+  <path d="M16 44 l4 -12 l4 12 M28 38 l4 -14 l4 14 M40 36 l4 -15 l4 15 M52 38 l4 -14 l4 14 M64 44 l4 -12 l4 12" fill="#c9b48a" ${sw}/>
+  <ellipse cx="40" cy="58" rx="24" ry="8" fill="#d8c28a" ${sw}/>
+  <ellipse cx="70" cy="52" rx="10" ry="8" fill="#4f7a3a" ${sw}/>
+  <circle cx="72" cy="48" r="2" fill="#ffd060"/>
+  <rect x="16" y="66" width="8" height="8" rx="2" fill="#22201c"/><rect x="56" y="66" width="8" height="8" rx="2" fill="#22201c"/>`);
 const healerIcon = () => svg(80, 80, `${shadow(40, 72, 22, 5)}
   <path d="M30 42 q-14 -22 -22 -14 q-4 14 22 14 z" fill="#f4a6d8" opacity=".85" ${sw}/><path d="M48 42 q14 -22 22 -14 q4 14 -22 14 z" fill="#c9a0f0" opacity=".85" ${sw}/>
   <rect x="20" y="44" width="40" height="22" rx="8" fill="#d0702a" ${sw}/><rect x="52" y="30" width="20" height="20" rx="6" fill="#d0702a" ${sw}/>
@@ -219,7 +226,7 @@ export const SPRITES: Record<string, string> = {
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
-  t_croco: crocoBrute(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
+  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
   i_gold: coin(), i_chicken: chickenIcon(),
