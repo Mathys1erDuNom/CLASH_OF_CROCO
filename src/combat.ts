@@ -21,6 +21,7 @@ export class Battle {
   time = 0;
   drops: { x: number; y: number }[] = []; // bombs dropped since the view last looked (it draws them)
   hearts: { from: { x: number; y: number }; to: { x: number; y: number } }[] = []; // hearts sent by healers, drawn by the view
+  private healsInFlight: { target: Unit; amount: number; at: number }[] = []; // heals that land when their heart arrives
   private nextId = 1000;
 
   /** stock: the gold and chicken stored in the base, split evenly between its storages (or its mines and farms if it has none). */
@@ -89,8 +90,9 @@ export class Battle {
     u.cooldown -= dt;
     if (u.cooldown > 1e-6) return;
     u.cooldown = d.hitEvery;
-    t.hp = Math.min(t.maxHp, t.hp + d.heal!);
     this.hearts.push({ from: { x: u.x, y: u.y }, to: { x: t.x, y: t.y } });
+    // the heal lands when the heart arrives; same travel time as the view draws it (0.15 s + 0.06 s per tile)
+    this.healsInFlight.push({ target: t, amount: d.heal!, at: this.time + 0.15 + dist * 0.06 });
   }
 
   /** The bomber: flies to random spots near the buildings, and drops a bomb whenever it is over one. */
@@ -115,6 +117,8 @@ export class Battle {
 
   step(dt: number) {
     this.time += dt;
+    for (const h of this.healsInFlight) if (h.at <= this.time && h.target.hp > 0) h.target.hp = Math.min(h.target.maxHp, h.target.hp + h.amount);
+    this.healsInFlight = this.healsInFlight.filter(h => h.at > this.time);
     const structs = this.alive(this.structs);
     const units = this.alive(this.units);
 

@@ -312,3 +312,15 @@ test('a healer heals its most hurt troop, one target at a time, and never attack
   assert.equal(hurt.hp, hurt.maxHp - 50, 'the other troop waits its turn');
   assert.ok(b.hearts.length > 0, 'hearts are sent');
 });
+
+test('a heal lands only when its heart arrives, not when it is sent', () => {
+  const b = new Battle([]);
+  const hurt = b.deploy('croco', 10, 10), healer = b.deploy('healer', 10.5, 11.5);
+  hurt.hp = 10;
+  b.step(0.05); // the healer fires at once: the heart is in flight
+  assert.equal(hurt.hp, 10, 'nothing yet');
+  assert.equal(b.hearts.length, 1);
+  for (let i = 0; i < 20; i++) b.step(0.05); // 1 s later the heart has landed
+  assert.ok(hurt.hp > 10, 'healed on arrival');
+  assert.equal(healer.targetId, hurt.id);
+});

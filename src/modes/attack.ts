@@ -34,10 +34,10 @@ function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   }
 }
 
-function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'flame' | 'heart', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'flame' ? ball(0.07, 0xff7a20, 0, 0, 0, 1) : kind === 'heart' ? ball(0.11, 0xff5c8a, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
+  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? ball(0.11, 0xff5c8a, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
-  const arc = kind === 'drop' || kind === 'flame' || kind === 'heart' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
+  const arc = kind === 'drop' || kind === 'heart' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
   if (kind === 'bomb') p.rotation.y = Math.atan2(-dir.z, dir.x); // the bomb-croco flies head first
   else p.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
@@ -47,7 +47,7 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
   }, () => {
     world.remove(p);
     p.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
-    if (kind === 'flame' || kind === 'heart') puff(to, kind === 'flame' ? 0xff7a20 : 0xff9ac0, kind === 'flame' ? 1 : 6, kind === 'flame' ? 0.08 : 0.14); // fire or hearts splash on arrival
+    if (kind === 'heart') puff(to, 0xff9ac0, 6, 0.14); // hearts splash on arrival
     else if (kind === 'bomb' || kind === 'drop') { puff(to, 0xff8a20, 10, 0.22); puff(to, 0x5a5048, 8, 0.18); }
     else puff(to, kind === 'coconut' ? 0xffc070 : 0xe8f0c0, kind === 'coconut' ? 6 : 2);
   });
@@ -159,7 +159,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         while (acc >= DT) { battle.step(DT); acc -= DT; }
         for (const d of battle.drops) projectile('drop', toWorld(d.x, d.y, FLY_HEIGHT), toWorld(d.x, d.y, 0.3)); // bombs the bombers dropped
         battle.drops.length = 0;
-        for (const h of battle.hearts) projectile('heart', toWorld(h.from.x, h.from.y, FLY_HEIGHT), toWorld(h.to.x, h.to.y, 1)); // hearts the healers sent
+        for (const h of battle.hearts) projectile('heart', toWorld(h.from.x, h.from.y, 1), toWorld(h.to.x, h.to.y, 1)); // hearts the healers sent: same height at both ends, so the travel time matches the simulation
         battle.hearts.length = 0;
         const noTroopsLeft = !battle.alive(battle.units).length && !Object.values(save.troops).some(n => n > 0);
         if (battle.destruction() === 100 || battle.time >= DURATION || noTroopsLeft) finish();
@@ -202,6 +202,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         v.last.copy(pos);
         const s = battle.structs.find(s => s.id === u.targetId && s.hp > 0);
         if (s) v.model.rotation.y = Math.atan2(-(s.cy - u.y), s.cx - u.x);
+        const ally = TROOPS[u.kind].heal ? battle.units.find(a => a.id === u.targetId) : undefined; // healers look at the troop they heal
+        if (ally) v.model.rotation.y = Math.atan2(-(ally.y - u.y), ally.x - u.x);
         else if (u.wp) v.model.rotation.y = Math.atan2(-(u.wp.y - u.y), u.wp.x - u.x); // wanderers face where they fly
         const fly = TROOPS[u.kind].flying;
         v.model.position.copy(pos).setY(fly ? FLY_HEIGHT + Math.sin(t * 3 + u.id) * 0.12 : moving ? Math.abs(Math.sin(t * 12 + u.id)) * 0.08 : 0);
@@ -211,10 +213,10 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         const attacking = s && edgeDist(u, s) <= TROOPS[u.kind].range;
         const arm = v.model.getObjectByName('arm');
         if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
-        if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.08)) { // flamethrower: a stream of sparks from the mouth, on its own clock (-id keeps it apart from the damage clock)
+        if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.1)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
-          const mouth = toWorld(u.x + (dx / len) * 0.4, u.y + (dy / len) * 0.4, 0.6);
-          for (let i = 0; i < 2; i++) projectile('flame', mouth.clone(), toWorld(s.cx + (Math.random() - 0.5) * 1.2, s.cy + (Math.random() - 0.5) * 1.2, 0.5));
+          const mouth = toWorld(u.x + (dx / len) * 0.4, u.y + (dy / len) * 0.4, 0.6), aim = toWorld(s.cx, s.cy, 0.5);
+          for (const color of [0xff5a20, 0xa02818]) puff(mouth.clone().lerp(aim, Math.random()), color, 2, 0.16);
         }
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));
