@@ -159,10 +159,14 @@ const crocoLauncherIcon = () => svg(80, 80, `${shadow(40, 72, 30, 6)}
   <path d="M48 50 L30 18" stroke="#5a4026" stroke-width="6" stroke-linecap="round"/><path d="M48 50 L30 18" stroke="${O}" stroke-width="1.5" opacity=".5"/>
   <path d="M14 18 q8 -8 20 -2 l8 2 q-2 6 -10 6 q-12 2 -18 -6 z" fill="#d0402a" ${sw}/><path d="M18 12 l-4 -8" stroke="#222" stroke-width="2"/><circle cx="13" cy="4" r="3" fill="#ffa020"/>
   <rect x="4" y="36" width="16" height="24" rx="4" fill="#5a9a3f" ${sw}/><path d="M8 34 q8 -10 18 -4 l4 4 q-8 4 -22 0 z" fill="#5a9a3f" ${sw}/><circle cx="14" cy="30" r="2.5" fill="#f5e663"/>`);
-const fireCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 22, 5)}
-  <rect x="18" y="40" width="22" height="24" rx="6" fill="#c0602a" ${sw}/><ellipse cx="44" cy="40" rx="16" ry="9" fill="#c0602a" ${sw}/>
-  <circle cx="50" cy="37" r="2" fill="#f5e663"/>
-  <path d="M56 42 q10 -6 20 -14 q-4 8 0 10 q6 -4 8 -4 q-4 12 -18 16 z" fill="#ff7a20" ${sw}/><path d="M58 40 q8 -2 14 -6 q-2 6 -6 8 z" fill="#ffd060"/>`);
+const fireCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 24, 5)}
+  <path d="M24 30 l4 -8 l4 8 M36 28 l4 -9 l4 9 M48 30 l4 -8 l4 8" fill="#ff6a1a" ${sw}/>
+  <rect x="14" y="36" width="34" height="26" rx="8" fill="#b0302a" ${sw}/>
+  <path d="M22 40 v20 M32 38 v22 M42 40 v20" stroke="#3a0c08" stroke-width="3"/>
+  <ellipse cx="60" cy="42" rx="14" ry="10" fill="#b0302a" ${sw}/>
+  <path d="M50 46 h18 l-3 4 h-15 z" fill="#f5e6c0" ${sw}/>
+  <circle cx="60" cy="38" r="2" fill="#ffd060"/>
+  <path d="M16 62 l-4 6 M24 62 v6 M44 62 v6 M52 62 l4 6" stroke="#3a0c08" stroke-width="3" stroke-linecap="round"/>`);
 const healerIcon = () => svg(80, 80, `${shadow(40, 72, 22, 5)}
   <path d="M30 42 q-14 -22 -22 -14 q-4 14 22 14 z" fill="#f4a6d8" opacity=".85" ${sw}/><path d="M48 42 q14 -22 22 -14 q4 14 -22 14 z" fill="#c9a0f0" opacity=".85" ${sw}/>
   <rect x="20" y="44" width="40" height="22" rx="8" fill="#d0702a" ${sw}/><rect x="52" y="30" width="20" height="20" rx="6" fill="#d0702a" ${sw}/>

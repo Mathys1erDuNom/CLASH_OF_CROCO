@@ -616,6 +616,8 @@ function healer(level: number) {
   const fur = 0xd0702a, dark = 0x5a3a24, horn = 0xf0e0b0;
   const g = new THREE.Group();
   g.add(box(0.6, 0.36, 0.34, fur, 0, 0.36, 0)); // fluffy body
+  // cow tail hanging from the rear, with a dark tuft at the end
+  g.add(rot(cyl(0.025, 0.02, 0.42, fur, -0.44, 0.23, 0, 5), 0, 0, 2.6), ball(0.06, dark, -0.55, 0.05, 0, 1));
   for (const x of [-0.22, 0.22]) for (const z of [-0.12, 0.12]) g.add(box(0.1, 0.22, 0.1, fur, x, 0.11, z), box(0.12, 0.06, 0.12, dark, x, 0.01, z)); // legs and hooves
   const head = new THREE.Group();
   head.add(box(0.3, 0.3, 0.3, fur, 0, 0, 0), box(0.12, 0.1, 0.22, 0xf0a8a0, 0.18, -0.06, 0)); // head and pink muzzle

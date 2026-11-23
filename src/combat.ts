@@ -77,6 +77,18 @@ export class Battle {
 
   alive<T extends { hp: number }>(list: T[]) { return list.filter(e => e.hp > 0); }
 
+  /** Ground troops never walk into a building: they take the free direction closest to the wanted one. A troop keeps a
+   *  margin of 0.3 tiles from every footprint, so gaps wider than 0.6 tiles can be walked through. */
+  private walk(u: Unit, angle: number, dist: number, structs: Struct[]) {
+    const living = structs.filter(s => s.hp > 0);
+    const gap = (x: number, y: number) => Math.min(0.3, ...living.map(s => edgeDist({ x, y }, s))); // capped at the margin
+    const now = gap(u.x, u.y); // a troop already squeezed into a margin may only move away from the building
+    for (const turn of [0, 0.5, -0.5, 1, -1, 1.5, -1.5, 2.2, -2.2, Math.PI]) {
+      const a = angle + turn, x = u.x + Math.cos(a) * dist, y = u.y + Math.sin(a) * dist;
+      if (gap(x, y) >= Math.min(0.3, now)) { u.x = x; u.y = y; return; }
+    }
+  }
+
   /** The healer: keeps the most hurt troop of its army as its target, flies to it and sends a heart every hitEvery seconds. */
   private heal(u: Unit, d: TroopDef, dt: number) {
     let t = this.units.find(a => a.id === u.targetId && a.hp > 0 && a.hp < a.maxHp);
@@ -145,7 +157,8 @@ export class Battle {
       else {
         const dx = t.cx - u.x, dy = t.cy - u.y, len = Math.hypot(dx, dy);
         const move = Math.min(d.speed * dt, len);
-        u.x += (dx / len) * move; u.y += (dy / len) * move;
+        if (d.flying) { u.x += (dx / len) * move; u.y += (dy / len) * move; } // flyers pass over buildings
+        else this.walk(u, Math.atan2(dy, dx), move, structs);
       }
     }
 

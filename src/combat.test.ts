@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Battle } from './combat.ts';
+import { Battle, edgeDist } from './combat.ts';
 import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
 import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, countOf, hqLevel, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
@@ -323,4 +323,16 @@ test('a heal lands only when its heart arrives, not when it is sent', () => {
   for (let i = 0; i < 20; i++) b.step(0.05); // 1 s later the heart has landed
   assert.ok(hurt.hp > 10, 'healed on arrival');
   assert.equal(healer.targetId, hurt.id);
+});
+
+test('ground troops walk around a building instead of through it', () => {
+  const b = new Battle([{ type: 'goldMine', x: 5, y: 5 }]);
+  const croco = b.deploy('croco', 2, 6.5); // straight line to the mine's centre crosses it
+  let closest = Infinity;
+  for (let i = 0; i < 400 && edgeDist(croco, b.structs[0]) > 0.6; i++) {
+    b.step(0.05);
+    closest = Math.min(closest, edgeDist(croco, b.structs[0]));
+  }
+  assert.ok(closest >= 0.3 - 1e-9, `never inside the margin (closest ${closest})`);
+  assert.ok(edgeDist(croco, b.structs[0]) <= 0.6 + 1e-9, 'and it still gets in reach');
 });
