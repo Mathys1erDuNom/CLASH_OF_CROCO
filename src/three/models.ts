@@ -700,10 +700,12 @@ function colossus(level: number) {
   for (const x of [-0.22, 0.22]) for (const z of [-0.3, 0.3]) { // legs with stone bands
     g.add(box(0.2, 0.3, 0.2, skin, x, 0.15, z), box(0.24, 0.07, 0.24, stone, x, 0.24, z), box(0.22, 0.05, 0.22, 0x22201c, x, 0.02, z));
   }
+
+  /** Changer la taille de  g.scale.setScalar(valeur) et faire (npm run models) */
   const head = crocoHead(1, skin); head.position.set(0.5, 0.42, 0); g.add(head);
   g.add(box(0.3, 0.14, 0.36, stone, 0.46, 0.6, 0)); // armoured brow
   g.add(box(0.4, 0.14, 0.18, skin, -0.55, 0.22, 0), box(0.25, 0.1, 0.12, stone, -0.8, 0.2, 0)); // tail with a stone tip
-  g.scale.setScalar(16);
+  g.scale.setScalar(4); 
   return g;
 }
 
