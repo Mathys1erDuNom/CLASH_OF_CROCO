@@ -85,7 +85,7 @@ export class Battle {
     const now = gap(u.x, u.y); // a troop already squeezed into a margin may only move away from the building
     for (const turn of [0, 0.5, -0.5, 1, -1, 1.5, -1.5, 2.2, -2.2, Math.PI]) {
       const a = angle + turn, x = u.x + Math.cos(a) * dist, y = u.y + Math.sin(a) * dist;
-      if (gap(x, y) >= Math.min(0.3, now)) { u.x = x; u.y = y; return; }
+      if (gap(x, y) >= Math.min(0.3, now) - 0.02) { u.x = x; u.y = y; return; } // the small tolerance lets a troop slide along a wall
     }
   }
 

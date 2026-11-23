@@ -161,9 +161,9 @@ const crocoLauncherIcon = () => svg(80, 80, `${shadow(40, 72, 30, 6)}
   <rect x="4" y="36" width="16" height="24" rx="4" fill="#5a9a3f" ${sw}/><path d="M8 34 q8 -10 18 -4 l4 4 q-8 4 -22 0 z" fill="#5a9a3f" ${sw}/><circle cx="14" cy="30" r="2.5" fill="#f5e663"/>`);
 const fireCrocoIcon = () => svg(80, 80, `${shadow(40, 74, 24, 5)}
   <path d="M24 30 l4 -8 l4 8 M36 28 l4 -9 l4 9 M48 30 l4 -8 l4 8" fill="#ff6a1a" ${sw}/>
-  <rect x="14" y="36" width="34" height="26" rx="8" fill="#b0302a" ${sw}/>
-  <path d="M22 40 v20 M32 38 v22 M42 40 v20" stroke="#3a0c08" stroke-width="3"/>
-  <ellipse cx="60" cy="42" rx="14" ry="10" fill="#b0302a" ${sw}/>
+  <rect x="14" y="36" width="34" height="26" rx="8" fill="#4f7a3a" ${sw}/>
+  <path d="M22 40 v20 M32 38 v22 M42 40 v20" stroke="#1f3a18" stroke-width="3"/>
+  <ellipse cx="60" cy="42" rx="14" ry="10" fill="#4f7a3a" ${sw}/>
   <path d="M50 46 h18 l-3 4 h-15 z" fill="#f5e6c0" ${sw}/>
   <circle cx="60" cy="38" r="2" fill="#ffd060"/>
   <path d="M16 62 l-4 6 M24 62 v6 M44 62 v6 M52 62 l4 6" stroke="#3a0c08" stroke-width="3" stroke-linecap="round"/>`);
