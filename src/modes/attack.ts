@@ -34,10 +34,10 @@ function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   }
 }
 
-function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'flame', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
+  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'flame' ? ball(0.14, 0xff7a20, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
-  const arc = kind === 'drop' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
+  const arc = kind === 'drop' || kind === 'flame' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
   if (kind === 'bomb') p.rotation.y = Math.atan2(-dir.z, dir.x); // the bomb-croco flies head first
   else p.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
@@ -47,7 +47,8 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
   }, () => {
     world.remove(p);
     p.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
-    if (kind === 'bomb' || kind === 'drop') { puff(to, 0xff8a20, 10, 0.22); puff(to, 0x5a5048, 8, 0.18); }
+    if (kind === 'flame') puff(to, 0xff7a20, 8, 0.14); // the fire splashes on arrival
+    else if (kind === 'bomb' || kind === 'drop') { puff(to, 0xff8a20, 10, 0.22); puff(to, 0x5a5048, 8, 0.18); }
     else puff(to, kind === 'coconut' ? 0xffc070 : 0xe8f0c0, kind === 'coconut' ? 6 : 2);
   });
 }
@@ -211,7 +212,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
           if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));
           else if (u.kind === 'crocoLauncher') projectile('bomb', pos.clone().setY(0.8), toWorld(s.cx, s.cy, 0.4), troopLevel(save, u.kind));
-          else puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), u.kind === 'fireCroco' ? 0xff7a20 : 0xffe08a, 3, 0.07); // fire is orange
+          else if (u.kind === 'fireCroco') projectile('flame', pos.clone().setY(0.6), toWorld(s.cx, s.cy, 0.6)); // fire flies from its mouth to the target
+          else puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
         }
       }
       refresh();
