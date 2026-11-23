@@ -607,17 +607,25 @@ function crocoLauncher(level: number) {
   return g;
 }
 
-/** Fire-spitting croco: crocoHead faces +x, the flame comes out of its mouth. */
+/** Fire-spitting croco, from the reference art: rocky plates and back spikes, lava cracks from level 2. Faces +x. */
 function fireCroco(level: number) {
-  const skin = 0xc0602a;
+  const L2 = level >= 2, L3 = level >= 3;
+  const skin = [0x4f7a3a, 0x4a3a32, 0xb0302a][level - 1], lava = 0xff6a1a;
   const g = new THREE.Group();
-  for (const z of [-0.08, 0.08]) g.add(box(0.11, 0.22, 0.11, skin, 0, 0.11, z));
-  g.add(box(0.3, 0.36, 0.28, skin, 0, 0.4, 0), box(0.05, 0.26, 0.2, BELLY, 0.14, 0.4, 0));
-  const head = crocoHead(0.6, skin); head.position.set(0.22, 0.68, 0); g.add(head);
-  const flame = new THREE.Group();
-  flame.add(ball(0.1, 0xff7a20, 0.55, 0.66, 0), ball(0.14, 0xff9a30, 0.7, 0.7, 0), ball(0.08, 0xffd060, 0.86, 0.72, 0));
-  flame.name = 'flame';
-  g.add(flame);
+  const big = 1 + (level - 1) * 0.2; // each level is bigger
+  g.add(box(0.6 * big, 0.36 * big, 0.36 * big, skin, 0, 0.42 * big, 0)); // body
+  g.add(box(0.5 * big, 0.2 * big, 0.3 * big, 0xe2c08a, 0.05, 0.25 * big, 0)); // pale belly
+  for (const [x, z] of [[0.2, -0.18], [0.2, 0.18], [-0.2, -0.18], [-0.2, 0.18]]) g.add(box(0.14, 0.26, 0.14, skin, x * big, 0.13 * big, z * big)); // legs
+  g.add(box(0.36 * big, 0.2 * big, 0.2 * big, skin, -0.42 * big, 0.36 * big, 0)); // tail base
+  g.add(box(0.24 * big, 0.14 * big, 0.14 * big, skin, -0.62 * big, 0.3 * big, 0)); // tail tip
+  const head = crocoHead(0.75 * big, skin); head.position.set(0.42 * big, 0.66 * big, 0); g.add(head);
+  for (let i = 0; i < 4 + level; i++) { // back spikes, lava-coloured from level 2
+    const s = box(0.08, 0.2 * big, 0.08, L2 ? lava : 0x8a3a20, (0.3 - i * 0.16) * big, 0.72 * big, 0);
+    s.rotation.z = 0.3; g.add(s);
+  }
+  if (L2) for (const z of [-0.19, 0.19]) for (let i = 0; i < 3; i++) g.add(box(0.2, 0.03, 0.02, lava, -0.1 + i * 0.2, 0.42 * big, z * big)); // lava cracks on the flanks
+  if (L3) for (const x of [-0.2, 0.2]) g.add(box(0.12, 0.03, 0.14, lava, x * big, 0.02, 0.2 * big)); // glowing feet
+  if (L3) for (let i = 0; i < 5; i++) g.add(box(0.04, 0.4 * big, 0.4 * big, 0x3a0c08, (-0.2 + i * 0.1) * big, 0.42 * big, 0)); // dark stripes across the red body
   return g;
 }
 
