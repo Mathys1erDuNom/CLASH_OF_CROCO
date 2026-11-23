@@ -272,7 +272,7 @@ function mortar(goblin: boolean, level: number) {
   tube.add(cyl(0.22, 0.28, 1.0, [0x34343c, 0x9a6a30, 0x23232e][level - 1], 0, 0.5, 0, 10));
   if (L2) for (const y of [0.25, 0.7]) tube.add(cyl(0.3, 0.3, 0.07, IRON, 0, y, 0, 10)); // iron bands
   tube.position.y = 0.3;
-  tube.rotation.x = -0.6; // tilted up
+  tube.rotation.x = 0.6; // tilted up and forward: the turret turns it toward the target (forward is +z)
   turret.add(tube);
   if (L3) { // a second tube and a banner on a pole
     const twin = tube.clone();
