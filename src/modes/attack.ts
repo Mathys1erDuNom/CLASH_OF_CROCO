@@ -34,10 +34,10 @@ function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   }
 }
 
-function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'flame', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'flame' ? ball(0.14, 0xff7a20, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'flame' | 'heart', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
+  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'flame' ? ball(0.14, 0xff7a20, 0, 0, 0, 1) : kind === 'heart' ? ball(0.11, 0xff5c8a, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
-  const arc = kind === 'drop' || kind === 'flame' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
+  const arc = kind === 'drop' || kind === 'flame' || kind === 'heart' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
   if (kind === 'bomb') p.rotation.y = Math.atan2(-dir.z, dir.x); // the bomb-croco flies head first
   else p.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
@@ -47,7 +47,7 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
   }, () => {
     world.remove(p);
     p.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
-    if (kind === 'flame') puff(to, 0xff7a20, 8, 0.14); // the fire splashes on arrival
+    if (kind === 'flame' || kind === 'heart') puff(to, kind === 'flame' ? 0xff7a20 : 0xff9ac0, 6, 0.14); // fire or hearts splash on arrival
     else if (kind === 'bomb' || kind === 'drop') { puff(to, 0xff8a20, 10, 0.22); puff(to, 0x5a5048, 8, 0.18); }
     else puff(to, kind === 'coconut' ? 0xffc070 : 0xe8f0c0, kind === 'coconut' ? 6 : 2);
   });
@@ -159,6 +159,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         while (acc >= DT) { battle.step(DT); acc -= DT; }
         for (const d of battle.drops) projectile('drop', toWorld(d.x, d.y, FLY_HEIGHT), toWorld(d.x, d.y, 0.3)); // bombs the bombers dropped
         battle.drops.length = 0;
+        for (const h of battle.hearts) projectile('heart', toWorld(h.from.x, h.from.y, FLY_HEIGHT), toWorld(h.to.x, h.to.y, 1)); // hearts the healers sent
+        battle.hearts.length = 0;
         const noTroopsLeft = !battle.alive(battle.units).length && !Object.values(save.troops).some(n => n > 0);
         if (battle.destruction() === 100 || battle.time >= DURATION || noTroopsLeft) finish();
       }

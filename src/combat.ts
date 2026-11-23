@@ -20,6 +20,7 @@ export class Battle {
   units: Unit[] = [];
   time = 0;
   drops: { x: number; y: number }[] = []; // bombs dropped since the view last looked (it draws them)
+  hearts: { from: { x: number; y: number }; to: { x: number; y: number } }[] = []; // hearts sent by healers, drawn by the view
   private nextId = 1000;
 
   /** stock: the gold and chicken stored in the base, split evenly between its storages (or its mines and farms if it has none). */
@@ -75,6 +76,23 @@ export class Battle {
 
   alive<T extends { hp: number }>(list: T[]) { return list.filter(e => e.hp > 0); }
 
+  /** The healer: keeps the most hurt troop of its army as its target, flies to it and sends a heart every hitEvery seconds. */
+  private heal(u: Unit, d: TroopDef, dt: number) {
+    let t = this.units.find(a => a.id === u.targetId && a.hp > 0 && a.hp < a.maxHp);
+    if (!t) { // one target at a time: the lowest share of hp, kept until it is full or dead
+      t = this.units.filter(a => a !== u && a.hp > 0 && a.hp < a.maxHp).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      u.targetId = t?.id ?? null;
+    }
+    if (!t) return;
+    const dist = Math.hypot(t.x - u.x, t.y - u.y);
+    if (dist > d.range) { const move = Math.min(d.speed * dt, dist); u.x += ((t.x - u.x) / dist) * move; u.y += ((t.y - u.y) / dist) * move; return; }
+    u.cooldown -= dt;
+    if (u.cooldown > 1e-6) return;
+    u.cooldown = d.hitEvery;
+    t.hp = Math.min(t.maxHp, t.hp + d.heal!);
+    this.hearts.push({ from: { x: u.x, y: u.y }, to: { x: t.x, y: t.y } });
+  }
+
   /** The bomber: flies to random spots near the buildings, and drops a bomb whenever it is over one. */
   private bomb(u: Unit, d: TroopDef, structs: Struct[], dt: number) {
     if (!structs.length) return;
@@ -102,6 +120,7 @@ export class Battle {
 
     for (const u of units) {
       const d = TROOPS[u.kind];
+      if (d.heal) { this.heal(u, d, dt); continue; }
       if (d.wanders) { this.bomb(u, d, structs, dt); continue; }
       let t = structs.find(s => s.id === u.targetId && s.hp > 0);
       if (!t) {

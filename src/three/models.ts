@@ -607,6 +607,29 @@ function crocoLauncher(level: number) {
   return g;
 }
 
+/** Healer: a fluffy orange highland calf with pink fairy wings (wingL/wingR pivot at the shoulders), like the reference art. */
+function healer(level: number) {
+  const fur = 0xd0702a, dark = 0x5a3a24, horn = 0xf0e0b0;
+  const g = new THREE.Group();
+  g.add(box(0.6, 0.36, 0.34, fur, 0, 0.36, 0)); // fluffy body
+  for (const x of [-0.22, 0.22]) for (const z of [-0.12, 0.12]) g.add(box(0.1, 0.22, 0.1, fur, x, 0.11, z), box(0.12, 0.06, 0.12, dark, x, 0.01, z)); // legs and hooves
+  const head = new THREE.Group();
+  head.add(box(0.3, 0.3, 0.3, fur, 0, 0, 0), box(0.12, 0.1, 0.22, 0xf0a8a0, 0.18, -0.06, 0)); // head and pink muzzle
+  for (const z of [-0.1, 0.1]) { head.add(cone(0.04, 0.2, horn, -0.02, 0.2, z, 5)); head.add(ball(0.03, 0x1a1a1a, 0.16, 0.04, z * 1.4, 1)); } // horns and eyes
+  head.add(box(0.2, 0.08, 0.2, fur, -0.02, 0.18, 0)); // fringe
+  head.position.set(0.36, 0.6, 0);
+  g.add(head);
+  for (const side of [1, -1]) {
+    const w = new THREE.Group();
+    w.add(box(0.04, 0.02, 0.6, 0xf4a6d8, -0.05, 0, side * 0.32), box(0.5, 0.02, 0.6, 0xc9a0f0, -0.25, 0, side * 0.3)); // translucent pink and lilac membranes
+    w.position.set(-0.05, 0.56, side * 0.16);
+    w.name = side > 0 ? 'wingL' : 'wingR';
+    g.add(w);
+  }
+  g.scale.setScalar(level === 1 ? 1 : 1.12);
+  return g;
+}
+
 /** Fire-spitting croco, from the reference art: rocky plates and back spikes, lava cracks from level 2. Faces +x. */
 function fireCroco(level: number) {
   const L2 = level >= 2, L3 = level >= 3;
@@ -657,7 +680,7 @@ function flyingCroco(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */

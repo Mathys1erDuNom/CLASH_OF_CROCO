@@ -300,3 +300,15 @@ test('a mortar reaches far and its shell hits every troop near the target', () =
   assert.ok(b.units[0].hp < b.units[0].maxHp, 'first troop hit');
   assert.ok(b.units[1].hp < b.units[1].maxHp, 'the troop beside it hit too');
 });
+
+test('a healer heals its most hurt troop, one target at a time, and never attacks', () => {
+  const b = new Battle([]);
+  const hurt = b.deploy('croco', 10, 10), hurtMore = b.deploy('croco', 11, 10), healer = b.deploy('healer', 10.5, 11.5);
+  hurt.hp = hurt.maxHp - 50;
+  hurtMore.hp = 10; // lowest share of hp: this one is the first target
+  for (let i = 0; i < 10; i++) b.step(0.1);
+  assert.equal(healer.targetId, hurtMore.id);
+  assert.ok(hurtMore.hp > 10, 'the most hurt troop is healed');
+  assert.equal(hurt.hp, hurt.maxHp - 50, 'the other troop waits its turn');
+  assert.ok(b.hearts.length > 0, 'hearts are sent');
+});
