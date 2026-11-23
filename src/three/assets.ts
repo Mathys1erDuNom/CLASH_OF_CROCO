@@ -32,4 +32,5 @@ const get = (path: string) => {
   return m.clone() as THREE.Group;
 };
 export const building = (type: string, goblin: boolean, level = 1) => get(buildingPath(type, goblin, level));
-export const troop = (kind: string, level = 1) => get(troopPath(kind, level));
+// wrapped so the views can set the scale (pop-in, garrison) without overwriting the model's own size
+export const troop = (kind: string, level = 1) => { const w = new THREE.Group(); w.add(get(troopPath(kind, level))); return w; };
