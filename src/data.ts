@@ -119,7 +119,7 @@ export interface TroopDef {
 
 export const TROOPS: Record<string, TroopDef> = {
   croco: { name: 'Croco Cogneur', hp: 320, dps: 26, range: 0.6, hitEvery: 1.0, speed: 1.1, space: 5, cost: { chicken: 50 }, trainSec: 12, labRequired: { 2: 2, 3: 3 } },
-  colossus: { name: 'Croco Colosse', hp: 1200, dps: 30, range: 0.9, hitEvery: 1.2, speed: 0.6, space: 10, cost: { chicken: 300 }, trainSec: 6, unlock: { cost: { chicken: 90 }, sec: 3 }, labRequired: {}, barracksRequired: 3, maxLevel: 1, prefers: 'defense' }, // three times the size of a croco, to soak up damage
+  colossus: { name: 'Croco Colosse', hp: 1200, dps: 30, range: 0.9, hitEvery: 1.2, speed: 0.6, space: 10, cost: { chicken: 300 }, trainSec: 6, unlock: { cost: { chicken: 90 }, sec: 3 }, labRequired: {}, barracksRequired: 3, maxLevel: 1, prefers: 'defense' }, // four times the size of a croco, to soak up damage
   frog: { name: 'Grenouille Sarbacane', hp: 90, dps: 16, range: 3, hitEvery: 0.8, speed: 1.6, space: 2, cost: { chicken: 30 }, trainSec: 8, unlock: { cost: { chicken: 100 }, sec: 60 }, labRequired: { 2: 2, 3: 3 } },
   babyCroco: { name: 'Bébé Croco', hp: 70, dps: 12, range: 0.5, hitEvery: 0.5, speed: 2.4, space: 1, cost: { chicken: 15 }, trainSec: 4, unlock: { cost: { chicken: 150 }, sec: 90 }, prefers: 'resource', labRequired: { 2: 2, 3: 3 }, resourceBonus: 3 },
   crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { chicken: 90 }, trainSec: 20, unlock: { cost: { chicken: 400 }, sec: 180 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2

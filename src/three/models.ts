@@ -703,7 +703,7 @@ function colossus(level: number) {
   const head = crocoHead(1, skin); head.position.set(0.5, 0.42, 0); g.add(head);
   g.add(box(0.3, 0.14, 0.36, stone, 0.46, 0.6, 0)); // armoured brow
   g.add(box(0.4, 0.14, 0.18, skin, -0.55, 0.22, 0), box(0.25, 0.1, 0.12, stone, -0.8, 0.2, 0)); // tail with a stone tip
-  g.scale.setScalar(3);
+  g.scale.setScalar(6);
   return g;
 }
 
