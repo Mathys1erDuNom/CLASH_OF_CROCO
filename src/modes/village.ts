@@ -281,7 +281,7 @@ export function villageMode(): Mode {
   function troopStats(k: string, level: number): string {
     const d = TROOPS[k], m = TROOP_LEVELS[level - 1].mult;
     const traits = [
-      `vise ${d.prefers === 'defense' ? 'les défenses d’abord' : d.prefers === 'resource' ? 'les ressources d’abord' : d.prefers === 'cluster' ? 'le groupe de bâtiments le plus dense' : 'le bâtiment le plus proche'}`,
+      `vise ${d.prefers === 'defense' ? 'les défenses d’abord' : d.prefers === 'resource' ? 'les ressources d’abord' : 'le bâtiment le plus proche'}`,
       d.resourceBonus && `dégâts x${d.resourceBonus} sur les mines et pompes`,
       d.splash && `dégâts de zone (rayon ${d.splash})`,
       d.flying && 'volant : seules les tours à sarbacanes le touchent',
@@ -294,7 +294,7 @@ export function villageMode(): Mode {
     const canTrain = hasBarracks(save, now, trainer);
     return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).filter(([k]) => trainerOf(k) === trainer).map(([k, d]) => {
       const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now, trainer) < req;
-      const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : d.prefers === 'cluster' ? 'les groupes' : 'tout';
+      const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · ${d.space} place${d.space > 1 ? 's' : ''} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
       const canUnlock = !save[unlockSlot(k)] && !!d.unlock && canAfford(save, d.unlock.cost); // blue: can be unlocked right now
       const unlockBtn = `<button class="${canUnlock ? 'unlock' : locked ? 'off' : ''}" data-act="unlock" data-arg="${k}" ${canUnlock ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} · à débloquer<small>${d.unlock ? fmtCost(d.unlock.cost) : ''} · ${d.unlock ? secs(d.unlock.sec * 1000) : ''}</small></button>`;

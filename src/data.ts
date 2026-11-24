@@ -120,7 +120,7 @@ export interface TroopDef {
   cost: Cost;
   trainSec: number;
   unlock?: { cost: Cost; sec: number }; // paid once in the barracks, then wait; without it the troop is available from the start
-  prefers?: 'defense' | 'resource' | 'cluster'; // favourite targets; 'cluster' = the building with the most others within its splash; falls back to the nearest building once none are left
+  prefers?: 'defense' | 'resource'; // favourite targets; falls back to the nearest building once none are left
   /** Laboratory level needed to research each troop level: { 2: 2 } = "level 2 needs a level-2 lab". */
   labRequired: Record<number, number>;
   barracksRequired?: number; // barracks level needed to train it (default 1)
@@ -140,7 +140,7 @@ export const TROOPS: Record<string, TroopDef> = {
   crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { chicken: 90 }, trainSec: 20, unlock: { cost: { chicken: 400 }, sec: 180 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2
   healer: { name: 'Guérisseuse', hp: 180, dps: 0, range: 4, hitEvery: 1.0, speed: 1.8, space: 2, cost: { chicken: 180 }, trainSec: 5, unlock: { cost: { chicken: 700 }, sec: 10 }, labRequired: {}, barracksRequired: 3, maxLevel: 1, flying: true, heal: 40 },
   fireCroco: { name: 'Cracheur de feu', hp: 220, dps: 38, range: 3, hitEvery: 0.6, speed: 1.3, space: 3, cost: { chicken: 220 }, trainSec: 35, unlock: { cost: { chicken: 800 }, sec: 300 }, labRequired: { 2: 2, 3: 3 }, barracksRequired: 3, maxLevel: 3, prefers: 'defense' },
-  whirlCroco: { name: 'Croco Tourbillon', hp: 500, dps: 60, range: 1.2, hitEvery: 1.0, speed: 3, space: 5, cost: { chicken: 260 }, trainSec: 2, unlock: { cost: { chicken: 500 }, sec: 120 }, labRequired: { 2: 2 }, barracksRequired: 2, maxLevel: 2, prefers: 'cluster', splash: 2.2 }, // spins: hits every building near the middle of a group
+  whirlCroco: { name: 'Croco Tourbillon', hp: 600, dps: 80, range: 1.9, hitEvery: 1.0, speed: 3, space: 5, cost: { chicken: 260 }, trainSec: 2, unlock: { cost: { chicken: 500 }, sec: 120 }, labRequired: { 2: 2 }, barracksRequired: 2, maxLevel: 2, splash: 2.2 }, // spins: hits the first building it reaches, and every building near it
   dragon: { name: 'Dragon crache-feu', hp: 400, dps: 105, range: 3.5, hitEvery: 0.6, speed: 1.6, space: 6, cost: { chicken: 350 }, trainSec: 5, unlock: { cost: { chicken: 1000 }, sec: 3 }, labRequired: {}, barracksRequired: 2, maxLevel: 1, prefers: 'defense', flying: true }, // flies over the base and breathes fire on defences
   flyingCroco: { name: 'Croco volant bombardier', hp: 300, dps: 42, range: 0, hitEvery: 0.7, speed: 2.5, space: 6, cost: { chicken: 160 }, trainSec: 30, unlock: { cost: { chicken: 600 }, sec: 240 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1, flying: true, wanders: true }, // TEST: real value barracksRequired: 3
 };

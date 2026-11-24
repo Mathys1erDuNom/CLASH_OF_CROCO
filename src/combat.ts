@@ -142,10 +142,7 @@ export class Battle {
       let t = structs.find(s => s.id === u.targetId && s.hp > 0);
       if (!t) {
         const fav = structs.filter(s => d.prefers === 'defense' ? BUILDINGS[s.type].defense : d.prefers === 'resource' && BUILDINGS[s.type].res);
-        const crowd = (s: Struct) => structs.filter(o => o.hp > 0 && edgeDist(s, o) <= (d.splash ?? 0)).length; // buildings its blow would reach
-        t = d.prefers === 'cluster'
-          ? structs.filter(s => s.hp > 0).sort((a, b) => crowd(b) - crowd(a) || edgeDist(u, a) - edgeDist(u, b))[0]
-          : nearest(fav.length ? fav : structs, s => edgeDist(u, s));
+        t = nearest(fav.length ? fav : structs, s => edgeDist(u, s));
         u.targetId = t?.id ?? null;
       }
       if (!t) continue;

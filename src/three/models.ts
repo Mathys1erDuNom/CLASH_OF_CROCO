@@ -343,6 +343,7 @@ function whirlCroco(level: number) {
     for (const z of [-1, 1]) g.add(box(0.32, 0.2, 0.32, brown, 0, 0.98, z * 0.5), box(0.24, 0.24, 0.2, gold, 0, 0.85, z * 0.72), box(0.26, 0.12, 0.26, gold, 0, 0.4, z * 0.18));
   }
   if (L2) g.add(mesh(new THREE.TorusGeometry(0.42, 0.06, 5, 12, Math.PI), gold, 0, 0.85, wz).rotateZ(Math.PI)); // second, inner edge
+  g.scale.setScalar(0.8); // a bit smaller than a croco brawler
   return g;
 }
 
