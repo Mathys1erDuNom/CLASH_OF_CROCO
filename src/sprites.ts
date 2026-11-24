@@ -231,6 +231,15 @@ function whirlCrocoIcon() {
     <path d="M24 16 l-4 -10 M30 13 l-1 -11 M36 12 l0 -11 M42 13 l1 -11 M48 16 l4 -10" stroke="#f0e6c8" stroke-width="5" stroke-linecap="round"/>
     <path d="M30 24 h14 M32 28 l10 0" stroke="#fff" stroke-width="2"/>`);
 }
+function dragonIcon() {
+  return svg(72, 72, `${shadow(36, 66, 22, 5)}
+    <path d="M4 30 Q14 8 30 22 L22 30 z M68 30 Q58 8 42 22 L50 30 z" fill="#d0604a" ${sw}/>
+    <ellipse cx="34" cy="40" rx="16" ry="11" fill="#b8402a" ${sw}/>
+    <ellipse cx="50" cy="32" rx="10" ry="8" fill="#b8402a" ${sw}/>
+    <path d="M56 34 L68 36 L56 38 z" fill="#6a1f14"/>
+    <path d="M60 32 L70 26 M60 30 L68 22" stroke="#ffd040" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="56" cy="28" r="2" fill="#ffd040"/><path d="M44 22 l-3 -8 M50 22 l1 -9" stroke="#f0e6c8" stroke-width="3"/>`);
+}
 function bombTowerIcon(g: boolean) {
   const stone = g ? '#5a4a3a' : '#9a9486', top = g ? '#3a2a1a' : '#6d4526';
   return svg(128, 160, `${shadow(64, 142, 50)}<rect x="36" y="60" width="56" height="82" rx="6" fill="${stone}" ${sw}/><rect x="30" y="50" width="68" height="14" rx="3" fill="${top}" ${sw}/><circle cx="48" cy="40" r="10" fill="#222228" ${sw}/><circle cx="72" cy="36" r="9" fill="#222228" ${sw}/><circle cx="62" cy="22" r="8" fill="#222228" ${sw}/><rect x="54" y="100" width="20" height="30" rx="3" fill="#2b1d14"/><path d="M44 74 h10 M74 74 h10" stroke="#2b1d14" stroke-width="4"/>`);
@@ -249,7 +258,7 @@ export const SPRITES: Record<string, string> = {
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_sarbacaneTower: sarbacaneTowerIcon(false), g_sarbacaneTower: sarbacaneTowerIcon(true), b_lab: labIcon(), b_workshop: workshopIcon(), b_bombTower: bombTowerIcon(false), b_aerialBarracks: aerialBarracksIcon(), g_bombTower: bombTowerIcon(true),
-  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(), t_whirlCroco: whirlCrocoIcon(),
+  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(), t_whirlCroco: whirlCrocoIcon(), t_dragon: dragonIcon(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
   i_gold: coin(), i_chicken: chickenIcon(),

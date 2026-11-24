@@ -289,6 +289,28 @@ function mortar(goblin: boolean, level: number) {
   return g;
 }
 
+/** The fire dragon: a red flyer with horns, a fire-glowing jaw and flapping wings. It breathes fire on what it flies over. */
+function dragon(level: number) {
+  const body = 0xb8402a, belly = 0xf2c25a, dark = 0x6a1f14, horn = 0xf0e6c8, wing = 0xd0604a;
+  const g = new THREE.Group();
+  g.add(scl(ball(0.4, body, 0, 0.1, 0), 1.3, 0.9, 0.8), scl(ball(0.25, belly, 0.1, -0.02, 0), 1.2, 0.6, 0.8)); // body and belly
+  g.add(rot(cyl(0.12, 0.16, 0.5, body, 0.6, 0.35, 0, 7), 0, 0, -0.9)); // neck
+  g.add(scl(ball(0.22, body, 0.85, 0.5, 0), 1.3, 0.85, 0.9)); // head
+  g.add(box(0.3, 0.1, 0.22, body, 1.0, 0.55, 0), box(0.3, 0.1, 0.2, dark, 1.0, 0.42, 0)); // upper and lower jaw
+  for (const z of [-0.12, 0.12]) { g.add(rot(cone(0.04, 0.2, horn, 0.75, 0.72, z, 4), 0, 0, 0.4), ball(0.04, 0xffd040, 0.9, 0.6, z, 0)); } // horns and eyes
+  g.add(rot(cyl(0.1, 0.02, 1.0, body, -0.9, 0, 0, 6), 0, 0, Math.PI / 2), rot(cone(0.08, 0.25, dark, -1.5, 0, 0, 4), 0, 0, -Math.PI / 2)); // tail with a spike
+  for (const side of [-1, 1]) { // wings pivot at the shoulders so they can flap
+    const w = new THREE.Group();
+    w.name = side < 0 ? 'wingL' : 'wingR';
+    w.position.set(0, 0.35, side * 0.2);
+    w.add(box(0.8, 0.03, 0.9, wing, -0.15, 0, side * 0.45)); // membrane
+    w.add(box(0.05, 0.05, 0.95, dark, 0, 0.02, side * 0.47), box(0.04, 0.04, 0.7, dark, -0.4, 0.02, side * 0.38)); // two bones along the wing, lying flat
+    g.add(w);
+  }
+  for (const x of [-0.3, 0.3]) for (const z of [-0.25, 0.25]) g.add(box(0.12, 0.22, 0.12, body, x, -0.2, z)); // legs
+  return g;
+}
+
 /** The whirling croco: a red-sashed warrior with a feather crest and one curved, spiked blade in its right hand. It spins where it fights. Level 2 has a double blade edge and darker armour. */
 function whirlCroco(level: number) {
   const L2 = level >= 2;
@@ -809,7 +831,7 @@ function colossus(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : kind === 'whirlCroco' ? whirlCroco(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : kind === 'whirlCroco' ? whirlCroco(level) : kind === 'dragon' ? dragon(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */
