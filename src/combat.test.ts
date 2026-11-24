@@ -379,3 +379,10 @@ test('a whirling croco hits the first building it reaches, and the buildings nex
   b.step(0.1);
   assert.equal(b.structs.find(s => s.id === u.targetId)!.type, 'goldMine');
 });
+
+test('a whirling croco stands between two neighbouring buildings and hits both', () => {
+  const b = new Battle([{ type: 'goldMine', x: 12, y: 12 }, { type: 'chickenFarm', x: 15, y: 12 }]);
+  b.deploy('whirlCroco', 2, 12.5);
+  for (let i = 0; i < 100; i++) b.step(0.1);
+  assert.ok(b.structs.every(s => s.hp < s.maxHp), 'both buildings hit');
+});

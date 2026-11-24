@@ -10,7 +10,7 @@ export interface Struct {
   reload: number; // seconds until its next shot
 }
 export interface Unit {
-  id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number;
+  id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number; stuck: number; // seconds a spinner has been blocked on its way to its spot
   wp: { x: number; y: number } | null; // wandering units: the spot they fly to next
 }
 
@@ -71,7 +71,7 @@ export class Battle {
 
   deploy(kind: string, x: number, y: number, mult = 1): Unit {
     const d = TROOPS[kind];
-    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0, wp: null };
+    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0, stuck: 0, wp: null };
     this.units.push(u);
     return u;
   }
@@ -147,19 +147,23 @@ export class Battle {
       }
       if (!t) continue;
       u.cooldown -= dt;
-      if (edgeDist(u, t) <= d.range) {
+      const stand = d.spins ? bestSpot(u, t, structs, d.splash ?? 0, d.range) : undefined; // where its blow reaches the most buildings
+      const onSpot = !stand || Math.hypot(stand.x - u.x, stand.y - u.y) < 0.3 || u.stuck > 0.5; // stuck behind a building: it fights from where it is
+      if (edgeDist(u, t) <= d.range && onSpot) {
         if (u.cooldown > 1e-6) continue; // still reloading (tolerance for float steps)
         u.cooldown += d.hitEvery;
         if (u.cooldown < 0) u.cooldown = d.hitEvery; // first hit after walking: no burst of stored hits
         const dmg = d.dps * d.hitEvery * u.mult * (BUILDINGS[t.type].res ? d.resourceBonus ?? 1 : 1);
-        const hit = d.splash ? structs.filter(s => s.hp > 0 && edgeDist({ x: t.cx, y: t.cy }, s) <= d.splash!) : [t]; // area damage around the target
+        const hit = d.splash ? structs.filter(s => s.hp > 0 && edgeDist(d.spins ? u : { x: t.cx, y: t.cy }, s) <= d.splash!) : [t]; // area damage around the target (or around a spinner)
         for (const s of hit) s.hp -= dmg;
       }
       else {
-        const dx = t.cx - u.x, dy = t.cy - u.y, len = Math.hypot(dx, dy);
-        const move = Math.min(d.speed * dt, len);
+        const gx = stand ? stand.x : t.cx, gy = stand ? stand.y : t.cy;
+        const dx = gx - u.x, dy = gy - u.y, len = Math.hypot(dx, dy) || 1e-9;
+        const move = Math.min(d.speed * dt, len), px = u.x, py = u.y;
         if (d.flying) { u.x += (dx / len) * move; u.y += (dy / len) * move; } // flyers pass over buildings
         else this.walk(u, Math.atan2(dy, dx), move, structs);
+        if (stand) u.stuck = Math.hypot(u.x - px, u.y - py) < 0.01 ? u.stuck + dt : 0;
       }
     }
 
@@ -215,6 +219,19 @@ export function edgeDist(u: { x: number; y: number }, s: Struct): number {
   const dx = Math.max(s.x - u.x, 0, u.x - (s.x + s.size));
   const dy = Math.max(s.y - u.y, 0, u.y - (s.y + s.size));
   return Math.hypot(dx, dy);
+}
+
+/** Where a spinning troop stands: a free spot in reach of its target from which its blow reaches the most buildings; ties go to the spot nearest the troop. */
+function bestSpot(u: { x: number; y: number }, t: Struct, structs: Struct[], splash: number, range: number): { x: number; y: number } {
+  let best = { x: t.cx, y: t.cy }, bestN = -1, bestD = Infinity;
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2, r = t.size / 2 + range * 0.8;
+    const p = { x: t.cx + Math.cos(a) * r, y: t.cy + Math.sin(a) * r };
+    if (structs.some(s => s.hp > 0 && edgeDist(p, s) < 0.2)) continue; // not inside another building
+    const n = structs.filter(s => s.hp > 0 && edgeDist(p, s) <= splash).length, d = Math.hypot(p.x - u.x, p.y - u.y);
+    if (n > bestN || (n === bestN && d < bestD)) { best = p; bestN = n; bestD = d; }
+  }
+  return best;
 }
 
 function nearest<T>(list: T[], dist: (e: T) => number): T | undefined {
