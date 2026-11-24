@@ -255,6 +255,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         const attacking = s && edgeDist(u, s) <= TROOPS[u.kind].range;
         const arm = v.model.getObjectByName('arm');
         if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
+        if (u.kind === 'whirlCroco' && attacking) v.model.rotation.y += dt * 12; // spins on the spot while it fights
         if (attacking && u.kind === 'fireCroco' && ready(-u.id, dt, 0.05)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
           const tip = toWorld(u.x + (dx / len) * 0.6, u.y + (dy / len) * 0.6, 0.65), aim = toWorld(s.cx, s.cy, 0.5); // the snout tip

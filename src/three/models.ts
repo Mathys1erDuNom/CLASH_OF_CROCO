@@ -289,6 +289,37 @@ function mortar(goblin: boolean, level: number) {
   return g;
 }
 
+/** The whirling croco: a red-sashed warrior with a feather crest and one curved, spiked blade in its right hand. It spins where it fights. Level 2 has a double blade edge and darker armour. */
+function whirlCroco(level: number) {
+  const L2 = level >= 2;
+  const skin = L2 ? 0x5e6e2a : 0x7a8a3a, belly = 0xe0c890, brown = 0x6a4a2a, gold = L2 ? 0xf0c040 : 0xc8962a, red = 0xb3262a, cream = 0xf0e6c8, steel = 0x8a8a90;
+  const g = new THREE.Group();
+  g.add(box(0.7, 0.7, 0.6, skin, 0, 0.65, 0), box(0.5, 0.4, 0.45, belly, 0.1, 0.55, 0)); // body and belly
+  for (const z of [-0.18, 0.18]) g.add(box(0.22, 0.4, 0.22, skin, 0, 0.2, z)); // legs
+  g.add(box(0.75, 0.12, 0.65, brown, 0, 0.35, 0), ball(0.09, gold, 0.4, 0.42, 0, 1)); // belt with a gold buckle
+  g.add(rot(box(0.08, 0.9, 0.5, red, 0.1, 0.7, 0), 0, 0, 0.5)); // red sash
+  const head = crocoHead(1.1, skin); head.position.set(0.42, 1.2, 0); g.add(head);
+  g.add(box(0.45, 0.12, 0.5, gold, 0.3, 1.42, 0)); // gold helmet
+  const crest = L2 ? 7 : 5; // feather crest, centred on the back of the head: level 1 leans back, level 2 is set into the head
+  for (let i = 0; i < crest; i++) {
+    const z = (i - (crest - 1) / 2) * (L2 ? 0.09 : 0.1);
+    g.add(L2 ? rot(cone(0.05, 0.36, cream, 0.22, 1.36, z, 4), 0, 0, 0.45) : rot(cone(0.06, 0.4, cream, 0.12, 1.42, z, 4), 0, 0, 0.3));
+  }
+  g.add(box(0.2, 0.2, 0.6, skin, 0, 0.85, 0.5), ball(0.1, brown, 0, 0.85, 0.9, 0)); // left arm, empty hand
+  const wz = -0.95; // right arm and its weapon
+  g.add(box(0.2, 0.2, 0.6, skin, 0, 0.85, -0.5), ball(0.1, brown, 0, 0.85, wz, 0));
+  g.add(mesh(new THREE.TorusGeometry(0.6, 0.1, 5, 12, Math.PI), steel, 0, 0.85, wz).rotateZ(Math.PI)); // curved blade, lower half of a ring
+  for (const s of [-1, 1]) g.add(rot(cone(0.08, 0.3, gold, s * 0.62, 0.9, wz, 4), 0, 0, -s * Math.PI / 2)); // spiked tips
+  g.add(rot(cyl(0.04, 0.04, 1.2, brown, 0, 0.85, wz, 6), 0, 0, Math.PI / 2)); // grip bar across the blade
+  g.add(ball(0.12, gold, 0, 0.25, wz, 1)); // round boss at the bottom
+  if (L2) { // armour: chest plate with gold trim, pauldrons, arm bracers and leg guards
+    g.add(box(0.74, 0.66, 0.66, brown, 0, 0.72, 0), box(0.78, 0.06, 0.7, gold, 0, 1.06, 0), box(0.06, 0.5, 0.6, gold, 0.38, 0.7, 0)); // chest plate with gold trim
+    for (const z of [-1, 1]) g.add(box(0.32, 0.2, 0.32, brown, 0, 0.98, z * 0.5), box(0.24, 0.24, 0.2, gold, 0, 0.85, z * 0.72), box(0.26, 0.12, 0.26, gold, 0, 0.4, z * 0.18));
+  }
+  if (L2) g.add(mesh(new THREE.TorusGeometry(0.42, 0.06, 5, 12, Math.PI), gold, 0, 0.85, wz).rotateZ(Math.PI)); // second, inner edge
+  return g;
+}
+
 /** The blowpipe tower: bamboo legs and a leafy roof, with a croco at the top aiming its blowpipe. Level 2 adds bamboo shields, level 3 a stone base. */
 function sarbacaneTower(goblin: boolean, level: number) {
   const BAMBOO = 0xc8944a, PLANK = 0xa8743a;
@@ -451,19 +482,29 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'aerialBarracks' ? aerialBarracks() : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
 
-/** The aerial barracks: a hut on stilts under a blue roof, with two wings on top to show it trains flyers. */
-function aerialBarracks() {
+/** The aerial barracks: a hut on stilts under a blue roof. Level 2 adds bigger wings and gold trim; level 3 a second pair of wings, a gem and a rope ladder. */
+function aerialBarracks(level = 1) {
+  const L2 = level >= 2, L3 = level >= 3, gold = 0xe8a830;
   const g = new THREE.Group();
-  for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) g.add(cyl(0.07, 0.09, 1.3, DARK_WOOD, x, 0.65, z, 5));
+  for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) g.add(cyl(L2 ? 0.1 : 0.07, L2 ? 0.12 : 0.09, 1.3, DARK_WOOD, x, 0.65, z, 5));
   g.add(box(1.6, 0.12, 1.6, WOOD, 0, 1.3, 0)); // platform on stilts
   g.add(box(1.2, 0.9, 1.2, 0x4a7a6a, 0, 1.8, 0), box(0.42, 0.6, 0.05, DOOR, 0, 1.6, 0.61)); // hut and door
   g.add(rot(cone(1.05, 0.8, 0x2f5a8a, 0, 2.65, 0, 4), 0, Math.PI / 4, 0)); // blue roof
-  for (const s of [-1, 1]) g.add(rot(box(1.3, 0.05, 0.35, 0xe8d9a0, s * 0.65, 3.1, 0), 0, 0, s * 0.35)); // wings
+  for (const s of [-1, 1]) {
+    g.add(rot(box(1.3, 0.05, 0.35, 0xe8d9a0, s * 0.65, 3.1, 0), 0, 0, s * 0.35)); // wings
+    if (L2) g.add(rot(box(1.6, 0.05, 0.3, 0xe8d9a0, s * 0.8, 3.0, 0.45), 0, 0, s * 0.45)); // bigger wings, second feather
+  }
+  if (L2) g.add(box(1.25, 0.1, 1.25, gold, 0, 2.2, 0), box(0.1, 0.9, 1.25, gold, 0.6, 1.8, 0), box(0.1, 0.9, 1.25, gold, -0.6, 1.8, 0)); // gold trim
+  if (L3) {
+    for (const s of [-1, 1]) g.add(rot(box(1.5, 0.05, 0.3, 0xe8d9a0, s * 0.75, 3.35, -0.2), 0, 0, s * 0.25)); // a third pair of wings
+    g.add(ball(0.18, 0x40ff80, 0, 3.1, 0, 1)); // gem on the roof
+    g.add(box(0.05, 1.1, 0.05, 0x8b6a44, 0.9, 1.2, 0.9), box(0.25, 0.05, 0.05, 0x8b6a44, 0.9, 1.5, 0.9), box(0.25, 0.05, 0.05, 0x8b6a44, 0.9, 1.1, 0.9)); // rope ladder
+  }
   return g;
 }
 
@@ -768,7 +809,7 @@ function colossus(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : kind === 'whirlCroco' ? whirlCroco(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */

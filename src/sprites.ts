@@ -222,6 +222,15 @@ const workshopIcon = () => svg(128, 160, `${shadow(64, 140, 50)}<rect x="24" y="
 function aerialBarracksIcon() {
   return svg(128, 160, `${shadow(64, 146, 56)}<path d="M30 136 L30 96 M98 136 L98 96 M30 112 L98 112" stroke="#6b5426" stroke-width="5"/><rect x="26" y="94" width="76" height="8" fill="#8b6a3a" ${sw}/><rect x="38" y="58" width="52" height="38" rx="3" fill="#4a7a6a" ${sw}/><path d="M26 60 L64 30 L102 60 z" fill="#2f5a8a" ${sw}/><path d="M10 44 Q26 36 40 46 L36 52 Q20 48 10 44 z M118 44 Q102 36 88 46 L92 52 Q108 48 118 44 z" fill="#e8d9a0" ${sw}/><rect x="56" y="74" width="16" height="22" fill="#22160e"/>`);
 }
+function whirlCrocoIcon() {
+  return svg(72, 72, `${shadow(36, 66, 22, 5)}
+    <path d="M10 30 Q4 46 18 58 Q14 44 22 34 z M62 30 Q68 46 54 58 Q58 44 50 34 z" fill="#e8a830" ${sw}/>
+    <ellipse cx="36" cy="44" rx="16" ry="18" fill="#7a8a3a" ${sw}/>
+    <path d="M22 40 L50 52" stroke="#b3262a" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="36" cy="22" r="10" fill="#7a8a3a" ${sw}/>
+    <path d="M24 16 l-4 -10 M30 13 l-1 -11 M36 12 l0 -11 M42 13 l1 -11 M48 16 l4 -10" stroke="#f0e6c8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M30 24 h14 M32 28 l10 0" stroke="#fff" stroke-width="2"/>`);
+}
 function bombTowerIcon(g: boolean) {
   const stone = g ? '#5a4a3a' : '#9a9486', top = g ? '#3a2a1a' : '#6d4526';
   return svg(128, 160, `${shadow(64, 142, 50)}<rect x="36" y="60" width="56" height="82" rx="6" fill="${stone}" ${sw}/><rect x="30" y="50" width="68" height="14" rx="3" fill="${top}" ${sw}/><circle cx="48" cy="40" r="10" fill="#222228" ${sw}/><circle cx="72" cy="36" r="9" fill="#222228" ${sw}/><circle cx="62" cy="22" r="8" fill="#222228" ${sw}/><rect x="54" y="100" width="20" height="30" rx="3" fill="#2b1d14"/><path d="M44 74 h10 M74 74 h10" stroke="#2b1d14" stroke-width="4"/>`);
@@ -240,7 +249,7 @@ export const SPRITES: Record<string, string> = {
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_sarbacaneTower: sarbacaneTowerIcon(false), g_sarbacaneTower: sarbacaneTowerIcon(true), b_lab: labIcon(), b_workshop: workshopIcon(), b_bombTower: bombTowerIcon(false), b_aerialBarracks: aerialBarracksIcon(), g_bombTower: bombTowerIcon(true),
-  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(),
+  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(), t_whirlCroco: whirlCrocoIcon(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
   i_gold: coin(), i_chicken: chickenIcon(),

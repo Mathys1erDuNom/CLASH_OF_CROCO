@@ -372,3 +372,10 @@ test('flying troops need the aerial barracks; the classic barracks cannot train 
   s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), false);
 });
+
+test('a whirling croco picks the building with the most neighbours, not the nearest one', () => {
+  const b = new Battle([{ type: 'goldMine', x: 3, y: 3 }, { type: 'cannon', x: 12, y: 12 }, { type: 'chickenFarm', x: 13, y: 12 }]);
+  const u = b.deploy('whirlCroco', 1, 1); // the mine is the nearest, but alone
+  b.step(0.1);
+  assert.ok(['cannon', 'chickenFarm'].includes(b.structs.find(s => s.id === u.targetId)!.type));
+});
