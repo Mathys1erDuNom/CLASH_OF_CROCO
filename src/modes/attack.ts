@@ -217,7 +217,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
           if (s.type === 'cannon' && muzzle) { // a straight shot, from the end of the barrel
             v.model.updateWorldMatrix(true, true);
             projectile('shot', muzzle.getWorldPosition(new THREE.Vector3()), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
-          } else projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+          } else projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : s.type === 'bombTower' ? 'drop' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
         }
       }
 

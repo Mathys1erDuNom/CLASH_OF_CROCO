@@ -355,3 +355,11 @@ test('a defence hurts in shots: no damage between shots, one reload\'s worth per
   for (let i = 0; i < 7; i++) b.step(0.1); // 1.2 s: the first shot (float steps need a little over 0.9 s)
   assert.equal(u.hp, u.maxHp - BUILDINGS.cannon.levels[0].dps! * 0.9);
 });
+
+test('a bomb tower hits every ground troop near its target and never a flyer', () => {
+  const b = new Battle([{ type: 'bombTower', x: 5, y: 5, level: 1 }]);
+  const near = b.deploy('croco', 8, 6), beside = b.deploy('croco', 8.6, 6.8), flyer = b.deploy('flyingCroco', 8, 6);
+  for (let i = 0; i < 12; i++) b.step(0.1); // a bomb every second
+  assert.ok(near.hp < near.maxHp && beside.hp < beside.maxHp, 'both ground troops bombed');
+  assert.equal(flyer.hp, flyer.maxHp);
+});

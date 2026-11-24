@@ -80,6 +80,10 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 8 },
     { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 8 },
   ] },
+  bombTower: { name: 'Tour à bombes', size: 2, max: 2, hutRequired: 3, defense: true, splash: 2, reload: 1, levels: [
+    { cost: { gold: 500, chicken: 150 }, sec: 60, hp: 700, dps: 50, range: 6 },
+    { cost: { gold: 1100, chicken: 400 }, sec: 150, hp: 950, dps: 80, range: 6 },
+  ] },
   goldStore: { name: "Réserve d'or", size: 2, max: 4, store: 'gold', loot: true, levels: [
     { cost: { gold: 150 }, sec: 30, hp: 900, store: 1000 },
     { cost: { gold: 600 }, sec: 90, hp: 1400, store: 2500 },
@@ -154,7 +158,7 @@ const RAW_GOBLIN_BASES: GoblinBase[] = [
     id: 'camp', name: 'Campement gobelin', loot: { gold: 300, chicken: 300 },
     buildings: [
       { type: 'hq', x: 9, y: 9 }, { type: 'goldMine', x: 5, y: 9 }, { type: 'chickenFarm', x: 13, y: 9 },
-      { type: 'cannon', x: 9, y: 5 }, { type: 'mortar', x: 9, y: 13 },
+      { type: 'cannon', x: 9, y: 5 }, { type: 'mortar', x: 9, y: 13 }, { type: 'bombTower', x: 13, y: 13 },
     ],
   },
   {

@@ -450,8 +450,24 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : reedTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'bombTower' ? bombTower(goblin, level) : reedTower(goblin, level);
   levelParts(g, type, level, goblin);
+  return g;
+}
+
+/** The bomb tower: a stone tower with a rotating rack of black bombs on top; level 2 carries more bombs. */
+function bombTower(goblin: boolean, level: number) {
+  const stone = goblin ? 0x5a4a3a : 0x8a8478, wood = goblin ? 0x4a3020 : 0x6d4526, iron = 0x3a3a40, bomb = 0x222228;
+  const g = new THREE.Group();
+  g.add(cyl(0.9, 1.0, 2.2, stone, 0, 1.1, 0, 8)); // stone tower
+  g.add(cyl(1.1, 1.1, 0.2, wood, 0, 2.3, 0, 8)); // wooden platform
+  const turret = new THREE.Group();
+  turret.name = 'turret';
+  turret.position.set(0, 2.5, 0);
+  turret.add(cyl(0.15, 0.15, 0.3, iron, 0, 0.15, 0, 6)); // swivel
+  const n = 3 + level * 2;
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; turret.add(ball(0.2, bomb, Math.cos(a) * 0.45, 0.4, Math.sin(a) * 0.45, 0)); } // bombs in a ring
+  g.add(turret);
   return g;
 }
 
@@ -465,7 +481,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, reedTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];
