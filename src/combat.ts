@@ -7,6 +7,7 @@ export interface Struct {
   stock: number; // part of the base's stored gold or chicken that this storage holds
   held: number; // what this mine or farm holds (uncollected production): stolen when it is destroyed
   ref: number | null; // the building's id in its owner's save
+  reload: number; // seconds until its next shot
 }
 export interface Unit {
   id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number;
@@ -28,7 +29,7 @@ export class Battle {
   constructor(layout: Placement[], stock: Partial<Record<Res, number>> = {}) {
     this.structs = layout.map((p, i) => {
       const d = BUILDINGS[p.type], level = p.level ?? 1, hp = d.levels[level - 1].hp;
-      return { id: i, type: p.type, level, x: p.x, y: p.y, size: d.size, cx: p.x + d.size / 2, cy: p.y + d.size / 2, hp, maxHp: hp, targetId: null, stock: 0, held: p.held ?? 0, ref: p.ref ?? null };
+      return { id: i, type: p.type, level, x: p.x, y: p.y, size: d.size, cx: p.x + d.size / 2, cy: p.y + d.size / 2, hp, maxHp: hp, targetId: null, stock: 0, held: p.held ?? 0, ref: p.ref ?? null, reload: d.reload ?? 0.5 }; // the first shot comes after one reload, like the view
     });
     for (const res of ['gold', 'chicken'] as Res[]) {
       const stores = this.structs.filter(s => BUILDINGS[s.type].store === res);
@@ -171,9 +172,10 @@ export class Battle {
       let t = inRange.find(u => u.id === s.targetId);
       if (!t) t = nearest(inRange, u => Math.hypot(u.x - s.cx, u.y - s.cy));
       s.targetId = t?.id ?? null;
-      if (t) { // area defences (mortar) hit every troop near the target, not only the target
-        const radius = BUILDINGS[s.type].splash;
-        for (const u of radius ? inRange.filter(u => Math.hypot(u.x - t.x, u.y - t.y) <= radius) : [t]) u.hp -= dps * dt;
+      s.reload -= dt;
+      if (t && s.reload <= 0) { // a defence hits in shots, not continuously: each shot does dps × its reload
+        const reload = BUILDINGS[s.type].reload ?? 0.5, radius = BUILDINGS[s.type].splash; s.reload = reload;
+        for (const u of radius ? inRange.filter(u => Math.hypot(u.x - t.x, u.y - t.y) <= radius) : [t]) u.hp -= dps * reload; // area defences (mortar) hit every troop near the target
       }
     }
 

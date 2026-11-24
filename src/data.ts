@@ -24,6 +24,7 @@ export interface BuildingDef {
   defense?: boolean;
   hitsAir?: boolean; // defense that can shoot flying troops (others only hit the ground)
   splash?: number; // defense: each shot damages every troop within this radius (tiles) of its target
+  reload?: number; // defense: seconds between shots (default 0.5); each shot does dps × reload damage
   airOnly?: boolean; // shoots flying troops only
   trains?: boolean;
   lab?: boolean; // upgrades troops
@@ -57,12 +58,12 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 350 }, sec: 50, hp: 550, housing: 35 },
     { cost: { gold: 900 }, sec: 120, hp: 700, housing: 50 },
   ] },
-  cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, levels: [
+  cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, reload: 0.9, levels: [
     { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 6 },
     { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 6 },
     { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 6 },
   ] },
-  mortar: { name: 'Mortier', size: 2, max: 2, hutRequired: 2, defense: true, splash: 1.5, levels: [
+  mortar: { name: 'Mortier', size: 2, max: 2, hutRequired: 2, defense: true, splash: 1.5, reload: 1.2, levels: [
     { cost: { gold: 400, chicken: 100 }, sec: 60, hp: 600, dps: 60, range: 17 },
     { cost: { gold: 1000, chicken: 300 }, sec: 120, hp: 850, dps: 80, range: 17 },
     { cost: { gold: 2200, chicken: 700 }, sec: 240, hp: 1100, dps: 100, range: 17 },
@@ -72,7 +73,7 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 8 },
     { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 8 },
   ] },
-  airDefense: { name: 'Lance-harpons anti-air', size: 2, max: 2, hutRequired: 3, defense: true, hitsAir: true, airOnly: true, levels: [
+  airDefense: { name: 'Lance-harpons anti-air', size: 2, max: 2, hutRequired: 3, defense: true, hitsAir: true, airOnly: true, reload: 0.7, levels: [
     { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 8 },
     { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 8 },
     { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 8 },

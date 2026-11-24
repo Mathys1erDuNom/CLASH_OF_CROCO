@@ -212,7 +212,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (!target) continue;
         const turret = v.model.getObjectByName('turret');
         if (turret) turret.rotation.y = Math.atan2(target.x - s.cx, target.y - s.cy);
-        if (ready(s.id, dt, s.type === 'mortar' ? 1.2 : s.type === 'cannon' ? 0.9 : s.type === 'airDefense' ? 0.7 : 0.5)) {
+        if (ready(s.id, dt, BUILDINGS[s.type].reload ?? 0.5)) {
           const muzzle = v.model.getObjectByName('muzzle');
           if (s.type === 'cannon' && muzzle) { // a straight shot, from the end of the barrel
             v.model.updateWorldMatrix(true, true);

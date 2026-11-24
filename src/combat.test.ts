@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Battle, edgeDist } from './combat.ts';
-import { GOBLIN_BASES, GRID, TROOPS } from './data.ts';
+import { BUILDINGS, GOBLIN_BASES, GRID, TROOPS } from './data.ts';
 import { canPlace, placeBuilding, addTroopsToQueue, armyCap, applyRaid, countOf, hqLevel, collect, migrate, rebuild, storeCap, moveBuilding, newSave, tick, trainMs, troopLevel, upgrade, upgradeBlock, upgradeTroop } from './economy.ts';
 
 test('troop research needs the lab level set in labRequired, takes time, then gives more hp', () => {
@@ -219,7 +219,7 @@ test('anti-air harpoon launcher shoots flyers only', () => {
   b.step(0.1);
   assert.equal(b.structs[0].targetId, null); // ground troop ignored
   const flyer = b.deploy('flyingCroco', 6, 9);
-  b.step(0.1);
+  for (let i = 0; i < 10; i++) b.step(0.1); // a shot every reload (0.7 s)
   assert.equal(b.structs[0].targetId, flyer.id);
   assert.ok(flyer.hp < flyer.maxHp && walker.hp === walker.maxHp);
 });
@@ -306,7 +306,7 @@ test('a mortar reaches far and its shell hits every troop near the target', () =
   const b = new Battle([{ type: 'mortar', x: 0, y: 0, level: 1 }]);
   b.deploy('croco', 12, 1); // 12 tiles away: within the mortar's reach, far beyond a cannon's
   b.deploy('croco', 12.5, 1.5); // a second troop next to the first one
-  b.step(0.1);
+  for (let i = 0; i < 15; i++) b.step(0.1); // the first shot comes after one reload (1.2 s)
   assert.ok(b.units[0].hp < b.units[0].maxHp, 'first troop hit');
   assert.ok(b.units[1].hp < b.units[1].maxHp, 'the troop beside it hit too');
 });
@@ -345,4 +345,13 @@ test('ground troops walk around a building instead of through it', () => {
   }
   assert.ok(closest >= 0.3 - 1e-9, `never inside the margin (closest ${closest})`);
   assert.ok(edgeDist(croco, b.structs[0]) <= 0.6 + 1e-9, 'and it still gets in reach');
+});
+
+test('a defence hurts in shots: no damage between shots, one reload\'s worth per shot', () => {
+  const b = new Battle([{ type: 'cannon', x: 5, y: 5, level: 1 }]);
+  const u = b.deploy('croco', 8, 6);
+  for (let i = 0; i < 5; i++) b.step(0.1); // 0.5 s: not yet a full reload (0.9 s)
+  assert.equal(u.hp, u.maxHp);
+  for (let i = 0; i < 7; i++) b.step(0.1); // 1.2 s: the first shot (float steps need a little over 0.9 s)
+  assert.equal(u.hp, u.maxHp - BUILDINGS.cannon.levels[0].dps! * 0.9);
 });
