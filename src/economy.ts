@@ -44,6 +44,7 @@ export function migrate(s: Save): Save {
   delete old.mud;
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
   for (const m of [s.troops, s.troopLevel, s.unlockedTroops] as unknown[]) renameFrog(m); // the frog troop is now the croco sarbacane
+  for (const q of [...s.queue, s.unlocking]) if (q?.kind === 'frog') q.kind = 'crocoSarbacane'; // queued or unlocking frogs too
   s.troopLevel ??= {};
   s.research ??= null;
   s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
