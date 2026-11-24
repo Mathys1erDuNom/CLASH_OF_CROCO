@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType, storeCap, troopUnlocked, unlockTroop, rebuild, workersFree, workersTotal, maxCount,
+  currentType, storeCap, troopUnlocked, unlockTroop, rebuild, workersFree, workersTotal, maxCount, trainerOf,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -290,10 +290,10 @@ export function villageMode(): Mode {
     return `PV ${Math.round(d.hp * m)} · dégâts ${hit(k, m)} par attaque · 1 attaque toutes les ${d.hitEvery} s (${Math.round(d.dps * m)}/s)<br>portée ${d.flying ? 'au-dessus de la cible' : d.range} · vitesse ${d.speed} · ${d.space} place${d.space > 1 ? 's' : ''}<br>${traits.join(' · ')}`;
   }
 
-  function trainHtml(now: number): string {
-    const canTrain = hasBarracks(save, now);
-    return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).map(([k, d]) => {
-      const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now) < req;
+  function trainHtml(now: number, trainer: 'ground' | 'air'): string {
+    const canTrain = hasBarracks(save, now, trainer);
+    return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).filter(([k]) => trainerOf(k) === trainer).map(([k, d]) => {
+      const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now, trainer) < req;
       const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · ${d.space} place${d.space > 1 ? 's' : ''} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
       const canUnlock = !save.unlocking && !!d.unlock && canAfford(save, d.unlock.cost); // blue: can be unlocked right now
@@ -343,7 +343,7 @@ export function villageMode(): Mode {
         ? `<button data-act="upgrade" class="compact" ${block ? 'disabled' : ''}>⬆ Niveau ${b.level + 1} · ${fmtCost(next.cost)} · ${secs(next.sec * 1000)}${block ? `<small>⚠ ${block}</small>` : ''}</button>`
         : `<button data-act="upgrade" ${block ? 'disabled' : ''}>Améliorer au niveau ${b.level + 1}<small>${fmtCost(next.cost)} · ${secs(next.sec * 1000)}<br>→ ${levelInfo(b.type, b.level + 1)}${block ? `<br>⚠ ${block}` : ''}</small></button>`;
     } else if (!busy) body += '<p class="hint">Niveau maximum atteint.</p>';
-    if (d.trains && working > 0) body += trainHtml(now);
+    if (d.trains && working > 0) body += trainHtml(now, d.trains);
     if (d.lab && working > 0) body += labHtml(now, working);
     return `<div class="sel-box"><h2>${d.name} <span class="lvl">${stars}</span></h2>${body}<div class="row"><button data-act="move">Déplacer</button><button data-act="deselect">Fermer</button></div></div>`;
   }

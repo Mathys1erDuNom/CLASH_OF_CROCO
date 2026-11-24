@@ -27,7 +27,7 @@ export interface BuildingDef {
   splash?: number; // defense: each shot damages every troop within this radius (tiles) of its target
   reload?: number; // defense: seconds between shots (default 0.5); each shot does dps × reload damage
   airOnly?: boolean; // shoots flying troops only
-  trains?: boolean;
+  trains?: 'ground' | 'air'; // which troops it trains: ground troops, or flying ones
   lab?: boolean; // upgrades troops
   workshop?: boolean; // each finished workshop adds a worker
   loot?: boolean; // goblin version holds loot
@@ -50,10 +50,15 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 200 }, sec: 40, hp: 550, perMin: 50, cap: 400 },
     { cost: { gold: 600 }, sec: 120, hp: 750, perMin: 80, cap: 800 },
   ] },
-  barracks: { name: 'Caserne du marais', size: 2, max: 2, trains: true, levels: [
+  barracks: { name: 'Caserne du marais', size: 2, max: 2, trains: 'ground', levels: [
     { cost: { gold: 120 }, sec: 20, hp: 500 },
     { cost: { gold: 400 }, sec: 60, hp: 700 },
     { cost: { gold: 1000 }, sec: 150, hp: 900 },
+  ] },
+  aerialBarracks: { name: 'Caserne aérienne', size: 2, max: 1, hutRequired: 3, trains: 'air', levels: [
+    { cost: { gold: 800, chicken: 300 }, sec: 120, hp: 600 },
+    { cost: { gold: 1500, chicken: 600 }, sec: 300, hp: 800 },
+    { cost: { gold: 3000, chicken: 1200 }, sec: 600, hp: 1000 },
   ] },
   camp: { name: 'Camp des troupes', size: 3, max: 3, levels: [
     { cost: { gold: 80 }, sec: 15, hp: 400, housing: 20 },

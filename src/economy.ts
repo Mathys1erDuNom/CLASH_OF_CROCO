@@ -159,9 +159,12 @@ export function upgrade(s: Save, b: Building, now: number): boolean {
 export const campHousing = (b: Building, now: number) => (workingLevel(b, now) > 0 ? stats(b.type, workingLevel(b, now)).housing ?? 0 : 0);
 export const armyCap = (s: Save, now: number) => s.buildings.reduce((n, b) => n + campHousing(b, now), 0);
 
-/** Training time in ms, shortened by the best working barracks level. */
+/** Flying troops are trained in the aerial barracks, the others in the classic barracks. */
+export const trainerOf = (kind: string) => (TROOPS[kind].flying ? 'air' : 'ground');
+
+/** Training time in ms, shortened by the best working barracks level of the right kind. */
 export function trainMs(s: Save, kind: string, now: number) {
-  const best = Math.max(1, ...s.buildings.filter(b => BUILDINGS[b.type].trains).map(b => workingLevel(b, now)));
+  const best = Math.max(1, ...s.buildings.filter(b => BUILDINGS[b.type].trains === trainerOf(kind)).map(b => workingLevel(b, now)));
   return (TROOPS[kind].trainSec * 1000) / (1 + TRAIN_SPEEDUP_PER_LEVEL * (best - 1));
 }
 export const troopLevel = (s: Save, kind: string) => s.troopLevel[kind] ?? 1;
@@ -183,10 +186,10 @@ export function upgradeTroop(s: Save, kind: string, now: number): boolean {
 /** Army places used: troops count by their space, queued troops included. */
 export const armySize = (s: Save) =>
   Object.entries(s.troops).reduce((a, [k, n]) => a + n * TROOPS[k].space, 0) + s.queue.reduce((a, q) => a + TROOPS[q.kind].space, 0);
-export const hasBarracks = (s: Save, now: number) => s.buildings.some(b => BUILDINGS[b.type].trains && workingLevel(b, now) > 0);
+export const hasBarracks = (s: Save, now: number, trainer: 'ground' | 'air') => s.buildings.some(b => BUILDINGS[b.type].trains === trainer && workingLevel(b, now) > 0);
 
 /** Best working barracks level (0 = none). */
-export const barracksLevel = (s: Save, now: number) => Math.max(0, ...s.buildings.filter(b => BUILDINGS[b.type].trains).map(b => workingLevel(b, now)));
+export const barracksLevel = (s: Save, now: number, trainer: 'ground' | 'air') => Math.max(0, ...s.buildings.filter(b => BUILDINGS[b.type].trains === trainer).map(b => workingLevel(b, now)));
 
 export const troopUnlocked = (s: Save, kind: string) => !TROOPS[kind].unlock || s.unlockedTroops.includes(kind);
 
@@ -201,7 +204,7 @@ export function unlockTroop(s: Save, kind: string, now: number): boolean {
 
 export function addTroopsToQueue(s: Save, kind: string, now: number): boolean {
   const d = TROOPS[kind];
-  if (!troopUnlocked(s, kind) || barracksLevel(s, now) < (d.barracksRequired ?? 1) || armySize(s) + d.space > armyCap(s, now) || !canAfford(s, d.cost)) return false;
+  if (!troopUnlocked(s, kind) || barracksLevel(s, now, trainerOf(kind)) < (d.barracksRequired ?? 1) || armySize(s) + d.space > armyCap(s, now) || !canAfford(s, d.cost)) return false;
   pay(s, d.cost);
   const start = Math.max(now, s.queue.at(-1)?.doneAt ?? 0);
   s.queue.push({ kind, doneAt: start + trainMs(s, kind, now) });

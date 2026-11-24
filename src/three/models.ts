@@ -451,8 +451,19 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'aerialBarracks' ? aerialBarracks() : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
   levelParts(g, type, level, goblin);
+  return g;
+}
+
+/** The aerial barracks: a hut on stilts under a blue roof, with two wings on top to show it trains flyers. */
+function aerialBarracks() {
+  const g = new THREE.Group();
+  for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) g.add(cyl(0.07, 0.09, 1.3, DARK_WOOD, x, 0.65, z, 5));
+  g.add(box(1.6, 0.12, 1.6, WOOD, 0, 1.3, 0)); // platform on stilts
+  g.add(box(1.2, 0.9, 1.2, 0x4a7a6a, 0, 1.8, 0), box(0.42, 0.6, 0.05, DOOR, 0, 1.6, 0.61)); // hut and door
+  g.add(rot(cone(1.05, 0.8, 0x2f5a8a, 0, 2.65, 0, 4), 0, Math.PI / 4, 0)); // blue roof
+  for (const s of [-1, 1]) g.add(rot(box(1.3, 0.05, 0.35, 0xe8d9a0, s * 0.65, 3.1, 0), 0, 0, s * 0.35)); // wings
   return g;
 }
 
@@ -493,7 +504,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

@@ -184,7 +184,7 @@ test('flying bomber: trains at the barracks, cannons cannot hit it, sarbacane to
   const s = newSave(0);
   s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3;
-  s.buildings.find(b => b.type === 'barracks')!.level = TROOPS.flyingCroco.barracksRequired ?? 1;
+  s.buildings.push({ id: 900, type: 'aerialBarracks', x: 30, y: 30, level: TROOPS.flyingCroco.barracksRequired ?? 1, readyAt: 0, collectedAt: 0 }); // flyers train in the aerial barracks
   s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
 
@@ -207,9 +207,10 @@ test('barracksRequired blocks training until the barracks level is reached', () 
   TROOPS.flyingCroco.barracksRequired = 3; // the real value, temporarily lowered for testing
   s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), false);
-  s.buildings.find(b => b.type === 'barracks')!.level = 3;
+  s.buildings.push({ id: 900, type: 'aerialBarracks', x: 30, y: 30, level: 3, readyAt: 0, collectedAt: 0 }); // flyers train in the aerial barracks
   s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
+  assert.equal(addTroopsToQueue(s, 'croco', 0), true); // ground troops still train in the classic barracks
   TROOPS.flyingCroco.barracksRequired = real;
 });
 
@@ -362,4 +363,12 @@ test('a bomb tower hits every ground troop near its target and never a flyer', (
   for (let i = 0; i < 12; i++) b.step(0.1); // a bomb every second
   assert.ok(near.hp < near.maxHp && beside.hp < beside.maxHp, 'both ground troops bombed');
   assert.equal(flyer.hp, flyer.maxHp);
+});
+
+test('flying troops need the aerial barracks; the classic barracks cannot train them', () => {
+  const s = newSave(0);
+  s.gold = s.chicken = 10_000;
+  s.buildings.find(b => b.type === 'barracks')!.level = 3;
+  s.unlockedTroops.push('flyingCroco');
+  assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), false);
 });
