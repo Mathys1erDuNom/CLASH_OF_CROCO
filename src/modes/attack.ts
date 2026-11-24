@@ -243,7 +243,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         const moving = pos.distanceTo(v.last) > 0.001;
         v.last.copy(pos);
         const s = battle.structs.find(s => s.id === u.targetId && s.hp > 0);
-        if (s) v.model.rotation.y = Math.atan2(-(s.cy - u.y), s.cx - u.x);
+        if (s && u.kind !== 'whirlCroco') v.model.rotation.y = Math.atan2(-(s.cy - u.y), s.cx - u.x); // the whirling croco keeps its own spin
         const ally = TROOPS[u.kind].heal ? battle.units.find(a => a.id === u.targetId) : undefined; // healers look at the troop they heal
         if (ally) v.model.rotation.y = Math.atan2(-(ally.y - u.y), ally.x - u.x);
         else if (u.wp) v.model.rotation.y = Math.atan2(-(u.wp.y - u.y), u.wp.x - u.x); // wanderers face where they fly
