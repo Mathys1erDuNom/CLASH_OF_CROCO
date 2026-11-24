@@ -78,3 +78,12 @@ test('a save with reed towers is read as sarbacane towers, ruins included', () =
   assert.equal(s.buildings.find(b => b.id === 1)?.type, 'sarbacaneTower');
   assert.equal(s.ruins[0].type, 'sarbacaneTower');
 });
+
+test('ground and flying troops unlock side by side', () => {
+  const s = newSave(0);
+  s.gold = s.chicken = 10_000;
+  assert.equal(unlockTroop(s, 'crocoSarbacane', 0), true);
+  assert.equal(unlockTroop(s, 'crocoSarbacane', 0), false); // one ground unlock at a time
+  assert.equal(unlockTroop(s, 'dragon', 0), true); // the flying one is not blocked by it
+  assert.equal(unlockTroop(s, 'flyingCroco', 0), false); // but one flying unlock at a time
+});

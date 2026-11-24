@@ -297,6 +297,10 @@ function dragon(level: number) {
   g.add(rot(cyl(0.12, 0.16, 0.5, body, 0.6, 0.35, 0, 7), 0, 0, -0.9)); // neck
   g.add(scl(ball(0.22, body, 0.85, 0.5, 0), 1.3, 0.85, 0.9)); // head
   g.add(box(0.3, 0.1, 0.22, body, 1.0, 0.55, 0), box(0.3, 0.1, 0.2, dark, 1.0, 0.42, 0)); // upper and lower jaw
+  const mouth = new THREE.Object3D(); // where the fire comes out
+  mouth.name = 'mouth';
+  mouth.position.set(1.2, 0.47, 0);
+  g.add(mouth);
   for (const z of [-0.12, 0.12]) { g.add(rot(cone(0.04, 0.2, horn, 0.75, 0.72, z, 4), 0, 0, 0.4), ball(0.04, 0xffd040, 0.9, 0.6, z, 0)); } // horns and eyes
   g.add(rot(cyl(0.1, 0.02, 1.0, body, -0.9, 0, 0, 6), 0, 0, Math.PI / 2), rot(cone(0.08, 0.25, dark, -1.5, 0, 0, 4), 0, 0, -Math.PI / 2)); // tail with a spike
   for (const side of [-1, 1]) { // wings pivot at the shoulders so they can flap

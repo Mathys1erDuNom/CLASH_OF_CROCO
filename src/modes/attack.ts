@@ -258,7 +258,10 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         if (u.kind === 'whirlCroco' && attacking) v.model.rotation.y += dt * 12; // spins on the spot while it fights
         if (attacking && (u.kind === 'fireCroco' || u.kind === 'dragon') && ready(-u.id, dt, 0.05)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
-          const tip = toWorld(u.x + (dx / len) * 0.6, u.y + (dy / len) * 0.6, TROOPS[u.kind].flying ? FLY_HEIGHT : 0.65), aim = toWorld(s.cx, s.cy, 0.5); // the snout tip
+          const aim = toWorld(s.cx, s.cy, 0.5), mouth = u.kind === 'dragon' ? v.model.getObjectByName('mouth') : undefined;
+          if (u.kind === 'dragon') v.model.rotation.y = Math.atan2(-dy, dx); // the dragon turns its head to the target
+          if (mouth) v.model.updateWorldMatrix(true, true);
+          const tip = mouth ? mouth.getWorldPosition(new THREE.Vector3()) : toWorld(u.x + (dx / len) * 0.6, u.y + (dy / len) * 0.6, TROOPS[u.kind].flying ? FLY_HEIGHT : 0.65); // from the snout
           for (const color of [0xff5a20, 0xa02818, 0x4a3a34]) smoke(tip, aim, color); // orange, red, then dark smoke
         }
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
