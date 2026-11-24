@@ -105,7 +105,7 @@ sur n'importe quel appareil. Sans ces variables (en local), le jeu reste en mode
 - **Déplacer** : clique sur un bâtiment puis « Déplacer », et clique sur le nouvel emplacement (vert = libre).
 - **Bâtiments débloqués par la Hutte du Chef** : champ `hutRequired` dans `BUILDINGS` (`src/data.ts`). Tant que
   la hutte n'a pas ce niveau, le bâtiment n'apparaît même pas dans « Construire ». Actuellement : tour de
-  roseaux et laboratoire à la hutte 2, lance-harpons anti-air à la hutte 3, le reste dès la hutte 1.
+  sarbacanes et laboratoire à la hutte 2, lance-harpons anti-air à la hutte 3, le reste dès la hutte 1.
 - **Améliorations** : clique sur un bâtiment pour voir son niveau et ses stats, puis « Améliorer ».
   Chaque bâtiment a 3 niveaux, chacun avec son modèle 3D, son coût, sa durée et ses stats
   (production et stock pour les mines/pompes, dégâts et portée pour les défenses, places d'armée
@@ -118,7 +118,7 @@ sur n'importe quel appareil. Sans ces variables (en local), le jeu reste en mode
   autour du bâtiment visé. Il se débloque avec une caserne niveau 2 (`barracksRequired`, mis à 1 temporairement pour les tests) et peut monter au
   niveau 2 avec un labo niveau 3 (`labRequired: { 2: 3 }`, `maxLevel: 2`). Tout se règle dans `TROOPS`.
 - **Croco volant bombardier** : vole au-dessus de tout et lâche des bombes à dégâts de zone. Seules les
-  défenses avec `hitsAir` (la tour de roseaux) peuvent le toucher ; le canon ne tire qu'au sol. Caserne
+  défenses avec `hitsAir` (la tour à sarbacanes) peuvent le toucher ; le canon ne tire qu'au sol. Caserne
   niveau 3 requise (mis à 1 temporairement pour les tests), niveau 2 avec labo niveau 3 (`flying: true` dans `TROOPS`).
 - **Lance-harpons anti-air** : défense qui ne tire que sur les troupes volantes (`airOnly`), avec de gros
   dégâts (110, 160 puis 230 par seconde). Présent aussi au Fort des Verrues et à la Citadelle.

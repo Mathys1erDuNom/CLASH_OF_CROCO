@@ -70,7 +70,7 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 1000, chicken: 300 }, sec: 120, hp: 850, dps: 80, range: 17 },
     { cost: { gold: 2200, chicken: 700 }, sec: 240, hp: 1100, dps: 100, range: 17 },
   ] },
-  reedTower: { name: 'Tour de roseaux', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
+  sarbacaneTower: { name: 'Tour à sarbacanes', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
     { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 8 },
     { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 8 },
     { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 8 },
@@ -165,7 +165,7 @@ const RAW_GOBLIN_BASES: GoblinBase[] = [
     id: 'fort', name: 'Fort des Verrues', loot: { gold: 700, chicken: 600 },
     buildings: [
       { type: 'hq', x: 9, y: 9, level: 2 }, { type: 'cannon', x: 6, y: 6, level: 2 }, { type: 'cannon', x: 13, y: 13 },
-      { type: 'reedTower', x: 13, y: 6, level: 2 }, { type: 'goldMine', x: 6, y: 13 }, { type: 'goldMine', x: 9, y: 13 },
+      { type: 'sarbacaneTower', x: 13, y: 6, level: 2 }, { type: 'goldMine', x: 6, y: 13 }, { type: 'goldMine', x: 9, y: 13 },
       { type: 'chickenFarm', x: 9, y: 6 }, { type: 'barracks', x: 13, y: 9 }, { type: 'airDefense', x: 3, y: 9 },
     ],
   },
@@ -173,22 +173,22 @@ const RAW_GOBLIN_BASES: GoblinBase[] = [
     id: 'citadel', name: 'Citadelle du Roi Gobelin', loot: { gold: 1500, chicken: 1400 },
     buildings: [
       { type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 6, y: 9, level: 3 }, { type: 'cannon', x: 13, y: 9, level: 3 },
-      { type: 'cannon', x: 9, y: 6, level: 2 }, { type: 'reedTower', x: 6, y: 6, level: 2 }, { type: 'reedTower', x: 13, y: 6, level: 2 },
-      { type: 'reedTower', x: 6, y: 13, level: 3 }, { type: 'reedTower', x: 13, y: 13, level: 3 }, { type: 'goldMine', x: 9, y: 13, level: 3 },
+      { type: 'cannon', x: 9, y: 6, level: 2 }, { type: 'sarbacaneTower', x: 6, y: 6, level: 2 }, { type: 'sarbacaneTower', x: 13, y: 6, level: 2 },
+      { type: 'sarbacaneTower', x: 6, y: 13, level: 3 }, { type: 'sarbacaneTower', x: 13, y: 13, level: 3 }, { type: 'goldMine', x: 9, y: 13, level: 3 },
       { type: 'chickenFarm', x: 3, y: 9, level: 2 }, { type: 'chickenFarm', x: 16, y: 9, level: 2 }, { type: 'goldMine', x: 9, y: 3, level: 2 }, { type: 'airDefense', x: 16, y: 3, level: 2 },
     ],
   },
   {
     id: 'swamp', name: 'Marais Maudit', loot: { gold: 2500, chicken: 2200 },
-    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 5, y: 5, level: 3 }, { type: 'cannon', x: 14, y: 5, level: 3 }, { type: 'cannon', x: 5, y: 14, level: 3 }, { type: 'cannon', x: 14, y: 14, level: 3 }, { type: 'reedTower', x: 9, y: 5, level: 3 }, { type: 'reedTower', x: 9, y: 14, level: 2 }, { type: 'reedTower', x: 5, y: 9, level: 2 }, { type: 'reedTower', x: 14, y: 9, level: 3 }, { type: 'airDefense', x: 7, y: 7, level: 2 }, { type: 'airDefense', x: 12, y: 12, level: 2 }, { type: 'barracks', x: 12, y: 6, level: 3 }, { type: 'lab', x: 6, y: 12, level: 2 }, { type: 'goldMine', x: 2, y: 2, level: 3 }, { type: 'goldMine', x: 17, y: 17, level: 3 }, { type: 'chickenFarm', x: 17, y: 2, level: 3 }, { type: 'chickenFarm', x: 2, y: 17, level: 3 }],
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 5, y: 5, level: 3 }, { type: 'cannon', x: 14, y: 5, level: 3 }, { type: 'cannon', x: 5, y: 14, level: 3 }, { type: 'cannon', x: 14, y: 14, level: 3 }, { type: 'sarbacaneTower', x: 9, y: 5, level: 3 }, { type: 'sarbacaneTower', x: 9, y: 14, level: 2 }, { type: 'sarbacaneTower', x: 5, y: 9, level: 2 }, { type: 'sarbacaneTower', x: 14, y: 9, level: 3 }, { type: 'airDefense', x: 7, y: 7, level: 2 }, { type: 'airDefense', x: 12, y: 12, level: 2 }, { type: 'barracks', x: 12, y: 6, level: 3 }, { type: 'lab', x: 6, y: 12, level: 2 }, { type: 'goldMine', x: 2, y: 2, level: 3 }, { type: 'goldMine', x: 17, y: 17, level: 3 }, { type: 'chickenFarm', x: 17, y: 2, level: 3 }, { type: 'chickenFarm', x: 2, y: 17, level: 3 }],
   },
   {
     id: 'warts', name: 'Repaire du Seigneur des Verrues', loot: { gold: 4000, chicken: 3500 },
-    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 6, y: 6, level: 3 }, { type: 'cannon', x: 12, y: 6, level: 3 }, { type: 'cannon', x: 6, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 3, level: 3 }, { type: 'reedTower', x: 3, y: 9, level: 3 }, { type: 'reedTower', x: 15, y: 9, level: 3 }, { type: 'reedTower', x: 9, y: 15, level: 3 }, { type: 'reedTower', x: 3, y: 3, level: 3 }, { type: 'reedTower', x: 15, y: 15, level: 3 }, { type: 'airDefense', x: 9, y: 6, level: 3 }, { type: 'airDefense', x: 6, y: 9, level: 2 }, { type: 'airDefense', x: 12, y: 9, level: 2 }, { type: 'goldMine', x: 15, y: 3, level: 3 }, { type: 'goldMine', x: 3, y: 15, level: 3 }, { type: 'chickenFarm', x: 17, y: 6, level: 3 }, { type: 'chickenFarm', x: 6, y: 17, level: 3 }, { type: 'camp', x: 16, y: 12, level: 3 }],
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 6, y: 6, level: 3 }, { type: 'cannon', x: 12, y: 6, level: 3 }, { type: 'cannon', x: 6, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 3, level: 3 }, { type: 'sarbacaneTower', x: 3, y: 9, level: 3 }, { type: 'sarbacaneTower', x: 15, y: 9, level: 3 }, { type: 'sarbacaneTower', x: 9, y: 15, level: 3 }, { type: 'sarbacaneTower', x: 3, y: 3, level: 3 }, { type: 'sarbacaneTower', x: 15, y: 15, level: 3 }, { type: 'airDefense', x: 9, y: 6, level: 3 }, { type: 'airDefense', x: 6, y: 9, level: 2 }, { type: 'airDefense', x: 12, y: 9, level: 2 }, { type: 'goldMine', x: 15, y: 3, level: 3 }, { type: 'goldMine', x: 3, y: 15, level: 3 }, { type: 'chickenFarm', x: 17, y: 6, level: 3 }, { type: 'chickenFarm', x: 6, y: 17, level: 3 }, { type: 'camp', x: 16, y: 12, level: 3 }],
   },
   {
     id: 'throne', name: 'Trône du Roi Gobelin Suprême', loot: { gold: 6000, chicken: 5000 },
-    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 7, y: 7, level: 3 }, { type: 'cannon', x: 12, y: 7, level: 3 }, { type: 'cannon', x: 7, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 4, level: 3 }, { type: 'cannon', x: 9, y: 14, level: 3 }, { type: 'cannon', x: 4, y: 9, level: 3 }, { type: 'cannon', x: 14, y: 9, level: 3 }, { type: 'reedTower', x: 4, y: 4, level: 3 }, { type: 'reedTower', x: 14, y: 4, level: 3 }, { type: 'reedTower', x: 4, y: 14, level: 3 }, { type: 'reedTower', x: 14, y: 14, level: 3 }, { type: 'reedTower', x: 1, y: 9, level: 3 }, { type: 'reedTower', x: 17, y: 9, level: 3 }, { type: 'airDefense', x: 9, y: 7, level: 3 }, { type: 'airDefense', x: 7, y: 9, level: 3 }, { type: 'airDefense', x: 12, y: 9, level: 3 }, { type: 'goldMine', x: 1, y: 1, level: 3 }, { type: 'goldMine', x: 17, y: 1, level: 3 }, { type: 'chickenFarm', x: 1, y: 17, level: 3 }, { type: 'chickenFarm', x: 17, y: 17, level: 3 }, { type: 'lab', x: 9, y: 17, level: 2 }, { type: 'barracks', x: 9, y: 1, level: 3 }],
+    buildings: [{ type: 'hq', x: 9, y: 9, level: 3 }, { type: 'cannon', x: 7, y: 7, level: 3 }, { type: 'cannon', x: 12, y: 7, level: 3 }, { type: 'cannon', x: 7, y: 12, level: 3 }, { type: 'cannon', x: 12, y: 12, level: 3 }, { type: 'cannon', x: 9, y: 4, level: 3 }, { type: 'cannon', x: 9, y: 14, level: 3 }, { type: 'cannon', x: 4, y: 9, level: 3 }, { type: 'cannon', x: 14, y: 9, level: 3 }, { type: 'sarbacaneTower', x: 4, y: 4, level: 3 }, { type: 'sarbacaneTower', x: 14, y: 4, level: 3 }, { type: 'sarbacaneTower', x: 4, y: 14, level: 3 }, { type: 'sarbacaneTower', x: 14, y: 14, level: 3 }, { type: 'sarbacaneTower', x: 1, y: 9, level: 3 }, { type: 'sarbacaneTower', x: 17, y: 9, level: 3 }, { type: 'airDefense', x: 9, y: 7, level: 3 }, { type: 'airDefense', x: 7, y: 9, level: 3 }, { type: 'airDefense', x: 12, y: 9, level: 3 }, { type: 'goldMine', x: 1, y: 1, level: 3 }, { type: 'goldMine', x: 17, y: 1, level: 3 }, { type: 'chickenFarm', x: 1, y: 17, level: 3 }, { type: 'chickenFarm', x: 17, y: 17, level: 3 }, { type: 'lab', x: 9, y: 17, level: 2 }, { type: 'barracks', x: 9, y: 1, level: 3 }],
   },
 ];
 

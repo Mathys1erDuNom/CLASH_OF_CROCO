@@ -97,18 +97,20 @@ function mortarIcon(g: boolean) {
     <circle cx="36" cy="134" r="6" fill="#4a4a52" ${sw}/><circle cx="96" cy="134" r="6" fill="#4a4a52" ${sw}/>`);
 }
 
-function reedTower(g: boolean) {
-  const roof = g ? ['#6e4f78', '#3a2844'] : ['#d6b45a', '#9a7428'];
-  return svg(128, 192, `<defs>${grad('r', roof[0], roof[1])}${grad('l', '#c7b36a', '#8a7636', false)}</defs>
+function sarbacaneTowerIcon(g: boolean) {
+  const roof = g ? ['#6e4f78', '#3a2844'] : ['#6fb34a', '#3a7a2a'];
+  return svg(128, 192, `<defs>${grad('r', roof[0], roof[1])}${grad('l', '#c8944a', '#8a5a2a', false)}</defs>
     ${shadow(64, 176, 50)}
-    <path d="M30 176 L46 70 M98 176 L82 70 M52 176 L56 70 M76 176 L72 70" stroke="url(#l)" stroke-width="9"/><path d="M30 176 L46 70 M98 176 L82 70" fill="none" stroke="${O}" stroke-width="2" opacity=".5"/>
+    <path d="M30 176 L46 70 M98 176 L82 70 M52 176 L56 70 M76 176 L72 70" stroke="url(#l)" stroke-width="9"/>
     <path d="M36 140 L92 140 M40 110 L88 110" stroke="#6b5426" stroke-width="5"/>
-    <rect x="26" y="62" width="76" height="16" rx="3" fill="#8b6a3a" ${sw}/>
-    <path d="M30 62 v-18 M98 62 v-18" stroke="#6b5426" stroke-width="5"/>
+    <rect x="26" y="62" width="76" height="16" rx="3" fill="#a8743a" ${sw}/>
     <path d="M16 46 L64 8 L112 46 Q64 54 16 46 z" fill="url(#r)" ${sw}/>
-    <path d="M30 44 L64 14 M64 14 L98 44 M48 48 L64 14 M80 48 L64 14" stroke="${roof[1]}" stroke-width="2.5"/>
-    <circle cx="64" cy="58" r="7" fill="${g ? '#7fa04a' : '#9be04b'}" stroke="${O}" stroke-width="2.5"/><circle cx="61" cy="55" r="2" fill="#fff"/><circle cx="67" cy="55" r="2" fill="#fff"/>`);
+    <ellipse cx="64" cy="56" rx="22" ry="14" fill="${g ? '#5a3f7a' : '#7cc24a'}" ${sw}/>
+    <path d="M44 58 h20 M56 52 h14" stroke="#f0e0a0" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="58" cy="50" r="3.5" fill="#fff"/><circle cx="58" cy="50" r="1.8" fill="${O}"/>
+    <path d="M70 56 L122 36" stroke="#c8944a" stroke-width="6" stroke-linecap="round"/><path d="M70 56 L122 36" stroke="#5ea83a" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 10"/>`);
 }
+
 
 function crocoBrute() {
   return svg(80, 80, `<defs>${grad('c', '#6cc25a', '#2f7a2c')}</defs>
@@ -235,7 +237,7 @@ export const SPRITES: Record<string, string> = {
   b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(), b_goldStore: goldStoreIcon(), b_chickenStore: chickenStoreIcon(),
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
-  b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(), b_workshop: workshopIcon(), b_bombTower: bombTowerIcon(false), g_bombTower: bombTowerIcon(true),
+  b_sarbacaneTower: sarbacaneTowerIcon(false), g_sarbacaneTower: sarbacaneTowerIcon(true), b_lab: labIcon(), b_workshop: workshopIcon(), b_bombTower: bombTowerIcon(false), g_bombTower: bombTowerIcon(true),
   t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),

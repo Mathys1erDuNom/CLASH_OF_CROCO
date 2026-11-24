@@ -180,7 +180,7 @@ test('explosive croco launcher: trains at the barracks, splashes nearby building
   assert.equal(upgradeTroop(s, 'crocoLauncher', 0), false); // max level 2
 });
 
-test('flying bomber: trains at the barracks, cannons cannot hit it, reed towers can', () => {
+test('flying bomber: trains at the barracks, cannons cannot hit it, sarbacane towers can', () => {
   const s = newSave(0);
   s.gold = s.chicken = 10_000;
   s.buildings.find(b => b.type === 'camp')!.level = 3;
@@ -188,11 +188,11 @@ test('flying bomber: trains at the barracks, cannons cannot hit it, reed towers 
   s.unlockedTroops.push('flyingCroco');
   assert.equal(addTroopsToQueue(s, 'flyingCroco', 0), true);
 
-  const b = new Battle([{ type: 'cannon', x: 5, y: 5 }, { type: 'reedTower', x: 15, y: 15 }]);
+  const b = new Battle([{ type: 'cannon', x: 5, y: 5 }, { type: 'sarbacaneTower', x: 15, y: 15 }]);
   const flyer = b.deploy('flyingCroco', 5, 9), walker = b.deploy('croco', 6, 9);
   b.step(0.1);
   assert.equal(b.structs[0].targetId, walker.id); // the cannon ignores the flyer
-  const b2 = new Battle([{ type: 'reedTower', x: 5, y: 5 }]);
+  const b2 = new Battle([{ type: 'sarbacaneTower', x: 5, y: 5 }]);
   const f2 = b2.deploy('flyingCroco', 6, 9);
   b2.step(0.1);
   assert.equal(b2.structs[0].targetId, f2.id);

@@ -284,7 +284,7 @@ export function villageMode(): Mode {
       `vise ${d.prefers === 'defense' ? 'les défenses d’abord' : d.prefers === 'resource' ? 'les ressources d’abord' : 'le bâtiment le plus proche'}`,
       d.resourceBonus && `dégâts x${d.resourceBonus} sur les mines et pompes`,
       d.splash && `dégâts de zone (rayon ${d.splash})`,
-      d.flying && 'volant : seules les tours de roseaux le touchent',
+      d.flying && 'volant : seules les tours à sarbacanes le touchent',
       d.range >= 2 && 'attaque à distance',
     ].filter(Boolean);
     return `PV ${Math.round(d.hp * m)} · dégâts ${hit(k, m)} par attaque · 1 attaque toutes les ${d.hitEvery} s (${Math.round(d.dps * m)}/s)<br>portée ${d.flying ? 'au-dessus de la cible' : d.range} · vitesse ${d.speed} · ${d.space} place${d.space > 1 ? 's' : ''}<br>${traits.join(' · ')}`;

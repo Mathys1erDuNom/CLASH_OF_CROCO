@@ -28,8 +28,8 @@ export function newSave(now: number): Save {
   return s;
 }
 
-/** Building type as it is named now: 'mudPump' was renamed 'chickenFarm'. Also used for other players' bases. */
-export const currentType = (t: string) => (t === 'mudPump' ? 'chickenFarm' : t);
+/** Building type as it is named now: 'mudPump' became 'chickenFarm', 'reedTower' became 'sarbacaneTower'. Also used for other players' bases. */
+export const currentType = (t: string) => (t === 'mudPump' ? 'chickenFarm' : t === 'reedTower' ? 'sarbacaneTower' : t);
 
 /** Fills fields added after a save was written (saves from before upgrades had no level). */
 /** Moves the whole village to the middle of the grid, keeping its layout (used on first login). */
@@ -43,6 +43,7 @@ export function migrate(s: Save): Save {
   s.chicken ??= old.mud ?? 0;
   delete old.mud;
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
+  for (const r of s.ruins ?? []) r.type = currentType(r.type); // ruins keep their old names too
   for (const m of [s.troops, s.troopLevel, s.unlockedTroops] as unknown[]) renameFrog(m); // the frog troop is now the croco sarbacane
   for (const q of [...s.queue, s.unlocking, s.research]) if (q?.kind === 'frog') q.kind = 'crocoSarbacane'; // queued, unlocking or upgrading frogs too
   s.troopLevel ??= {};

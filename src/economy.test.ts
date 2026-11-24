@@ -72,3 +72,9 @@ test('a second workshop needs the Hutte du Chef at level 3', () => {
   assert.equal(placeBuilding(s, 'workshop', 30, 14, 0), true);
   assert.equal(placeBuilding(s, 'workshop', 20, 2, 0), false); // two is the most
 });
+
+test('a save with reed towers is read as sarbacane towers, ruins included', () => {
+  const s = migrate({ ...newSave(0), buildings: [{ id: 1, type: 'reedTower', x: 3, y: 3, level: 1, readyAt: 0, collectedAt: 0 }], ruins: [{ type: 'reedTower', x: 5, y: 5, level: 1 }] } as never);
+  assert.equal(s.buildings.find(b => b.id === 1)?.type, 'sarbacaneTower');
+  assert.equal(s.ruins[0].type, 'sarbacaneTower');
+});
