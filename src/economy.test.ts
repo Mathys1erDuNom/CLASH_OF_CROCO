@@ -58,7 +58,7 @@ test('building needs a free worker: the HQ and the starting workshop give two', 
   s.gold = s.chicken = 10_000;
   assert.equal(workersFree(s, 0), 2);
   assert.equal(placeBuilding(s, 'cannon', 30, 2, 0), true);
-  assert.equal(placeBuilding(s, 'goldMine', 30, 14, 0), true);
+  assert.equal(placeBuilding(s, 'chickenFarm', 30, 14, 0), true);
   assert.equal(workersFree(s, 0), 0); // both are being built
   assert.equal(placeBuilding(s, 'chickenFarm', 30, 30, 0), false); // no free worker
   assert.equal(workersTotal(s, 0), 2);

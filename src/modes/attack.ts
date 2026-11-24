@@ -5,7 +5,7 @@ import { Bar, animate, floatText, toWorld, world, type Mode } from '../three/eng
 import { BUILDING_TOP, ball, bombCroco, box, cyl } from '../three/models.ts';
 import { building, troop } from '../three/assets.ts';
 import { swamp } from '../three/scenery.ts';
-import { gain, troopLevel, troopMult } from '../economy.ts';
+import { gain, troopLevel } from '../economy.ts';
 import { persist, save } from '../store.ts';
 import { spriteUrl } from '../sprites.ts';
 import { refresh, secs, setPanel } from '../ui.ts';
@@ -176,7 +176,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
       if (visit || result || !selected || (save.troops[selected] ?? 0) <= 0) return;
       if (!battle.canDeploy(tile.x, tile.y)) return floatText(toWorld(tile.x, tile.y, 0.5), 'Trop près !', '#ff8080');
       const lvl = troopLevel(save, selected);
-      const u = battle.deploy(selected, tile.x, tile.y, troopMult(save, selected));
+      const u = battle.deploy(selected, tile.x, tile.y, troopLevel(save, selected));
       save.troops[selected]--;
       persist();
       const model = troop(u.kind, lvl);

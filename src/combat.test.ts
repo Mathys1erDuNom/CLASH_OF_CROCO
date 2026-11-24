@@ -18,7 +18,7 @@ test('troop research needs the lab level set in labRequired, takes time, then gi
   tick(s, 60_000);
   assert.equal(troopLevel(s, 'croco'), 2);
   const b = new Battle(GOBLIN_BASES[0].buildings);
-  assert.equal(b.deploy('croco', 0, 0, 1.3).hp, 320 * 1.3);
+  assert.equal(b.deploy('croco', 0, 0, 2).hp, TROOPS.croco.levels[1].hp); // a level-2 croco has its own hp
 });
 
 /** How far a centred base moved from its hand-written layout (the hut was at 9,9). */

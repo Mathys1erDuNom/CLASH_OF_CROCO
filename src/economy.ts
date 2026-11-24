@@ -1,5 +1,5 @@
 // Village state and timer logic. Timers are wall-clock timestamps so production continues while offline.
-import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, GRID, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
+import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, GRID, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
 
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
@@ -170,7 +170,6 @@ export function trainMs(s: Save, kind: string, now: number) {
   return (TROOPS[kind].trainSec * 1000) / (1 + TRAIN_SPEEDUP_PER_LEVEL * (best - 1));
 }
 export const troopLevel = (s: Save, kind: string) => s.troopLevel[kind] ?? 1;
-export const troopMult = (s: Save, kind: string) => TROOP_LEVELS[troopLevel(s, kind) - 1].mult;
 
 /** Lab level needed to research the given troop level (TROOPS[kind].labRequired, default: the level itself). */
 export const labNeeded = (kind: string, target: number) => TROOPS[kind].labRequired[target] ?? target;
@@ -178,7 +177,7 @@ export const labLevel = (s: Save, now: number) => Math.max(0, ...s.buildings.fil
 
 /** Starts the research of the next level of a troop, if a working lab is high enough. */
 export function upgradeTroop(s: Save, kind: string, now: number): boolean {
-  const lvl = troopLevel(s, kind), up = TROOP_LEVELS[lvl - 1].up;
+  const lvl = troopLevel(s, kind), up = TROOPS[kind].levels[lvl - 1].up;
   if (lvl >= troopMaxLevel(kind) || s.research || !up || !canAfford(s, up.cost) || labLevel(s, now) < labNeeded(kind, lvl + 1)) return false;
   pay(s, up.cost);
   s.research = { kind, doneAt: now + up.sec * 1000 };

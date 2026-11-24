@@ -40,35 +40,35 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 500, chicken: 500 }, sec: 60, hp: 2200 },
     { cost: { gold: 1500, chicken: 1500 }, sec: 180, hp: 3200 },
   ] },
-  goldMine: { name: "Mine d'or", size: 2, max: 4, res: 'gold', loot: true, levels: [
-    { cost: { chicken: 60 }, sec: 10, hp: 400, perMin: 30, cap: 200 },
-    { cost: { chicken: 200 }, sec: 40, hp: 550, perMin: 50, cap: 400 },
-    { cost: { chicken: 600 }, sec: 120, hp: 750, perMin: 80, cap: 800 },
+  goldMine: { name: "Mine d'or", size: 2, max: 3, maxByHut: [1, 2, 3], res: 'gold', loot: true, levels: [
+    { cost: { chicken: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
+    { cost: { chicken: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
+    { cost: { chicken: 600 }, sec: 3600, hp: 750, perMin: 12, cap: 800 },
   ] },
-  chickenFarm: { name: 'Élevage de poulets', size: 2, max: 4, res: 'chicken', loot: true, levels: [
-    { cost: { gold: 60 }, sec: 10, hp: 400, perMin: 30, cap: 200 },
-    { cost: { gold: 200 }, sec: 40, hp: 550, perMin: 50, cap: 400 },
-    { cost: { gold: 600 }, sec: 120, hp: 750, perMin: 80, cap: 800 },
+  chickenFarm: { name: 'Élevage de poulets',size: 2, max: 3, maxByHut: [1, 2, 3], res: 'gold', loot: true, levels: [
+    { cost: { gold: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
+    { cost: { gold: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
+    { cost: { gold: 600 }, sec: 3600, hp: 750, perMin: 9, cap: 800 },
   ] },
-  barracks: { name: 'Caserne du marais', size: 2, max: 2, trains: 'ground', levels: [
+  barracks: { name: 'Caserne du marais', size: 2, max: 1, trains: 'ground', levels: [
     { cost: { gold: 120 }, sec: 20, hp: 500 },
-    { cost: { gold: 400 }, sec: 60, hp: 700 },
-    { cost: { gold: 1000 }, sec: 150, hp: 900 },
+    { cost: { gold: 400 }, sec: 600, hp: 700 },
+    { cost: { gold: 1000 }, sec: 3600, hp: 900 },
   ] },
   aerialBarracks: { name: 'Caserne aérienne', size: 2, max: 1, hutRequired: 3, trains: 'air', levels: [
     { cost: { gold: 800, chicken: 300 }, sec: 120, hp: 600 },
-    { cost: { gold: 1500, chicken: 600 }, sec: 300, hp: 800 },
-    { cost: { gold: 3000, chicken: 1200 }, sec: 600, hp: 1000 },
+    { cost: { gold: 1500, chicken: 600 }, sec: 600, hp: 800 },
+    { cost: { gold: 3000, chicken: 1200 }, sec: 3600, hp: 1000 },
   ] },
   camp: { name: 'Camp des troupes', size: 3, max: 3, levels: [
-    { cost: { gold: 80 }, sec: 15, hp: 400, housing: 20 },
-    { cost: { gold: 350 }, sec: 50, hp: 550, housing: 35 },
-    { cost: { gold: 900 }, sec: 120, hp: 700, housing: 50 },
+    { cost: { gold: 100 }, sec: 30, hp: 400, housing: 20 },
+    { cost: { gold: 350 }, sec: 600, hp: 550, housing: 35 },
+    { cost: { gold: 900 }, sec: 3600, hp: 700, housing: 50 },
   ] },
   cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, reload: 0.9, levels: [
-    { cost: { gold: 150 }, sec: 25, hp: 600, dps: 40, range: 6 },
-    { cost: { gold: 450 }, sec: 60, hp: 850, dps: 60, range: 6 },
-    { cost: { gold: 1100 }, sec: 150, hp: 1100, dps: 85, range: 6 },
+    { cost: { gold: 150 }, sec: 300, hp: 600, dps: 40, range: 6 },
+    { cost: { gold: 450 }, sec: 500, hp: 850, dps: 60, range: 6 },
+    { cost: { gold: 1100 }, sec: 3500, hp: 1100, dps: 85, range: 6 },
   ] },
   mortar: { name: 'Mortier', size: 2, max: 2, hutRequired: 2, defense: true, splash: 1.5, reload: 1.2, levels: [
     { cost: { gold: 400, chicken: 100 }, sec: 60, hp: 600, dps: 60, range: 17 },
@@ -109,10 +109,11 @@ export const BUILDINGS: Record<string, BuildingDef> = {
   ] },
 };
 
+export interface TroopLevel { hp: number; dps: number; up?: { cost: Cost; sec: number } } // dps: average damage per second; up: cost to go one level higher
+
 export interface TroopDef {
   name: string;
-  hp: number;
-  dps: number; // average damage per second
+  levels: TroopLevel[]; // stats of each level (level 1 first)
   hitEvery: number; // seconds between two attacks; damage per attack = dps * hitEvery
   range: number; // tiles
   speed: number; // tiles per second
@@ -124,7 +125,7 @@ export interface TroopDef {
   /** Laboratory level needed to research each troop level: { 2: 2 } = "level 2 needs a level-2 lab". */
   labRequired: Record<number, number>;
   barracksRequired?: number; // barracks level needed to train it (default 1)
-  maxLevel?: number; // highest level it can reach (default: every level of TROOP_LEVELS)
+  maxLevel?: number; // highest level it can reach (default: every level of its levels)
   splash?: number; // area damage radius in tiles around the target (default: single target)
   spins?: boolean; // splash is around the troop itself; it stands between its target and a neighbour to hit both
   flying?: boolean; // flies over everything; only defenses with hitsAir can shoot it
@@ -134,27 +135,213 @@ export interface TroopDef {
 }
 
 export const TROOPS: Record<string, TroopDef> = {
-  croco: { name: 'Croco Cogneur', hp: 320, dps: 26, range: 0.6, hitEvery: 1.0, speed: 1.1, space: 5, cost: { chicken: 50 }, trainSec: 12, labRequired: { 2: 2, 3: 3 } },
-  colossus: { name: 'Croco Colosse', hp: 1200, dps: 30, range: 0.9, hitEvery: 1.2, speed: 0.6, space: 10, cost: { chicken: 300 }, trainSec: 6, unlock: { cost: { chicken: 90 }, sec: 3 }, labRequired: { 2: 2, 3: 3 }, barracksRequired: 3, maxLevel: 3, prefers: 'defense' }, // much bigger than a croco (model scale in models.ts), to soak up damage
-  crocoSarbacane: { name: 'Croco Sarbacane', hp: 90, dps: 16, range: 3, hitEvery: 0.8, speed: 1.6, space: 2, cost: { chicken: 30 }, trainSec: 8, unlock: { cost: { chicken: 100 }, sec: 60 }, labRequired: { 2: 2, 3: 3 } },
-  babyCroco: { name: 'Bébé Croco', hp: 70, dps: 12, range: 0.5, hitEvery: 0.5, speed: 2.4, space: 1, cost: { chicken: 15 }, trainSec: 4, unlock: { cost: { chicken: 150 }, sec: 90 }, prefers: 'resource', labRequired: { 2: 2, 3: 3 }, resourceBonus: 3 },
-  crocoLauncher: { name: 'Lanceur de croco explosif', hp: 160, dps: 34, range: 4.5, hitEvery: 2.0, speed: 0.9, space: 4, cost: { chicken: 90 }, trainSec: 20, unlock: { cost: { chicken: 400 }, sec: 180 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1.5 }, // TEST: real value barracksRequired: 2
-  healer: { name: 'Guérisseuse', hp: 180, dps: 0, range: 4, hitEvery: 1.0, speed: 1.8, space: 2, cost: { chicken: 180 }, trainSec: 5, unlock: { cost: { chicken: 700 }, sec: 10 }, labRequired: {}, barracksRequired: 3, maxLevel: 1, flying: true, heal: 40 },
-  fireCroco: { name: 'Cracheur de feu', hp: 220, dps: 38, range: 3, hitEvery: 0.6, speed: 1.3, space: 3, cost: { chicken: 220 }, trainSec: 35, unlock: { cost: { chicken: 800 }, sec: 300 }, labRequired: { 2: 2, 3: 3 }, barracksRequired: 3, maxLevel: 3, prefers: 'defense' },
-  whirlCroco: { name: 'Croco Tourbillon', hp: 600, dps: 80, range: 1.9, hitEvery: 1.0, speed: 3, space: 5, cost: { chicken: 260 }, trainSec: 2, unlock: { cost: { chicken: 500 }, sec: 120 }, labRequired: { 2: 2 }, barracksRequired: 2, maxLevel: 2, splash: 2.2, spins: true }, // spins: hits the first building it reaches, and every building near it
-  dragon: { name: 'Dragon crache-feu', hp: 400, dps: 105, range: 3.5, hitEvery: 0.6, speed: 1.6, space: 6, cost: { chicken: 350 }, trainSec: 5, unlock: { cost: { chicken: 1000 }, sec: 3 }, labRequired: {}, barracksRequired: 2, maxLevel: 1, prefers: 'defense', flying: true }, // flies over the base and breathes fire on defences
-  flyingCroco: { name: 'Croco volant bombardier', hp: 300, dps: 42, range: 0, hitEvery: 0.7, speed: 2.5, space: 6, cost: { chicken: 160 }, trainSec: 30, unlock: { cost: { chicken: 600 }, sec: 240 }, labRequired: { 2: 3 }, barracksRequired: 2, maxLevel: 2, splash: 1, flying: true, wanders: true }, // TEST: real value barracksRequired: 3
+  croco: {
+    name: 'Croco Cogneur',
+    levels: [
+      { hp: 320, dps: 26, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 416, dps: 33.8, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 544, dps: 44.2 },
+    ],
+    range: 0.6,
+    hitEvery: 1,
+    speed: 1.1,
+    space: 5,
+    cost: { chicken: 50 },
+    trainSec: 12,
+    labRequired: { 2: 2, 3: 3 },
+  },
+
+  // much bigger than a croco (model scale in models.ts), to soak up damage
+  colossus: {
+    name: 'Croco Colosse',
+    levels: [
+      { hp: 1200, dps: 30, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 1560, dps: 39, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 2040, dps: 51 },
+    ],
+    range: 0.9,
+    hitEvery: 1.2,
+    speed: 0.6,
+    space: 10,
+    cost: { chicken: 300 },
+    trainSec: 6,
+    unlock: { cost: { chicken: 90 }, sec: 3 },
+    labRequired: { 2: 2, 3: 3 },
+    barracksRequired: 3,
+    maxLevel: 3,
+    prefers: 'defense',
+  },
+
+  crocoSarbacane: {
+    name: 'Croco Sarbacane',
+    levels: [
+      { hp: 90, dps: 16, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 117, dps: 20.8, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 153, dps: 27.2 },
+    ],
+    range: 3,
+    hitEvery: 0.8,
+    speed: 1.6,
+    space: 2,
+    cost: { chicken: 30 },
+    trainSec: 8,
+    unlock: { cost: { chicken: 100 }, sec: 60 },
+    labRequired: { 2: 2, 3: 3 },
+  },
+
+  babyCroco: {
+    name: 'Bébé Croco',
+    levels: [
+      { hp: 70, dps: 12, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 91, dps: 15.6, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 119, dps: 20.4 },
+    ],
+    range: 0.5,
+    hitEvery: 0.5,
+    speed: 2.4,
+    space: 1,
+    cost: { chicken: 15 },
+    trainSec: 4,
+    unlock: { cost: { chicken: 150 }, sec: 90 },
+    prefers: 'resource',
+    labRequired: { 2: 2, 3: 3 },
+    resourceBonus: 3,
+  },
+
+  // TEST: real value barracksRequired: 2
+  crocoLauncher: {
+    name: 'Lanceur de croco explosif',
+    levels: [
+      { hp: 160, dps: 34, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 208, dps: 44.2, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 272, dps: 57.8 },
+    ],
+    range: 4.5,
+    hitEvery: 2,
+    speed: 0.9,
+    space: 4,
+    cost: { chicken: 90 },
+    trainSec: 20,
+    unlock: { cost: { chicken: 400 }, sec: 180 },
+    labRequired: { 2: 3 },
+    barracksRequired: 2,
+    maxLevel: 2,
+    splash: 1.5,
+  },
+
+  healer: {
+    name: 'Guérisseuse',
+    levels: [
+      { hp: 180, dps: 0, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 234, dps: 0, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 306, dps: 0 },
+    ],
+    range: 4,
+    hitEvery: 1,
+    speed: 1.8,
+    space: 2,
+    cost: { chicken: 180 },
+    trainSec: 5,
+    unlock: { cost: { chicken: 700 }, sec: 10 },
+    labRequired: {},
+    barracksRequired: 3,
+    maxLevel: 1,
+    flying: true,
+    heal: 40,
+  },
+
+  fireCroco: {
+    name: 'Cracheur de feu',
+    levels: [
+      { hp: 220, dps: 38, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 286, dps: 49.4, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 374, dps: 64.6 },
+    ],
+    range: 3,
+    hitEvery: 0.6,
+    speed: 1.3,
+    space: 3,
+    cost: { chicken: 220 },
+    trainSec: 35,
+    unlock: { cost: { chicken: 800 }, sec: 300 },
+    labRequired: { 2: 2, 3: 3 },
+    barracksRequired: 3,
+    maxLevel: 3,
+    prefers: 'defense',
+  },
+
+  // spins: hits the first building it reaches, and every building near it
+  whirlCroco: {
+    name: 'Croco Tourbillon',
+    levels: [
+      { hp: 600, dps: 80, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 780, dps: 104, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 1020, dps: 136 },
+    ],
+    range: 1.9,
+    hitEvery: 1,
+    speed: 3,
+    space: 5,
+    cost: { chicken: 260 },
+    trainSec: 2,
+    unlock: { cost: { chicken: 500 }, sec: 120 },
+    labRequired: { 2: 2 },
+    barracksRequired: 2,
+    maxLevel: 2,
+    splash: 2.2,
+    spins: true,
+  },
+
+  // flies over the base and breathes fire on defences
+  dragon: {
+    name: 'Dragon crache-feu',
+    levels: [
+      { hp: 400, dps: 105, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 520, dps: 136.5, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 680, dps: 178.5 },
+    ],
+    range: 3.5,
+    hitEvery: 0.6,
+    speed: 1.6,
+    space: 6,
+    cost: { chicken: 350 },
+    trainSec: 5,
+    unlock: { cost: { chicken: 1000 }, sec: 3 },
+    labRequired: {},
+    barracksRequired: 2,
+    maxLevel: 1,
+    prefers: 'defense',
+    flying: true,
+  },
+
+  // TEST: real value barracksRequired: 3
+  flyingCroco: {
+    name: 'Croco volant bombardier',
+    levels: [
+      { hp: 300, dps: 42, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 390, dps: 54.6, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 510, dps: 71.4 },
+    ],
+    range: 0,
+    hitEvery: 0.7,
+    speed: 2.5,
+    space: 6,
+    cost: { chicken: 160 },
+    trainSec: 30,
+    unlock: { cost: { chicken: 600 }, sec: 240 },
+    labRequired: { 2: 3 },
+    barracksRequired: 2,
+    maxLevel: 2,
+    splash: 1,
+    flying: true,
+    wanders: true,
+  },
 };
 
 /** Each barracks level above 1 trains troops this much faster (level 2: x1.5, level 3: x2). */
 export const TRAIN_SPEEDUP_PER_LEVEL = 0.5;
 
 /** Troop levels by current level: mult scales hp and dps; up pays for the next level (lab level: see labRequired in TROOPS). */
-export const TROOP_LEVELS: { mult: number; up?: { cost: Cost; sec: number } }[] = [
-  { mult: 1, up: { cost: { chicken: 100 }, sec: 60 } },
-  { mult: 1.3, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-  { mult: 1.7 },
-];
 
 /** ref: the building's id in its owner's save (a raid needs it); held: what a mine or farm holds right now, stealable. */
 export interface Placement { type: string; x: number; y: number; level?: number; ref?: number; held?: number }
@@ -214,4 +401,4 @@ export function fmtCost(c: Cost): string {
   return [c.gold && `${c.gold} or`, c.chicken && `${c.chicken} poulet${c.chicken > 1 ? 's' : ''}`].filter(Boolean).join(' + ') || 'gratuit';
 }
 
-export const troopMaxLevel = (kind: string) => TROOPS[kind].maxLevel ?? TROOP_LEVELS.length;
+export const troopMaxLevel = (kind: string) => TROOPS[kind].maxLevel ?? TROOPS[kind].levels.length;

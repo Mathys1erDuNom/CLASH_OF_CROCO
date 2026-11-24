@@ -10,7 +10,7 @@ export interface Struct {
   reload: number; // seconds until its next shot
 }
 export interface Unit {
-  id: number; kind: string; x: number; y: number; hp: number; maxHp: number; mult: number; targetId: number | null; cooldown: number; stuck: number; // seconds a spinner has been blocked on its way to its spot
+  id: number; kind: string; x: number; y: number; hp: number; maxHp: number; dps: number; targetId: number | null; cooldown: number; stuck: number; // seconds a spinner has been blocked on its way to its spot
   wp: { x: number; y: number } | null; // wandering units: the spot they fly to next
 }
 
@@ -69,9 +69,9 @@ export class Battle {
     return this.structs.every(s => s.hp <= 0 || x < s.x - 1 || x > s.x + s.size + 1 || y < s.y - 1 || y > s.y + s.size + 1);
   }
 
-  deploy(kind: string, x: number, y: number, mult = 1): Unit {
-    const d = TROOPS[kind];
-    const u = { id: this.nextId++, kind, x, y, hp: d.hp * mult, maxHp: d.hp * mult, mult, targetId: null, cooldown: 0, stuck: 0, wp: null };
+  deploy(kind: string, x: number, y: number, level = 1): Unit {
+    const st = TROOPS[kind].levels[level - 1];
+    const u = { id: this.nextId++, kind, x, y, hp: st.hp, maxHp: st.hp, dps: st.dps, targetId: null, cooldown: 0, stuck: 0, wp: null };
     this.units.push(u);
     return u;
   }
@@ -123,7 +123,7 @@ export class Battle {
     if (u.cooldown <= 0 && structs.some(s => edgeDist(u, s) <= 0.5)) { // over a building: bomb
       u.cooldown = d.hitEvery;
       this.drops.push({ x: u.x, y: u.y });
-      const dmg = d.dps * d.hitEvery * u.mult;
+      const dmg = u.dps * d.hitEvery;
       for (const s of structs) if (s.hp > 0 && edgeDist(u, s) <= (d.splash ?? 0)) s.hp -= dmg; // every building in the blast takes the damage
     }
   }
@@ -153,7 +153,7 @@ export class Battle {
         if (u.cooldown > 1e-6) continue; // still reloading (tolerance for float steps)
         u.cooldown += d.hitEvery;
         if (u.cooldown < 0) u.cooldown = d.hitEvery; // first hit after walking: no burst of stored hits
-        const dmg = d.dps * d.hitEvery * u.mult * (BUILDINGS[t.type].res ? d.resourceBonus ?? 1 : 1);
+        const dmg = u.dps * d.hitEvery * (BUILDINGS[t.type].res ? d.resourceBonus ?? 1 : 1);
         const hit = d.splash ? structs.filter(s => s.hp > 0 && edgeDist(d.spins ? u : { x: t.cx, y: t.cy }, s) <= d.splash!) : [t]; // area damage around the target (or around a spinner)
         for (const s of hit) s.hp -= dmg;
       }

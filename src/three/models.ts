@@ -181,17 +181,19 @@ function goldStore(level: number) {
     g.add(lantern(0.8, 0, 0.6));
   } else {
     g.add(box(1.8, 1.0, 1.4, STONE, 0, 0.5, 0), box(0.9, 0.6, 0.05, DOOR, 0, 0.3, 0.71));
-    g.add(cyl(0.9, 0.9, 1.4, WOOD, 0, 1.5, 0, 10).rotateX(Math.PI / 2)); // barrel roof
-    for (let i = 0; i < 7; i++) g.add(ball(0.13, GOLD, -0.5 + i * 0.17, 0.15, 0.55, 0));
-    g.add(box(0.35, 0.6, 0.03, RED, 0.8, 0.75, 0.72), ball(0.08, GOLD, 0.8, 0.8, 0.74, 0));
+    if (level === 2) g.add(cyl(0.9, 0.9, 1.4, WOOD, 0, 1.5, 0, 10).rotateX(Math.PI / 2)); // barrel roof (level 2)
+    if (level === 2) {
+      for (let i = 0; i < 7; i++) g.add(ball(0.13, GOLD, -0.5 + i * 0.17, 0.15, 0.55, 0));
+      g.add(box(0.35, 0.6, 0.03, RED, 0.8, 0.75, 0.72), ball(0.08, GOLD, 0.8, 0.8, 0.74, 0));
+    }
     g.add(box(0.9, 0.1, 0.3, STONE, 0, 0.05, 1.0), box(0.9, 0.1, 0.3, STONE, 0, 0.15, 0.85)); // stairs
   }
-  if (level === 3) {
-    for (const x of [-0.95, 0.95]) {
-      g.add(cyl(0.25, 0.28, 1.5, STONE, x, 0.75, 0.6, 8), cone(0.3, 0.35, RED, x, 1.67, 0.6, 8));
-      g.add(mesh(new THREE.SphereGeometry(0.1, 8, 6), mat(0xffb030, { emissive: 0xff8a10, emissiveIntensity: 1 }), x, 2.0, 0.6));
-    }
-    g.add(box(0.3, 0.5, 0.03, RED, -0.95, 1.0, 0.92)); // banner on the tower
+  if (level === 3) { // a gold vault: a golden dome on stone pillars, a heap of coins and two chests
+    for (const [x, z] of [[-0.8, -0.55], [0.8, -0.55], [-0.8, 0.55], [0.8, 0.55]]) g.add(cyl(0.12, 0.14, 1.0, STONE, x, 0.5, z, 8), box(0.34, 0.12, 0.34, GOLD, x, 1.06, z));
+    g.add(mesh(new THREE.SphereGeometry(1.05, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), goldMat(), 0, 1.0, 0)); // golden dome
+    g.add(cyl(1.1, 1.1, 0.12, DARK_WOOD, 0, 1.0, 0, 14)); // dome base
+    for (let i = 0; i < 9; i++) g.add(ball(0.13, GOLD, -0.6 + (i % 3) * 0.3, 0.13 + Math.floor(i / 3) * 0.12, 1.05 + (i % 2) * 0.05, 0)); // coin heap in front
+    for (const x of [-1.1, 1.1]) g.add(box(0.42, 0.28, 0.32, WOOD, x, 0.14, 0.2), box(0.44, 0.06, 0.34, GOLD, x, 0.3, 0.2)); // treasure chests with gold bands
   }
   return g;
 }
@@ -572,7 +574,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.0, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

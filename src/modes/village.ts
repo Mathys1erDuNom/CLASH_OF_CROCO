@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, TROOPS, fmtCost, troopMaxLevel } from '../data.ts';
+import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOPS, fmtCost, troopMaxLevel } from '../data.ts';
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
@@ -275,11 +275,11 @@ export function villageMode(): Mode {
   const queueHtml = (now: number) => (save.queue.length ? `<p>En formation : ${save.queue.length} (prochain dans ${secs(save.queue[0].doneAt - now)})</p>` : '');
 
   /** Training buttons, shown only in the panel of a working barracks. */
-  const hit = (k: string, mult: number) => Math.round(TROOPS[k].dps * TROOPS[k].hitEvery * mult);
+  const hit = (k: string, level: number) => Math.round(TROOPS[k].levels[level - 1].dps * TROOPS[k].hitEvery);
 
   /** Every stat and special trait of a troop at a level, built from TROOPS. */
   function troopStats(k: string, level: number): string {
-    const d = TROOPS[k], m = TROOP_LEVELS[level - 1].mult;
+    const d = TROOPS[k], st = d.levels[level - 1];
     const traits = [
       `vise ${d.prefers === 'defense' ? 'les défenses d’abord' : d.prefers === 'resource' ? 'les ressources d’abord' : 'le bâtiment le plus proche'}`,
       d.resourceBonus && `dégâts x${d.resourceBonus} sur les mines et pompes`,
@@ -287,7 +287,7 @@ export function villageMode(): Mode {
       d.flying && 'volant : seules les tours à sarbacanes le touchent',
       d.range >= 2 && 'attaque à distance',
     ].filter(Boolean);
-    return `PV ${Math.round(d.hp * m)} · dégâts ${hit(k, m)} par attaque · 1 attaque toutes les ${d.hitEvery} s (${Math.round(d.dps * m)}/s)<br>portée ${d.flying ? 'au-dessus de la cible' : d.range} · vitesse ${d.speed} · ${d.space} place${d.space > 1 ? 's' : ''}<br>${traits.join(' · ')}`;
+    return `PV ${st.hp} · dégâts ${hit(k, level)} par attaque · 1 attaque toutes les ${d.hitEvery} s (${st.dps}/s)<br>portée ${d.flying ? 'au-dessus de la cible' : d.range} · vitesse ${d.speed} · ${d.space} place${d.space > 1 ? 's' : ''}<br>${traits.join(' · ')}`;
   }
 
   function trainHtml(now: number, trainer: 'ground' | 'air'): string {
@@ -312,16 +312,16 @@ export function villageMode(): Mode {
 
   /** "PV 320 → 416 · dégâts 26 → 34" for a research from level to level + 1. */
   function upgradeStats(k: string, level: number): string {
-    const d = TROOPS[k], a = TROOP_LEVELS[level - 1].mult, b = TROOP_LEVELS[level].mult;
+    const d = TROOPS[k], a = d.levels[level - 1], b = d.levels[level];
     const up = (icon: string, label: string, from: number, to: number, unit = '') =>
       `<span class="up">${icon} ${label} ${from}${unit} → <b>${to}${unit}</b> <em>+${to - from}</em></span>`;
-    return up('❤️', 'PV', Math.round(d.hp * a), Math.round(d.hp * b)) + up('⚔️', 'Dégâts par attaque', hit(k, a), hit(k, b));
+    return up('❤️', 'PV', a.hp, b.hp) + up('⚔️', 'Dégâts par attaque', hit(k, level), hit(k, level + 1));
   }
 
   /** Troop upgrade buttons, shown only in the panel of a working laboratory. */
   function labHtml(now: number, working: number): string {
     return '<h2>Améliorer les troupes</h2>' + researchHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="lab">' + Object.entries(TROOPS).map(([k, d]) => {
-      const lvl = troopLevel(save, k), up = TROOP_LEVELS[lvl - 1].up;
+      const lvl = troopLevel(save, k), up = TROOPS[k].levels[lvl - 1].up;
       if (!up || lvl >= troopMaxLevel(k)) return `<button disabled><img src="${spriteUrl('t_' + k)}" alt="">${d.name} niv ${lvl}<small>niveau maximum</small></button>`;
       const need = labNeeded(k, lvl + 1), ok = !save.research && working >= need && canAfford(save, up.cost);
       return `<button data-act="troopUp" data-arg="${k}" ${ok ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} niv ${lvl} → ${lvl + 1}<small>${fmtCost(up.cost)} · ${secs(up.sec * 1000)}${upgradeStats(k, lvl)}${working < need ? `<br>⚠ laboratoire niveau ${need} requis` : ''}</small></button>`;
