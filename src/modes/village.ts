@@ -19,6 +19,7 @@ const CATEGORIES: [string, string, (d: typeof BUILDINGS[string]) => boolean][] =
   ['res', '💰 Ressources', d => !!(d.res || d.store)],
   ['army', '🪖 Armée', d => !!(d.trains || d.lab || d.levels[0].housing)],
   ['def', '🛡️ Défenses', d => !!d.defense],
+  ['worker', '👷 Ouvrier', d => !!d.workshop],
 ];
 
 interface View { model: THREE.Group; shown: number; scaffold: THREE.Group; bar: Bar }
