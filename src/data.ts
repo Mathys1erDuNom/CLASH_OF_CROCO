@@ -18,6 +18,7 @@ export interface BuildingDef {
   name: string;
   size: number; // footprint in tiles
   max: number; // how many the player may own
+  maxByHut?: number[]; // how many by Hutte du Chef level (index 0 = level 1), when that differs from max
   hutRequired?: number; // Chief's hut level needed to build it; hidden from the build menu until then (default 1)
   res?: Res; // resource produced
   store?: Res; // resource whose stock it raises the maximum of
@@ -94,7 +95,7 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 500, chicken: 400 }, sec: 90, hp: 700 },
     { cost: { gold: 1200, chicken: 1000 }, sec: 200, hp: 900 },
   ] },
-  workshop: { name: "Atelier de l'ouvrier", size: 2, max: 4, hutRequired: 1, workshop: true, levels: [
+  workshop: { name: "Atelier de l'ouvrier", size: 2, max: 2, maxByHut: [1, 1, 2], hutRequired: 1, workshop: true, levels: [
     { cost: { gold: 100 }, sec: 20, hp: 450 },
   ] },
 };

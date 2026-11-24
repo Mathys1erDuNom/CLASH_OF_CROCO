@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType, storeCap, troopUnlocked, unlockTroop, rebuild, workersFree, workersTotal,
+  currentType, storeCap, troopUnlocked, unlockTroop, rebuild, workersFree, workersTotal, maxCount,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -350,8 +350,8 @@ export function villageMode(): Mode {
   function panelHtml(): string {
     const now = Date.now();
     const buildBtn = ([k, d]: [string, typeof BUILDINGS[string]]) => {
-      const c = d.levels[0].cost, ok = countOf(save, k) < d.max && canAfford(save, c);
-      return `<button data-act="build" data-arg="${k}" ${ok ? '' : 'disabled'}><img src="${spriteUrl('b_' + k)}" alt="">${d.name}<small>${fmtCost(c)} · ${countOf(save, k)}/${d.max}</small></button>`;
+      const c = d.levels[0].cost, ok = countOf(save, k) < maxCount(save, k, Date.now()) && canAfford(save, c);
+      return `<button data-act="build" data-arg="${k}" ${ok ? '' : 'disabled'}><img src="${spriteUrl('b_' + k)}" alt="">${d.name}<small>${fmtCost(c)} · ${countOf(save, k)}/${maxCount(save, k, Date.now())}</small></button>`;
     };
     // Build menu as collapsible categories (one open at a time)
     const available = Object.entries(BUILDINGS).filter(([k]) => k !== 'hq' && unlocked(save, k, now));

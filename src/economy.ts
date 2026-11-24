@@ -22,7 +22,7 @@ export interface Ruin { type: string; x: number; y: number; level: number }
 
 export function newSave(now: number): Save {
   const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
-  const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4]] as const;
+  const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4], ['workshop', 9, 4]] as const;
   for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
   return s;
@@ -51,7 +51,7 @@ export function migrate(s: Save): Save {
   s.unlocking ??= null;
   s.ruins ??= [];
   s.raids ??= [];
-  for (const type of ['camp', 'goldStore', 'chickenStore']) { // saves from before camps and storages: give a free one
+  for (const type of ['camp', 'goldStore', 'chickenStore', 'workshop']) { // saves from before camps and storages: give a free one
     if (countOf(s, type) || s.ruins.some(r => r.type === type)) continue; // a destroyed one is a ruin to rebuild, not a missing one
     const spot = [...Array(GRID * GRID).keys()].map(i => [i % GRID, Math.floor(i / GRID)]).find(([x, y]) => canPlace(s, type, x, y));
     if (spot) s.buildings.push({ id: s.nextId++, type, x: spot[0], y: spot[1], level: 1, readyAt: 0, collectedAt: 0 });
@@ -118,9 +118,12 @@ export const unlocked = (s: Save, type: string, now: number) => hqLevel(s, now) 
 export const workersTotal = (s: Save, now: number) => 1 + s.buildings.filter(b => BUILDINGS[b.type].workshop && now >= b.readyAt).length;
 export const workersFree = (s: Save, now: number) => workersTotal(s, now) - s.buildings.filter(b => now < b.readyAt).length;
 
+/** How many of a building the player may own now, given the Hutte du Chef's level. */
+export const maxCount = (s: Save, type: string, now: number) => BUILDINGS[type].maxByHut?.[hqLevel(s, now) - 1] ?? BUILDINGS[type].max;
+
 export function placeBuilding(s: Save, type: string, x: number, y: number, now: number): boolean {
   const lv = BUILDINGS[type].levels[0];
-  if (!unlocked(s, type, now) || countOf(s, type) >= BUILDINGS[type].max || !canAfford(s, lv.cost) || !canPlace(s, type, x, y) || workersFree(s, now) < 1) return false;
+  if (!unlocked(s, type, now) || countOf(s, type) >= maxCount(s, type, now) || !canAfford(s, lv.cost) || !canPlace(s, type, x, y) || workersFree(s, now) < 1) return false;
   pay(s, lv.cost);
   s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now + lv.sec * 1000, collectedAt: now });
   return true;
