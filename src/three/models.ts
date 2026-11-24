@@ -500,25 +500,31 @@ function croco(level: number) {
   return g;
 }
 
-const FROG_SKIN = [[0x8fd04b, 0x5ea22a, 0xf2f7c8], [0x3fbfa0, 0x2a8a72, 0xe8f8f0], [0x3a6ad8, 0x22408a, 0xffb347]];
-
-function frog(level: number) {
-  const [skin, dark, belly] = FROG_SKIN[level - 1];
+/** The croco sarbacane: a chibi croco with a bamboo blowpipe in its mouth. Level 2 adds a bigger quiver and a leather strap; level 3 has two pipes and gold armour. */
+function crocoSarbacane(level: number) {
+  const L2 = level >= 2, L3 = level >= 3;
+  const skin = [0x7cc24a, 0x5ea83a, 0x4a9a32][level - 1], dark = [0x3a7a2a, 0x2e6a22, 0x25601f][level - 1];
+  const bamboo = [0xd9a85a, 0xc8944a, 0xe0b060][level - 1], leather = 0x7a4a2a;
   const g = new THREE.Group();
-  for (const z of [-0.15, 0.15]) g.add(scl(ball(0.1, dark, -0.05, 0.05, z, 0), 1.6, 0.5, 1));
-  g.add(scl(ball(0.26, skin), 1, 0.85 + level * 0.04, 1.05));
-  g.children.at(-1)!.position.y = 0.25;
-  g.add(scl(ball(0.17, belly, 0.12, 0.2, 0, 1), 0.6, 0.9, 1));
-  for (const z of [-0.11, 0.11]) g.add(ball(0.09, skin, 0.08, 0.48, z, 1), ball(0.06, 0xffffff, 0.13, 0.5, z, 0), ball(0.03, 0x111111, 0.17, 0.51, z, 0));
-  if (level === 3) for (const [x, y, z] of [[-0.1, 0.4, 0.15], [0, 0.3, -0.2], [-0.15, 0.25, 0.05], [0.05, 0.42, -0.05]]) g.add(ball(0.045, 0x111111, x, y, z, 0)); // poison-frog spots
-  const pipe = level === 3 ? goldMat() : mat([0x8b5a2b, 0x5a3a1c][level - 1]);
-  g.add(rot(mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.55 + level * 0.1, 5), pipe, 0.35 + level * 0.04, 0.3, 0.08), 0, 0, Math.PI / 2 - 0.1));
-  if (level >= 2) { // headband and dart quiver
-    g.add(cyl(0.2, 0.2, 0.05, 0xb3262a, 0, 0.42, 0, 10));
-    g.add(rot(cyl(0.06, 0.06, 0.3, 0x6d4526, -0.2, 0.35, -0.12, 6), 0.4, 0, 0.3));
-  }
-  if (level >= 3) for (let i = 0; i < 3; i++) g.add(rot(box(0.03, 0.22, 0.07, [0xff5050, 0xffd84a, 0x50c8ff][i], -0.08, 0.58, (i - 1) * 0.07), (i - 1) * 0.3, 0, 0.3)); // feather crown
-  g.scale.setScalar([1, 1.08, 1.16][level - 1]);
+  g.add(scl(ball(0.3, skin, 0, 0.35, 0), 1, 0.95, 1.1)); // round body
+  g.add(scl(ball(0.2, BELLY, 0.1, 0.3, 0), 0.9, 0.9, 1.1)); // belly
+  for (const z of [-0.22, 0.22]) g.add(ball(0.12, skin, 0.08, 0.1, z), box(0.2, 0.08, 0.14, BELLY, 0.14, 0.04, z)); // stubby legs and feet
+  for (const x of [-0.2, -0.05, 0.1]) g.add(cone(0.05, 0.12, dark, x, 0.62, 0, 4)); // back spikes
+  g.add(rot(cone(0.11, 0.6, skin, -0.55, 0.22, 0, 5), 0, 0, Math.PI / 2)); // tail
+  g.add(ball(0.27, skin, 0.3, 0.72, 0)); // head
+  g.add(box(0.3, 0.16, 0.2, skin, 0.5, 0.66, 0), box(0.28, 0.07, 0.16, BELLY, 0.5, 0.56, 0)); // snout and jaw
+  for (const z of [-0.07, 0.07]) g.add(cone(0.02, 0.05, 0xffffff, 0.6, 0.6, z, 4)); // teeth
+  for (const z of [-0.2, 0.2]) g.add(ball(0.08, 0xffffff, 0.5, 0.82, z), ball(0.04, 0x1a1a1a, 0.56, 0.84, z * 1.1, 0), box(0.14, 0.04, 0.05, dark, 0.48, 0.95, z)); // eyes and angry brows
+  const mouthY = 0.6; // the pipes start inside the mouth
+  for (const z of L3 ? [-0.07, 0.07] : [0]) g.add(rot(cyl(0.035, 0.045, 0.95, bamboo, 1.05, mouthY, z, 7), 0, 0, Math.PI / 2), rot(cyl(0.05, 0.05, 0.08, skin, 1.3, mouthY, z, 7), 0, 0, Math.PI / 2)); // blowpipes with a green band
+  g.add(ball(0.08, skin, 0.9, mouthY, 0.12), ball(0.08, skin, 0.9, mouthY, -0.12)); // hands holding the pipes
+  for (const z of L3 ? [-0.07, 0.07] : [0]) { const mz = new THREE.Object3D(); mz.name = "muzzle"; mz.position.set(1.55, mouthY, z); g.add(mz); } // where each arrow leaves its pipe
+  const qh = L2 ? 0.5 : 0.42, qr = L2 ? 0.12 : 0.09, qy = 0.55, qTop = qy + qh / 2;
+  g.add(cyl(qr, qr * 0.9, qh, bamboo, -0.25, qy, -0.12, 8)); // quiver on the back
+  for (let i = 0; i < 3; i++) { const x = -0.25 + (i - 1) * 0.05; g.add(cyl(0.012, 0.012, 0.5, 0xd8c090, x, qTop, -0.12, 4), cone(0.035, 0.1, 0xd84a3a, x, qTop + 0.3, -0.12, 4)); } // arrows sticking out of the quiver
+  if (L2) g.add(rot(box(0.07, 0.5, 0.42, leather, 0.05, 0.4, 0), 0, 0, 0.5), ball(0.05, 0xf2c230, 0.12, 0.42, 0.16)); // leather strap and buckle
+  if (L3) g.add(box(0.3, 0.12, 0.36, GOLD, 0.02, 0.6, 0), box(0.08, 0.2, 0.36, GOLD, 0.25, 0.3, 0), ball(0.05, 0x40ff80, 0.25, 0.5, 0), box(0.03, 0.35, 0.22, 0x2f8a3a, -0.25, 0.25, 0)); // gold armour, green gem and cape
+  g.scale.setScalar([1, 1.06, 1.12][level - 1]);
   return g;
 }
 
@@ -714,7 +720,7 @@ function colossus(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'frog' ? frog(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */

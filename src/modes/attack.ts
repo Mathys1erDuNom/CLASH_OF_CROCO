@@ -252,7 +252,10 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
           for (const color of [0xff5a20, 0xa02818, 0x4a3a34]) smoke(tip, aim, color); // orange, red, then dark smoke
         }
         if (attacking && ready(u.id, dt, TROOPS[u.kind].hitEvery)) {
-          if (u.kind === 'frog') projectile('dart', pos.clone().setY(0.35), toWorld(s.cx, s.cy, 0.6));
+          if (u.kind === 'crocoSarbacane') { // one arrow per blowpipe, each leaving its muzzle
+            v.model.updateWorldMatrix(true, true);
+            for (const mz of v.model.getObjectsByProperty('name', 'muzzle')) projectile('dart', mz.getWorldPosition(new THREE.Vector3()), toWorld(s.cx, s.cy, 0.6));
+          }
           else if (u.kind === 'crocoLauncher') projectile('bomb', pos.clone().setY(0.8), toWorld(s.cx, s.cy, 0.4), troopLevel(save, u.kind));
           else if (u.kind !== 'fireCroco') puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
         }

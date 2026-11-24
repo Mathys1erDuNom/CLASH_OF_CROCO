@@ -61,15 +61,15 @@ function chickenFarm() {
 }
 
 function barracks(g: boolean) {
-  const a = g ? '#8a5a3a' : '#7fae54', b = g ? '#4e2e1c' : '#3f6e2c', s = g ? '#b3262a' : '#e8d9a0';
-  return svg(128, 160, `<defs>${grad('t', a, b, false)}</defs>
-    ${shadow(64, 142, 60)}
-    <path d="M8 140 L64 34 L120 140 z" fill="url(#t)" ${sw}/>
-    <path d="M36 140 L64 34 M92 140 L64 34" stroke="${s}" stroke-width="6" opacity=".9"/>
-    <path d="M50 140 Q64 92 78 140 z" fill="#1d150e" ${sw}/>
-    <path d="M64 92 L46 140" stroke="${b}" stroke-width="3"/>
-    <circle cx="58" cy="122" r="3.5" fill="#f5e663"/><circle cx="70" cy="122" r="3.5" fill="#f5e663"/>
-    <path d="M14 96 L44 140 M114 96 L84 140" stroke="#7a5430" stroke-width="5"/><path d="M10 90 l6 -2 l2 8 z M118 90 l-6 -2 l-2 8 z" fill="#ccc" stroke="${O}" stroke-width="2"/>
+  const wood = g ? '#6a4a2a' : '#c8944a', roof = g ? '#4e2e1c' : '#5ea83a', gem = g ? '#b3262a' : '#40ff80';
+  return svg(128, 160, `${shadow(64, 142, 60)}
+    <rect x="20" y="66" width="88" height="74" rx="6" fill="${wood}" ${sw}/>
+    <path d="M8 72 L64 24 L120 72 z" fill="${roof}" ${sw}/>
+    <path d="M14 74 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8" fill="none" stroke="#3a7a2a" stroke-width="4"/>
+    <rect x="54" y="104" width="20" height="36" rx="3" fill="#2b1d14"/>
+    <rect x="28" y="86" width="16" height="14" fill="#2b1d14"/><rect x="84" y="86" width="16" height="14" fill="#2b1d14"/>
+    <path d="M24 136 L104 90 M104 136 L24 90" stroke="#8b6a3a" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+    <circle cx="64" cy="44" r="7" fill="${gem}" ${sw}/>
     ${flag(64, 4, g)}`);
 }
 
@@ -126,17 +126,22 @@ function crocoBrute() {
     <circle cx="22" cy="44" r="5" fill="#4c9a3f" ${sw}/>`);
 }
 
-function frog() {
-  return svg(72, 72, `<defs>${grad('f', '#b6ef6a', '#5ea22a')}</defs>
-    ${shadow(34, 64, 20, 5)}
-    <ellipse cx="22" cy="58" rx="12" ry="6" fill="#5ea22a" ${sw}/><ellipse cx="46" cy="58" rx="12" ry="6" fill="#5ea22a" ${sw}/>
-    <ellipse cx="34" cy="44" rx="20" ry="17" fill="url(#f)" ${sw}/>
-    <ellipse cx="36" cy="50" rx="11" ry="8" fill="#f2f7c8"/>
-    <circle cx="24" cy="26" r="9" fill="url(#f)" ${sw}/><circle cx="42" cy="26" r="9" fill="url(#f)" ${sw}/>
-    <circle cx="25" cy="25" r="4.5" fill="#fff"/><circle cx="43" cy="25" r="4.5" fill="#fff"/><circle cx="26" cy="25" r="2.2" fill="${O}"/><circle cx="44" cy="25" r="2.2" fill="${O}"/>
-    <path d="M26 38 q8 5 16 0" fill="none" stroke="${O}" stroke-width="2.5"/>
-    <path d="M40 38 L70 30" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/><path d="M40 38 L70 30" stroke="#c49a5a" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="46" cy="38" r="4" fill="#5ea22a" ${sw}/>`);
+function crocoSarbacane() {
+  return svg(72, 72, `<defs>${grad('c', '#8fd16a', '#4a9a32')}</defs>
+    ${shadow(36, 66, 22, 5)}
+    <path d="M18 46 L4 40 L8 50 Z" fill="#4a9a32" ${sw}/>
+    <ellipse cx="32" cy="46" rx="18" ry="14" fill="url(#c)" ${sw}/>
+    <ellipse cx="36" cy="52" rx="10" ry="6" fill="#f0e0a0"/>
+    <rect x="16" y="56" width="8" height="8" rx="3" fill="#f0e0a0" ${sw}/><rect x="36" y="56" width="8" height="8" rx="3" fill="#f0e0a0" ${sw}/>
+    <rect x="18" y="20" width="16" height="22" rx="4" transform="rotate(-12 26 31)" fill="#c8944a" ${sw}/>
+    <path d="M22 18 l-2 -8 M26 17 l0 -9 M30 18 l2 -8" stroke="#d8c090" stroke-width="2"/><path d="M20 10 l-2 -4 l4 0 z M26 8 l-1 -4 l3 0 z M32 10 l2 -4 l-4 0 z" fill="#d84a3a"/>
+    <circle cx="48" cy="34" r="13" fill="url(#c)" ${sw}/>
+    <rect x="52" y="34" width="14" height="10" rx="5" fill="#8fd16a" ${sw}/>
+    <circle cx="46" cy="30" r="4.5" fill="#fff"/><circle cx="47" cy="30" r="2.2" fill="${O}"/>
+    <path d="M42 26 l8 2" stroke="${O}" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M58 40 l3 -1 M62 42 l2 0" stroke="#fff" stroke-width="1.5"/>
+    <path d="M50 27 L70 20" stroke="#d9a85a" stroke-width="4" stroke-linecap="round"/><path d="M50 27 L70 20" stroke="#5ea83a" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 12"/>
+    <circle cx="48" cy="40" r="4" fill="#5ea83a" ${sw}/>`);
 }
 
 function babyCroco() {
@@ -212,7 +217,7 @@ const log = () => svg(64, 28, `${shadow(32, 24, 28, 4)}<rect x="6" y="8" width="
 const mushroom = () => svg(28, 28, `<rect x="11" y="14" width="6" height="10" rx="2" fill="#efe6cc" stroke="${O}" stroke-width="2"/><path d="M3 15 Q14 0 25 15 z" fill="#c9443a" stroke="${O}" stroke-width="2"/><circle cx="10" cy="10" r="2" fill="#fff"/><circle cx="17" cy="9" r="1.6" fill="#fff"/>`);
 const rubble = () => svg(96, 64, `<ellipse cx="48" cy="40" rx="42" ry="18" fill="#2e2a22" opacity=".7"/>${[[24, 36, 9], [44, 30, 11], [64, 40, 8], [36, 46, 7], [58, 26, 6]].map(([x, y, r]) =>
   `<circle cx="${x}" cy="${y}" r="${r}" fill="#6e6658" stroke="${O}" stroke-width="2"/>`).join('')}<path d="M18 30 L40 44 M60 32 L78 46" stroke="#6d4526" stroke-width="5"/>`);
-const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" width="84" height="56" rx="6" fill="#9a8fb0" ${sw}/><path d="M14 80 L64 34 L114 80 z" fill="#6a3a8a" ${sw}/><rect x="54" y="104" width="20" height="28" rx="3" fill="#2b1d14"/><path d="M92 92 h16 l-4 6 v12 l10 18 H82 l10 -18 v-12 z" fill="#cfe6f0" ${sw}/><path d="M86 124 h28 l-3 8 H89 z" fill="#7dff6a"/>`);
+const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" width="84" height="56" rx="6" fill="#c8944a" ${sw}/><path d="M14 80 L64 34 L114 80 z" fill="#5ea83a" ${sw}/><rect x="54" y="104" width="20" height="28" rx="3" fill="#2b1d14"/><path d="M64 42 l-12 18 l12 18 l12 -18 z" fill="#40ff80" ${sw}/><circle cx="36" cy="96" r="5" fill="#40ff80"/><circle cx="92" cy="96" r="5" fill="#40ff80"/><path d="M30 130 L98 110" stroke="#8b6a3a" stroke-width="5" stroke-linecap="round"/>`);
 const coin = () => svg(32, 32, `<circle cx="16" cy="16" r="12" fill="#f2c230" ${sw}/><circle cx="16" cy="16" r="7" fill="none" stroke="#b38512" stroke-width="2.5"/><path d="M11 10 q3 -2 6 0" stroke="#fff6b0" stroke-width="2" fill="none"/>`);
 const chickenIcon = () => svg(32, 32, `<circle cx="15" cy="18" r="10" fill="#f4f0e6" ${sw}/><path d="M11 9 q2 -6 4 0 q2 -5 4 1" fill="#d42a2a" stroke="${O}" stroke-width="2"/><path d="M24 16 l6 2 l-6 2 z" fill="#f0a020" stroke="${O}" stroke-width="1.5"/><circle cx="19" cy="16" r="1.6" fill="${O}"/>`);
 
@@ -226,7 +231,7 @@ export const SPRITES: Record<string, string> = {
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
   b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
-  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_frog: frog(), t_babyCroco: babyCroco(),
+  t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),
   i_gold: coin(), i_chicken: chickenIcon(),

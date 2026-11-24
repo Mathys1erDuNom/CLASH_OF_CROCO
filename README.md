@@ -1,7 +1,7 @@
 # 🐊 Clash of Croco
 
 Prototype de jeu de construction de base et d'attaque dans un marais. Construis ton village
-(mines d'or, élevages de poulets, casernes, défenses), forme des troupes (Croco Cogneur, Grenouille
+(mines d'or, élevages de poulets, casernes, défenses), forme des troupes (Croco Cogneur, Croco
 Sarbacane, Bébé Croco) et attaque les bases des gobelins.
 
 Le jeu est en **3D** (Three.js) : clic-glisser pour tourner la caméra, clic droit-glisser pour la déplacer, molette pour zoomer.
@@ -127,7 +127,7 @@ sur n'importe quel appareil. Sans ces variables (en local), le jeu reste en mode
   « niveau 2 = labo 2, niveau 3 = labo 3 ». Pour une future troupe plus rare, mets par exemple `{ 2: 3, 3: 3 }`.
   Pour ajouter un niveau de labo, ajoute une ligne dans `levels` du `lab` puis lance `npm run models`.
 - Ciblage : le Croco Cogneur fonce d'abord sur les défenses, le Bébé Croco sur les mines et pompes,
-  la Grenouille tire sur le bâtiment le plus proche. Quand il n'y a plus de cible préférée, ils tapent le reste
+  le Croco Sarbacane tire sur le bâtiment le plus proche. Quand il n'y a plus de cible préférée, ils tapent le reste
   (réglable avec `prefers` dans `TROOPS`, `src/data.ts`).
 - Attaque : choisis une troupe et clique sur la carte hors des zones rouges. 1 étoile à 50 %,
   1 pour la Hutte du Chef, 1 pour 100 %. Le butin dépend des mines/pompes/hutte détruites.

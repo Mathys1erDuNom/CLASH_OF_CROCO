@@ -43,6 +43,7 @@ export function migrate(s: Save): Save {
   s.chicken ??= old.mud ?? 0;
   delete old.mud;
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
+  for (const m of [s.troops, s.troopLevel, s.unlockedTroops] as unknown[]) renameFrog(m); // the frog troop is now the croco sarbacane
   s.troopLevel ??= {};
   s.research ??= null;
   s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
@@ -239,4 +240,10 @@ export function rebuild(s: Save, now: number): number {
     return false;
   });
   return n;
+}
+
+/** Saves from when the troop was called 'frog' keep their troops under the new name. */
+function renameFrog(o: unknown) {
+  if (Array.isArray(o)) o.forEach((k, i) => { if (k === 'frog') o[i] = 'crocoSarbacane'; });
+  else if (o && typeof o === 'object' && 'frog' in o) { (o as Record<string, unknown>).crocoSarbacane = (o as Record<string, unknown>).frog; delete (o as Record<string, unknown>).frog; }
 }

@@ -5,14 +5,14 @@ import { addTroopsToQueue, collect, gain, migrate, newSave, storeCap, tick, unlo
 test('other troops are paid for and wait in the barracks before training', () => {
   const s = newSave(0);
   s.chicken = 1000;
-  assert.equal(addTroopsToQueue(s, 'frog', 0), false); // not unlocked yet
-  assert.equal(unlockTroop(s, 'frog', 0), true);
-  assert.equal(s.chicken, 900); // frog unlock costs 100
+  assert.equal(addTroopsToQueue(s, 'crocoSarbacane', 0), false); // not unlocked yet
+  assert.equal(unlockTroop(s, 'crocoSarbacane', 0), true);
+  assert.equal(s.chicken, 900); // sarbacane unlock costs 100
   assert.equal(unlockTroop(s, 'babyCroco', 0), false); // one unlock at a time
   tick(s, 59_999);
-  assert.equal(addTroopsToQueue(s, 'frog', 59_999), false); // still unlocking
+  assert.equal(addTroopsToQueue(s, 'crocoSarbacane', 59_999), false); // still unlocking
   tick(s, 60_000);
-  assert.equal(addTroopsToQueue(s, 'frog', 60_000), true);
+  assert.equal(addTroopsToQueue(s, 'crocoSarbacane', 60_000), true);
   assert.equal(addTroopsToQueue(s, 'croco', 60_000), true); // the croco needs no unlock
 });
 
@@ -40,4 +40,11 @@ test('old saves with vase and mud pumps load as chicken and chicken farms', () =
   assert.equal(s.chicken, 321);
   assert.equal(s.buildings[0].type, 'chickenFarm');
   assert.equal('mud' in s, false);
+});
+
+test('a save from when the troop was a frog gets its troops under the new name', () => {
+  const s = migrate({ ...newSave(0), troops: { frog: 3 }, unlockedTroops: ['frog'], troopLevel: { frog: 2 } } as never);
+  assert.deepEqual(s.troops, { crocoSarbacane: 3 });
+  assert.deepEqual(s.unlockedTroops, ['crocoSarbacane']);
+  assert.deepEqual(s.troopLevel, { crocoSarbacane: 2 });
 });

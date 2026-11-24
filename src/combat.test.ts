@@ -12,7 +12,7 @@ test('troop research needs the lab level set in labRequired, takes time, then gi
   assert.equal(upgradeTroop(s, 'croco', 0), false); // croco level 2 needs a level-2 lab
   s.buildings.at(-1)!.level = 2;
   assert.equal(upgradeTroop(s, 'croco', 0), true);
-  assert.equal(upgradeTroop(s, 'frog', 0), false); // one research at a time
+  assert.equal(upgradeTroop(s, 'crocoSarbacane', 0), false); // one research at a time
   tick(s, 59_999);
   assert.equal(troopLevel(s, 'croco'), 1);
   tick(s, 60_000);
@@ -89,13 +89,13 @@ test('producers accumulate up to their cap and training finishes on time', () =>
   assert.equal(collect(s, mine, 60_000 * 100), 200); // capped
   s.chicken = 1000;
   s.troops = {}; // the starting army (23 places) would fill the 20-place camp
-  const before = s.troops.frog ?? 0;
-  s.unlockedTroops.push('frog');
-  assert.equal(addTroopsToQueue(s, 'frog', 0), true);
+  const before = s.troops.crocoSarbacane ?? 0;
+  s.unlockedTroops.push('crocoSarbacane');
+  assert.equal(addTroopsToQueue(s, 'crocoSarbacane', 0), true);
   tick(s, 7_999);
-  assert.equal(s.troops.frog ?? 0, before);
+  assert.equal(s.troops.crocoSarbacane ?? 0, before);
   tick(s, 8_000);
-  assert.equal(s.troops.frog, before + 1);
+  assert.equal(s.troops.crocoSarbacane, before + 1);
 });
 
 test('upgrades cost resources, take time, need the hut level, then boost production', () => {
@@ -113,16 +113,16 @@ test('upgrades cost resources, take time, need the hut level, then boost product
   assert.equal(armyCap(s, 0), 20); // one level-1 camp
 });
 
-test('crocos go for the nearest building, baby crocos for resources, frogs for the nearest building', () => {
+test('crocos go for the nearest building, baby crocos for resources, sarbacanes for the nearest building', () => {
   const b = new Battle(GOBLIN_BASES[0].buildings); // hq, goldMine, chickenFarm, cannon
   const { ox, oy } = offset(b);
-  const croco = b.deploy('croco', 9 + ox, 17 + oy), baby = b.deploy('babyCroco', 9 + ox, 17 + oy), frog = b.deploy('frog', 9 + ox, 17 + oy);
+  const croco = b.deploy('croco', 9 + ox, 17 + oy), baby = b.deploy('babyCroco', 9 + ox, 17 + oy), sarbacane = b.deploy('crocoSarbacane', 9 + ox, 17 + oy);
   b.step(0.01);
   const typeOf = (id: number | null) => b.structs.find(s => s.id === id)?.type;
   const nearest = b.structs.reduce((a, s) => (edgeDist(croco, s) < edgeDist(croco, a) ? s : a));
   assert.equal(croco.targetId, nearest.id); // no preference any more: the nearest building
   assert.ok(['goldMine', 'chickenFarm'].includes(typeOf(baby.targetId)!));
-  assert.equal(typeOf(frog.targetId), 'mortar'); // the nearest building
+  assert.equal(typeOf(sarbacane.targetId), 'mortar'); // the nearest building
   for (const s of b.structs) if (s.type === 'goldMine' || s.type === 'chickenFarm') s.hp = 0;
   baby.targetId = null;
   b.step(0.01);
@@ -140,9 +140,9 @@ test('camps give army places by level, old saves get a camp, barracks level spee
   const old = migrate({ ...newSave(0), buildings: newSave(0).buildings.filter(b => b.type !== 'camp') });
   assert.equal(old.buildings.filter(b => b.type === 'camp').length, 1);
   const barracks = s.buildings.find(b => b.type === 'barracks')!;
-  assert.equal(trainMs(s, 'frog', 0), 8000);
+  assert.equal(trainMs(s, 'crocoSarbacane', 0), 8000);
   barracks.level = 3;
-  assert.equal(trainMs(s, 'frog', 0), 4000);
+  assert.equal(trainMs(s, 'crocoSarbacane', 0), 4000);
 });
 
 test('buildings move only to free spots, and may overlap their own old footprint', () => {
