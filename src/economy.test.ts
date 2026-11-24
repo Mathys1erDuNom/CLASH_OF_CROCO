@@ -47,7 +47,8 @@ test('a save from when the troop was a frog gets its troops under the new name',
   assert.deepEqual(s.troops, { crocoSarbacane: 3 });
   assert.deepEqual(s.unlockedTroops, ['crocoSarbacane']);
   assert.deepEqual(s.troopLevel, { crocoSarbacane: 2 });
-  const q = migrate({ ...newSave(0), queue: [{ kind: 'frog', doneAt: 5 }], unlocking: { kind: 'frog', doneAt: 5 } } as never);
+  const q = migrate({ ...newSave(0), queue: [{ kind: 'frog', doneAt: 5 }], unlocking: { kind: 'frog', doneAt: 5 }, research: { kind: 'frog', doneAt: 5 } } as never);
   assert.equal(q.queue[0].kind, 'crocoSarbacane');
   assert.equal(q.unlocking?.kind, 'crocoSarbacane');
+  assert.equal(q.research?.kind, 'crocoSarbacane');
 });
