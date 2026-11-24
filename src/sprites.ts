@@ -61,15 +61,14 @@ function chickenFarm() {
 }
 
 function barracks(g: boolean) {
-  const wood = g ? '#6a4a2a' : '#c8944a', roof = g ? '#4e2e1c' : '#5ea83a', gem = g ? '#b3262a' : '#40ff80';
+  const main = g ? '#8a5a3a' : '#6f9e48', stripe = g ? '#b3262a' : '#e8d9a0';
   return svg(128, 160, `${shadow(64, 142, 60)}
-    <rect x="20" y="66" width="88" height="74" rx="6" fill="${wood}" ${sw}/>
-    <path d="M8 72 L64 24 L120 72 z" fill="${roof}" ${sw}/>
-    <path d="M14 74 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8 l10 8 l10 -8" fill="none" stroke="#3a7a2a" stroke-width="4"/>
-    <rect x="54" y="104" width="20" height="36" rx="3" fill="#2b1d14"/>
-    <rect x="28" y="86" width="16" height="14" fill="#2b1d14"/><rect x="84" y="86" width="16" height="14" fill="#2b1d14"/>
-    <path d="M24 136 L104 90 M104 136 L24 90" stroke="#8b6a3a" stroke-width="5" stroke-linecap="round" opacity=".8"/>
-    <circle cx="64" cy="44" r="7" fill="${gem}" ${sw}/>
+    <path d="M10 140 L64 36 L118 140 z" fill="${main}" ${sw}/>
+    <path d="M36 112 L92 112 M24 130 L104 130" stroke="${stripe}" stroke-width="7"/>
+    <path d="M50 140 Q64 98 78 140 z" fill="#22160e" ${sw}/>
+    <circle cx="58" cy="122" r="3" fill="#f5e663"/><circle cx="70" cy="122" r="3" fill="#f5e663"/>
+    <path d="M14 96 L44 22 M114 96 L84 22" stroke="#5a4026" stroke-width="5" stroke-linecap="round"/>
+    <path d="M40 16 l4 -12 l4 12 z M84 16 l4 -12 l4 12 z" fill="#ccc" stroke="${O}" stroke-width="2"/>
     ${flag(64, 4, g)}`);
 }
 
@@ -224,7 +223,7 @@ function bombTowerIcon(g: boolean) {
   const stone = g ? '#5a4a3a' : '#9a9486', top = g ? '#3a2a1a' : '#6d4526';
   return svg(128, 160, `${shadow(64, 142, 50)}<rect x="36" y="60" width="56" height="82" rx="6" fill="${stone}" ${sw}/><rect x="30" y="50" width="68" height="14" rx="3" fill="${top}" ${sw}/><circle cx="48" cy="40" r="10" fill="#222228" ${sw}/><circle cx="72" cy="36" r="9" fill="#222228" ${sw}/><circle cx="62" cy="22" r="8" fill="#222228" ${sw}/><rect x="54" y="100" width="20" height="30" rx="3" fill="#2b1d14"/><path d="M44 74 h10 M74 74 h10" stroke="#2b1d14" stroke-width="4"/>`);
 }
-const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" width="84" height="56" rx="6" fill="#c8944a" ${sw}/><path d="M14 80 L64 34 L114 80 z" fill="#5ea83a" ${sw}/><rect x="54" y="104" width="20" height="28" rx="3" fill="#2b1d14"/><path d="M64 42 l-12 18 l12 18 l12 -18 z" fill="#40ff80" ${sw}/><circle cx="36" cy="96" r="5" fill="#40ff80"/><circle cx="92" cy="96" r="5" fill="#40ff80"/><path d="M30 130 L98 110" stroke="#8b6a3a" stroke-width="5" stroke-linecap="round"/>`);
+const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="74" width="84" height="68" rx="4" fill="#8a8478" ${sw}/><path d="M14 78 L64 34 L114 78 z" fill="#6a3a8a" ${sw}/><rect x="54" y="104" width="20" height="38" rx="3" fill="#2b1d14"/><path d="M64 34 L64 14" stroke="#b87333" stroke-width="4"/><circle cx="64" cy="12" r="6" fill="#7dff6a" ${sw}/><rect x="28" y="84" width="14" height="22" fill="#cfe6f0" ${sw}/><circle cx="35" cy="80" r="8" fill="#7dff6a" ${sw}/><rect x="86" y="84" width="14" height="22" fill="#cfe6f0" ${sw}/><circle cx="93" cy="80" r="8" fill="#f0a0ff" ${sw}/>`);
 const coin = () => svg(32, 32, `<circle cx="16" cy="16" r="12" fill="#f2c230" ${sw}/><circle cx="16" cy="16" r="7" fill="none" stroke="#b38512" stroke-width="2.5"/><path d="M11 10 q3 -2 6 0" stroke="#fff6b0" stroke-width="2" fill="none"/>`);
 const chickenIcon = () => svg(32, 32, `<circle cx="15" cy="18" r="10" fill="#f4f0e6" ${sw}/><path d="M11 9 q2 -6 4 0 q2 -5 4 1" fill="#d42a2a" stroke="${O}" stroke-width="2"/><path d="M24 16 l6 2 l-6 2 z" fill="#f0a020" stroke="${O}" stroke-width="1.5"/><circle cx="19" cy="16" r="1.6" fill="${O}"/>`);
 

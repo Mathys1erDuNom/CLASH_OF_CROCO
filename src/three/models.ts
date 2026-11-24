@@ -302,12 +302,12 @@ function sarbacaneTower(goblin: boolean, level: number) {
   g.add(box(1.35, 0.14, 1.35, PLANK, 0, 2.2, 0));
   for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) g.add(cyl(0.04, 0.04, 0.6, DARK_WOOD, x, 2.55, z, 4));
   g.add(rot(cone(1.05, 0.7, (goblin ? [0x6e4f8a, 0x8a2a3a, 0x2e2a34] : [0x6fb34a, 0x4f9a32, 0x3a7a2a])[level - 1], 0, 3.15, 0, 4), 0, Math.PI / 4, 0));
-  const turret = new THREE.Group(); // the croco aims: its head and blowpipe turn together
+  const turret = new THREE.Group(); // the whole croco turns to aim
   turret.name = 'turret';
-  turret.position.set(0, 2.5, 0);
-  const head = goblin ? goblinHead(0.9) : crocoHead(0.9, 0x7cc24a);
-  head.position.set(0.1, 0.25, 0);
-  turret.add(head, cyl(0.035, 0.045, 1.1, BAMBOO, 0.9, 0.2, 0, 7).rotateZ(Math.PI / 2)); // blowpipe out of the snout
+  turret.position.set(0, 2.27, 0); // on the top platform
+  const croco = crocoSarbacane(level);
+  croco.scale.multiplyScalar(0.5); // small enough to stand on the platform
+  turret.add(croco);
   g.add(turret);
   return g;
 }
@@ -456,19 +456,30 @@ export function building(type: string, goblin: boolean, level = 1): THREE.Group 
   return g;
 }
 
-/** The bomb tower: a stone tower with a rotating rack of black bombs on top; level 2 carries more bombs. */
+/** The bomb tower: a stone tower where a croco gunner lifts a lit bomb, with a basket of bombs beside him. Level 2 has a fuller basket. */
 function bombTower(goblin: boolean, level: number) {
   const stone = goblin ? 0x5a4a3a : 0x8a8478, wood = goblin ? 0x4a3020 : 0x6d4526, iron = 0x3a3a40, bomb = 0x222228;
+  const skin = goblin ? 0x8a5a3a : 0x4c9a3f, belly = 0xe2d9a0, basket = 0x8b6a44;
   const g = new THREE.Group();
   g.add(cyl(0.9, 1.0, 2.2, stone, 0, 1.1, 0, 8)); // stone tower
   g.add(cyl(1.1, 1.1, 0.2, wood, 0, 2.3, 0, 8)); // wooden platform
-  const turret = new THREE.Group();
-  turret.name = 'turret';
-  turret.position.set(0, 2.5, 0);
-  turret.add(cyl(0.15, 0.15, 0.3, iron, 0, 0.15, 0, 6)); // swivel
-  const n = 3 + level * 2;
-  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; turret.add(ball(0.2, bomb, Math.cos(a) * 0.45, 0.4, Math.sin(a) * 0.45, 0)); } // bombs in a ring
-  g.add(turret);
+  if (level >= 2) { // reinforced: iron bands round the tower and crenellations
+    for (const y of [0.6, 1.4, 2.0]) g.add(cyl(0.98, 1.08, 0.12, iron, 0, y, 0, 8));
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; g.add(box(0.28, 0.3, 0.28, stone, Math.cos(a) * 0.95, 2.55, Math.sin(a) * 0.95)); }
+  }
+  const croco = new THREE.Group(); // the gunner throws from the platform
+  croco.name = 'turret';
+  croco.position.set(0, 2.27, 0);
+  croco.add(box(0.5, 0.5, 0.4, skin, 0, 0.3, 0), box(0.3, 0.3, 0.28, belly, 0.08, 0.25, 0)); // body and belly
+  for (const z of [-0.12, 0.12]) croco.add(box(0.12, 0.2, 0.12, skin, 0, 0.1, z)); // legs
+  const head = crocoHead(0.7, skin); head.position.set(0.25, 0.7, 0); croco.add(head);
+  croco.add(rot(box(0.12, 0.4, 0.12, skin, 0.3, 0.8, 0.25), 0, 0, -0.8)); // raised arm
+  croco.add(ball(0.16, bomb, 0.5, 1.02, 0.25, 1)); // the bomb in its hand
+  croco.add(mesh(new THREE.SphereGeometry(0.05, 6, 4), mat(0xffa020, { emissive: 0xff6000, emissiveIntensity: 1 }), 0.5, 1.2, 0.25)); // lit fuse
+  g.add(croco);
+  g.add(cyl(0.25, 0.2, 0.25, basket, -0.6, 2.45, 0.2, 8)); // basket of bombs beside the gunner
+  const n = level >= 2 ? 4 : 2;
+  for (let i = 0; i < n; i++) g.add(ball(0.13, bomb, -0.6 + (i % 2 ? 0.1 : -0.1), 2.62 + Math.floor(i / 2) * 0.12, 0.2, 0));
   return g;
 }
 
