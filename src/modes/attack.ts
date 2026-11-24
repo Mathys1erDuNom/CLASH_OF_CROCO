@@ -46,6 +46,14 @@ function puff(at: THREE.Vector3, color: number, n: number, size = 0.12) {
   }
 }
 
+/** A bomb tower's shot: when it lands, every ground troop in its radius gets a small burst where it stands. */
+function bombBlast(battle: Battle, at: { x: number; y: number }, radius: number) {
+  animate(0.35, () => {}, () => { // the bomb falls for a moment first
+    puff(toWorld(at.x, at.y, 0.3), 0xffe08a, 6, 0.3);
+    for (const a of battle.units) if (a.hp > 0 && !TROOPS[a.kind].flying && Math.hypot(a.x - at.x, a.y - at.y) <= radius) puff(toWorld(a.x, a.y, 0.4), 0xff8a20, 8, 0.2);
+  });
+}
+
 const HEART_MAT = new THREE.MeshBasicMaterial({ color: 0xff3d7a });
 /** A heart: two round lobes and a point underneath. */
 function heart() {
@@ -218,6 +226,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
             v.model.updateWorldMatrix(true, true);
             projectile('shot', muzzle.getWorldPosition(new THREE.Vector3()), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
           } else projectile(s.type === 'cannon' || s.type === 'mortar' ? 'coconut' : s.type === 'airDefense' ? 'harpoon' : s.type === 'bombTower' ? 'drop' : 'thorn', toWorld(s.cx, s.cy, s.type === 'cannon' ? 1.1 : s.type === 'mortar' ? 1.2 : s.type === 'airDefense' ? 1.4 : 2.6), toWorld(target.x, target.y, TROOPS[target.kind].flying ? FLY_HEIGHT : 0.3));
+          if (s.type === 'bombTower') bombBlast(battle, target, BUILDINGS[s.type].splash ?? 0);
         }
       }
 
