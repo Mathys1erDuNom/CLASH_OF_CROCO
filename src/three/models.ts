@@ -689,14 +689,17 @@ function flyingCroco(level: number) {
   return g;
 }
 
-/** The colossus: a stone-shelled tank, built at normal size then scaled up (see the setScalar below). Faces +x. */
+/** The colossus: a stone-shelled tank, built at normal size then scaled up (see the setScalar below). Faces +x.
+ * Level 2 adds plates, gold spikes and a stone crown of horns; level 3 also gets a gold shell. */
 function colossus(level: number) {
-  const skin = 0x4f7a3a, stone = 0x3a322c, shell = 0x5a4a40, spike = 0xc9b48a, belly = 0xd8c28a;
+  const L2 = level >= 2, L3 = level >= 3;
+  const skin = [0x4f7a3a, 0x5a6a34, 0x6a5a3a][level - 1], stone = L2 ? 0x6a6058 : 0x3a322c, shell = L3 ? 0xc9a030 : 0x5a4a40, spike = L2 ? 0xe0b040 : 0xc9b48a, belly = 0xd8c28a;
   const g = new THREE.Group();
   g.add(box(0.7, 0.3, 0.6, skin, 0, 0.3, 0)); // low, wide body
   g.add(box(0.6, 0.12, 0.5, belly, 0.02, 0.16, 0)); // belly
-  for (let i = 0; i < 4; i++) g.add(box(0.2, 0.3, 0.58, shell, -0.24 + i * 0.16, 0.6, 0)); // tall stone plates over the back
-  for (let i = 0; i < 4; i++) g.add(cone(0.06, 0.32, spike, -0.24 + i * 0.16, 0.92, 0, 4)); // tall spikes on the shell
+  const plates = L2 ? 5 : 4, spacing = L2 ? 0.13 : 0.16;
+  for (let i = 0; i < plates; i++) g.add(box(0.2, L2 ? 0.4 : 0.3, 0.58, shell, (i - (plates - 1) / 2) * spacing, 0.6, 0)); // stone plates over the back
+  for (let i = 0; i < plates; i++) g.add(cone(0.06, L2 ? 0.5 : 0.32, spike, (i - (plates - 1) / 2) * spacing, L2 ? 1.0 : 0.92, 0, 4)); // spikes on the shell
   for (const x of [-0.22, 0.22]) for (const z of [-0.3, 0.3]) { // legs with stone bands
     g.add(box(0.2, 0.3, 0.2, skin, x, 0.15, z), box(0.24, 0.07, 0.24, stone, x, 0.24, z), box(0.22, 0.05, 0.22, 0x22201c, x, 0.02, z));
   }
@@ -704,6 +707,7 @@ function colossus(level: number) {
   /** Changer la taille de  g.scale.setScalar(valeur) et faire (npm run models) */
   const head = crocoHead(1, skin); head.position.set(0.5, 0.42, 0); g.add(head);
   g.add(box(0.3, 0.14, 0.36, stone, 0.46, 0.6, 0)); // armoured brow
+  if (L2) for (const z of [-0.14, 0.14]) g.add(cone(0.05, 0.35, spike, 0.46, 0.8, z, 4)); // stone crown horns
   g.add(box(0.4, 0.14, 0.18, skin, -0.55, 0.22, 0), box(0.25, 0.1, 0.12, stone, -0.8, 0.2, 0)); // tail with a stone tip
   g.scale.setScalar(1.5); 
   return g;
