@@ -37,6 +37,15 @@ test('a big croco army wipes the goblin camp for 3 stars', () => {
   assert.equal(b.left('gold'), 0);
 });
 
+test('loot is taken in step with the hp a storage or mine loses', () => {
+  const b = new Battle([{ type: 'goldMine', x: 5, y: 5, held: 40 }, { type: 'goldStore', x: 10, y: 5, ref: 7 }], { gold: 100 });
+  b.structs[0].hp = b.structs[0].maxHp / 2; // half the mine's hp gone: half its 40 is stolen
+  assert.equal(b.taken('gold'), 20);
+  b.structs[1].hp = b.structs[1].maxHp * 0.75; // a quarter of the storage's 100 is stolen
+  assert.equal(b.stockTaken('gold'), 25);
+  assert.equal(b.taken('gold'), 45);
+});
+
 test('stored gold sits in the storages, and a mine or farm holds its own production', () => {
   const b = new Battle([{ type: 'goldMine', x: 5, y: 5, held: 40 }, { type: 'goldStore', x: 10, y: 5, ref: 7 }], { gold: 101 });
   assert.equal(b.total('gold'), 141); // 101 stored + 40 in the mine

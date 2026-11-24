@@ -43,14 +43,14 @@ export class Battle {
     return this.structs.filter(s => holds(s, res)).reduce((n, s) => n + s.stock + s.held, 0);
   }
 
-  /** What has been stolen so far: the contents of every destroyed building that held the resource. */
+  /** What has been stolen so far: each storage, mine or farm gives up its contents in step with the hp it has lost. */
   taken(res: Res): number {
-    return this.structs.filter(s => s.hp <= 0 && holds(s, res)).reduce((n, s) => n + s.stock + s.held, 0);
+    return Math.floor(this.structs.filter(s => holds(s, res)).reduce((n, s) => n + (s.stock + s.held) * lostShare(s), 0));
   }
 
   /** Stored stock (not mine or farm contents) stolen so far: this is what leaves the owner's storage. */
   stockTaken(res: Res): number {
-    return this.structs.filter(s => s.hp <= 0 && holds(s, res)).reduce((n, s) => n + s.stock, 0);
+    return Math.floor(this.structs.filter(s => holds(s, res)).reduce((n, s) => n + s.stock * lostShare(s), 0));
   }
 
   /** What is still in the base: the total minus what has been stolen. */
@@ -200,6 +200,9 @@ export class Battle {
   }
 
 }
+
+/** Share of a building's contents already stolen: its lost hp over its max hp. */
+const lostShare = (s: Struct) => 1 - Math.max(0, s.hp) / s.maxHp;
 
 /** A mine, farm or storage that holds this resource. */
 function holds(s: Struct, res: Res): boolean {
