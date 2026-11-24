@@ -3,7 +3,7 @@ import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOP_LEVELS, T
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
-  currentType, storeCap, troopUnlocked, unlockTroop, rebuild,
+  currentType, storeCap, troopUnlocked, unlockTroop, rebuild, workersFree, workersTotal,
 } from '../economy.ts';
 import { Bar, animate, floatText, setMode, toWorld, world, type Mode, type Tile } from '../three/engine.ts';
 import { BUILDING_TOP, cyl, box, ghostOf } from '../three/models.ts';
@@ -377,7 +377,7 @@ export function villageMode(): Mode {
       ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><span title="Ouvriers libres">👷 ${workersFree(save, Date.now())}/${workersTotal(save, Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
       ${selectionHtml(now)}
       ${save.raids.length ? `<div class="sel-box"><h2>🚩 Vous avez été attaqué</h2>${save.raids.slice(-3).reverse().map(r => `<p>${esc(r.by)} : ${r.buildings} bâtiment${r.buildings > 1 ? 's' : ''} détruit${r.buildings > 1 ? 's' : ''} · −${r.gold} or · −${r.chicken} poulets</p>`).join('')}<button data-act="clearRaids">OK</button></div>` : ''}
       ${save.ruins.length ? `<button data-act="rebuild" class="unlock">🔨 Reconstruire (${save.ruins.length} bâtiment${save.ruins.length > 1 ? 's' : ''} détruit${save.ruins.length > 1 ? 's' : ''})</button>` : ''}

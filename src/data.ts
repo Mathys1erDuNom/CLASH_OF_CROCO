@@ -28,6 +28,7 @@ export interface BuildingDef {
   airOnly?: boolean; // shoots flying troops only
   trains?: boolean;
   lab?: boolean; // upgrades troops
+  workshop?: boolean; // each finished workshop adds a worker
   loot?: boolean; // goblin version holds loot
   levels: Level[];
 }
@@ -92,6 +93,9 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 150, chicken: 100 }, sec: 30, hp: 500 },
     { cost: { gold: 500, chicken: 400 }, sec: 90, hp: 700 },
     { cost: { gold: 1200, chicken: 1000 }, sec: 200, hp: 900 },
+  ] },
+  workshop: { name: "Atelier de l'ouvrier", size: 2, max: 4, hutRequired: 1, workshop: true, levels: [
+    { cost: { gold: 100 }, sec: 20, hp: 450 },
   ] },
 };
 

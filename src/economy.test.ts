@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addTroopsToQueue, collect, gain, migrate, newSave, storeCap, tick, unlockTroop, type Save } from './economy.ts';
+import { addTroopsToQueue, collect, gain, migrate, newSave, placeBuilding, storeCap, tick, unlockTroop, workersFree, workersTotal, type Save } from './economy.ts';
 
 test('other troops are paid for and wait in the barracks before training', () => {
   const s = newSave(0);
@@ -51,4 +51,16 @@ test('a save from when the troop was a frog gets its troops under the new name',
   assert.equal(q.queue[0].kind, 'crocoSarbacane');
   assert.equal(q.unlocking?.kind, 'crocoSarbacane');
   assert.equal(q.research?.kind, 'crocoSarbacane');
+});
+
+test('building needs a free worker: the HQ gives one, each finished workshop another', () => {
+  const s = newSave(0);
+  s.gold = s.chicken = 10_000;
+  assert.equal(workersFree(s, 0), 1);
+  assert.equal(placeBuilding(s, 'cannon', 30, 2, 0), true);
+  assert.equal(workersFree(s, 0), 0); // the cannon is being built
+  assert.equal(placeBuilding(s, 'goldMine', 30, 14, 0), false); // no free worker
+  assert.equal(placeBuilding(s, 'workshop', 30, 30, 60_000), true); // the cannon is done by now
+  assert.equal(workersTotal(s, 60_000), 1); // the workshop is still under construction
+  assert.equal(workersTotal(s, 80_000), 2); // finished: one more worker
 });

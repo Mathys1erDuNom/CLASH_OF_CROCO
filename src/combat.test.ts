@@ -230,8 +230,8 @@ test('buildings with hutRequired cannot be built before the hut level', () => {
   assert.equal(placeBuilding(s, 'lab', 30, 30, 0), false); // hut level 1, lab needs 2
   s.buildings.find(b => b.type === 'hq')!.level = 2;
   assert.equal(placeBuilding(s, 'lab', 30, 30, 0), true);
-  assert.equal(placeBuilding(s, 'airDefense', 30, 2, 0), false); // needs hut 3
-  assert.equal(placeBuilding(s, 'cannon', 30, 2, 0), true); // no requirement
+  assert.equal(placeBuilding(s, 'airDefense', 30, 2, 60_000), false); // needs hut 3
+  assert.equal(placeBuilding(s, 'cannon', 30, 2, 60_000), true); // no requirement (the lab is done by then: one worker)
 });
 
 test('troops hit once per hitEvery seconds for dps * hitEvery damage', () => {

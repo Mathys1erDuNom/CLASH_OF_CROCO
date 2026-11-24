@@ -217,6 +217,7 @@ const log = () => svg(64, 28, `${shadow(32, 24, 28, 4)}<rect x="6" y="8" width="
 const mushroom = () => svg(28, 28, `<rect x="11" y="14" width="6" height="10" rx="2" fill="#efe6cc" stroke="${O}" stroke-width="2"/><path d="M3 15 Q14 0 25 15 z" fill="#c9443a" stroke="${O}" stroke-width="2"/><circle cx="10" cy="10" r="2" fill="#fff"/><circle cx="17" cy="9" r="1.6" fill="#fff"/>`);
 const rubble = () => svg(96, 64, `<ellipse cx="48" cy="40" rx="42" ry="18" fill="#2e2a22" opacity=".7"/>${[[24, 36, 9], [44, 30, 11], [64, 40, 8], [36, 46, 7], [58, 26, 6]].map(([x, y, r]) =>
   `<circle cx="${x}" cy="${y}" r="${r}" fill="#6e6658" stroke="${O}" stroke-width="2"/>`).join('')}<path d="M18 30 L40 44 M60 32 L78 46" stroke="#6d4526" stroke-width="5"/>`);
+const workshopIcon = () => svg(128, 160, `${shadow(64, 140, 50)}<rect x="24" y="80" width="80" height="54" rx="4" fill="#8b6a44" ${sw}/><path d="M16 84 L64 40 L112 84 z" fill="#5a4026" ${sw}/><rect x="54" y="106" width="20" height="28" rx="3" fill="#2b1d14"/><rect x="84" y="50" width="8" height="44" fill="#5a4026"/><rect x="76" y="46" width="24" height="10" rx="2" fill="#9a9a9a" ${sw}/>`);
 const labIcon = () => svg(128, 160, `${shadow(64, 140, 56)}<rect x="22" y="76" width="84" height="56" rx="6" fill="#c8944a" ${sw}/><path d="M14 80 L64 34 L114 80 z" fill="#5ea83a" ${sw}/><rect x="54" y="104" width="20" height="28" rx="3" fill="#2b1d14"/><path d="M64 42 l-12 18 l12 18 l12 -18 z" fill="#40ff80" ${sw}/><circle cx="36" cy="96" r="5" fill="#40ff80"/><circle cx="92" cy="96" r="5" fill="#40ff80"/><path d="M30 130 L98 110" stroke="#8b6a3a" stroke-width="5" stroke-linecap="round"/>`);
 const coin = () => svg(32, 32, `<circle cx="16" cy="16" r="12" fill="#f2c230" ${sw}/><circle cx="16" cy="16" r="7" fill="none" stroke="#b38512" stroke-width="2.5"/><path d="M11 10 q3 -2 6 0" stroke="#fff6b0" stroke-width="2" fill="none"/>`);
 const chickenIcon = () => svg(32, 32, `<circle cx="15" cy="18" r="10" fill="#f4f0e6" ${sw}/><path d="M11 9 q2 -6 4 0 q2 -5 4 1" fill="#d42a2a" stroke="${O}" stroke-width="2"/><path d="M24 16 l6 2 l-6 2 z" fill="#f0a020" stroke="${O}" stroke-width="1.5"/><circle cx="19" cy="16" r="1.6" fill="${O}"/>`);
@@ -230,7 +231,7 @@ export const SPRITES: Record<string, string> = {
   b_chickenFarm: chickenFarm(), g_chickenFarm: chickenFarm(), b_goldStore: goldStoreIcon(), b_chickenStore: chickenStoreIcon(),
   b_barracks: barracks(false), g_barracks: barracks(true), b_camp: campIcon(),
   b_cannon: cannon(false), g_cannon: cannon(true), b_mortar: mortarIcon(false), g_mortar: mortarIcon(true), b_airDefense: airDefenseIcon(false), g_airDefense: airDefenseIcon(true),
-  b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(),
+  b_reedTower: reedTower(false), g_reedTower: reedTower(true), b_lab: labIcon(), b_workshop: workshopIcon(),
   t_croco: crocoBrute(), t_colossus: colossusIcon(), t_crocoLauncher: crocoLauncherIcon(), t_flyingCroco: flyingCrocoIcon(), t_fireCroco: fireCrocoIcon(), t_healer: healerIcon(), t_crocoSarbacane: crocoSarbacane(), t_babyCroco: babyCroco(),
   p_coconut: coconut(), p_dart: dart(), p_thorn: thorn(),
   d_pondL: pond(150, 96), d_pondS: pond(96, 64), d_cattails: cattails(), d_rock: rock(), d_log: log(), d_mushroom: mushroom(), d_rubble: rubble(),

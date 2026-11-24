@@ -114,9 +114,13 @@ export const countOf = (s: Save, type: string) => s.buildings.filter(b => b.type
 /** Whether the Chief's hut is high enough to build this type (BUILDINGS[type].hutRequired). */
 export const unlocked = (s: Save, type: string, now: number) => hqLevel(s, now) >= (BUILDINGS[type].hutRequired ?? 1);
 
+/** Workers: the HQ gives one, each finished workshop another. Buildings under construction or upgrade keep theirs busy. */
+export const workersTotal = (s: Save, now: number) => 1 + s.buildings.filter(b => BUILDINGS[b.type].workshop && now >= b.readyAt).length;
+export const workersFree = (s: Save, now: number) => workersTotal(s, now) - s.buildings.filter(b => now < b.readyAt).length;
+
 export function placeBuilding(s: Save, type: string, x: number, y: number, now: number): boolean {
   const lv = BUILDINGS[type].levels[0];
-  if (!unlocked(s, type, now) || countOf(s, type) >= BUILDINGS[type].max || !canAfford(s, lv.cost) || !canPlace(s, type, x, y)) return false;
+  if (!unlocked(s, type, now) || countOf(s, type) >= BUILDINGS[type].max || !canAfford(s, lv.cost) || !canPlace(s, type, x, y) || workersFree(s, now) < 1) return false;
   pay(s, lv.cost);
   s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now + lv.sec * 1000, collectedAt: now });
   return true;
@@ -130,6 +134,7 @@ export function upgradeBlock(s: Save, b: Building, now: number): string | null {
   const next = BUILDINGS[b.type].levels[b.level];
   if (now < b.readyAt) return 'Travaux en cours';
   if (!next) return 'Niveau maximum';
+  if (workersFree(s, now) < 1) return 'Aucun ouvrier libre';
   if (b.type !== 'hq' && b.level >= hqLevel(s, now)) return `Hutte du Chef niveau ${b.level + 1} requise`;
   if (!canAfford(s, next.cost)) return 'Pas assez de ressources';
   return null;
