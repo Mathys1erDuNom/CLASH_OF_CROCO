@@ -605,13 +605,22 @@ function necromancer(level: number) {
   const head = crocoHead(0.95, skin); head.position.set(0.2, 1.35, 0); g.add(head);
   g.add(rot(cone(0.42, 0.9, robe, -0.15, 1.55, 0, 6), 0, 0, -0.4)); // hood, leaning back
   g.add(cone(0.06, 0.3, trim, -0.35, 1.75, 0, 4)); // hood point
-  g.add(box(0.2, 0.2, 0.2, skin, 0.4, 0.9, -0.5), box(0.2, 0.6, 0.2, robe, 0.45, 0.55, -0.45)); // arm holding the staff
+  // the staff arm: pivots at the shoulder, so it can swing when the necromancer casts (children are relative to the shoulder)
+  const staffArm = new THREE.Group();
+  staffArm.name = 'arm';
+  staffArm.position.set(0.4, 1.0, -0.5);
+  staffArm.add(box(0.2, 0.2, 0.2, skin, 0, -0.1, 0), box(0.2, 0.6, 0.2, robe, 0.05, -0.45, 0.05));
+  staffArm.add(cyl(0.04, 0.05, 2.0, belt, 0.15, 0, 0, 5)); // staff
+  staffArm.add(ball(0.22, bone, 0.15, 1.1, 0, 1)); // staff skull
+  for (const z of [-0.12, 0.12]) staffArm.add(cone(0.05, 0.3, bone, 0.1, 1.4, z, 4)); // horns
+  for (const z of [-0.08, 0.08]) staffArm.add(ball(0.04, glow, 0.26, 1.12, z, 0)); // glowing eyes
+  staffArm.add(mesh(new THREE.ConeGeometry(0.16, 0.5, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.8 }), 0.15, 1.6, 0)); // purple flame
+  const muzzle = new THREE.Object3D(); // where the shadow bolt leaves
+  muzzle.name = 'muzzle';
+  muzzle.position.set(0.4, 1.2, 0);
+  staffArm.add(muzzle);
+  g.add(staffArm);
   g.add(box(0.2, 0.2, 0.2, skin, 0.4, 0.6, 0.35), box(0.2, 0.6, 0.2, robe, 0.5, 0.5, 0.35)); // other arm, reaching out
-  g.add(cyl(0.04, 0.05, 2.0, belt, 0.55, 1.0, -0.5, 5)); // staff
-  g.add(ball(0.22, bone, 0.55, 2.1, -0.5, 1)); // staff skull
-  for (const z of [-0.12, 0.12]) g.add(cone(0.05, 0.3, bone, 0.5, 2.4, -0.5 + z, 4)); // horns
-  for (const z of [-0.08, 0.08]) g.add(ball(0.04, glow, 0.66, 2.12, -0.5 + z, 0)); // glowing eyes
-  g.add(mesh(new THREE.ConeGeometry(0.16, 0.5, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.8 }), 0.55, 2.6, -0.5)); // purple flame
   g.add(mesh(new THREE.SphereGeometry(0.15, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.6 }), -0.7, 1.4, 0.55)); // ghost wisp
   if (L2) for (const [x, y, z] of [[0.28, 0.4, 0.2], [0.3, 0.7, -0.2], [0.3, 0.3, -0.2]] as const) g.add(ball(0.08, bone, x, y, z, 1)); // extra skulls
   if (L3) { // gold ornaments and a second wisp

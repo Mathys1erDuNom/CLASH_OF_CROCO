@@ -71,10 +71,10 @@ function heart() {
   return g;
 }
 
-function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart' | 'shot', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
-  const p = kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? heart() : kind === 'shot' ? ball(0.13, 0x3a3a44, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
+function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harpoon' | 'heart' | 'shot' | 'shadow', from: THREE.Vector3, to: THREE.Vector3, level = 1) {
+  const p = kind === 'shadow' ? ball(0.12, 0xb060ff, 0, 0, 0, 1) : kind === 'harpoon' ? cyl(0.04, 0.04, 0.7, 0x8b5a2b, 0, 0, 0, 5) : kind === 'drop' ? ball(0.1, 0x222228, 0, 0, 0, 1) : kind === 'bomb' ? bombCroco(level) : kind === 'heart' ? heart() : kind === 'shot' ? ball(0.13, 0x3a3a44, 0, 0, 0, 1) : kind === 'coconut' ? ball(0.13, 0x7a4a24, 0, 0, 0, 0) : cyl(0.02, 0.02, 0.35, kind === 'dart' ? 0xf1ead2 : 0x6d4526, 0, 0, 0, 4);
   world.add(p);
-  const arc = kind === 'drop' || kind === 'heart' || kind === 'shot' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
+  const arc = kind === 'drop' || kind === 'heart' || kind === 'shot' || kind === 'shadow' ? 0 : kind === 'bomb' ? 2.2 : kind === 'coconut' ? 1.6 : 0.3, dur = (kind === 'bomb' ? 0.35 : 0.15) + from.distanceTo(to) * 0.06;
   const dir = to.clone().sub(from);
   if (kind === 'bomb') p.rotation.y = Math.atan2(-dir.z, dir.x); // the bomb-croco flies head first
   else p.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
@@ -86,6 +86,7 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
     p.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
     if (kind === 'heart') puff(to, 0xff9ac0, 6, 0.14); // hearts splash on arrival
     else if (kind === 'bomb' || kind === 'drop') { puff(to, 0xff8a20, 10, 0.22); puff(to, 0x5a5048, 8, 0.18); }
+    else if (kind === 'shadow') puff(to, 0xb060ff, 8, 0.18); // a shadow burst
     else puff(to, kind === 'coconut' ? 0xffc070 : 0xe8f0c0, kind === 'coconut' ? 6 : 2);
   });
 }
@@ -275,6 +276,11 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
             for (const mz of v.model.getObjectsByProperty('name', 'muzzle')) projectile('dart', mz.getWorldPosition(new THREE.Vector3()), toWorld(s.cx, s.cy, 0.6));
           }
           else if (u.kind === 'crocoLauncher') projectile('bomb', pos.clone().setY(0.8), toWorld(s.cx, s.cy, 0.4), troopLevel(save, u.kind));
+          else if (u.kind === 'necromancer') { // the staff casts a shadow bolt
+            v.model.updateWorldMatrix(true, true);
+            const m = v.model.getObjectByName('muzzle');
+            if (m) projectile('shadow', m.getWorldPosition(new THREE.Vector3()), toWorld(s.cx, s.cy, 0.6));
+          }
           else if (u.kind !== 'fireCroco') puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
         }
       }
