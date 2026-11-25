@@ -149,7 +149,6 @@ export interface TroopDef {
   barracks?: Trainer; // which barracks trains it (default: flying ones in the aerial barracks, the others in the classic one)
   summonOnly?: boolean; // never trained: only summoned by another troop
   summons?: { kind: string; every: number; count: number; max: number }; // every `every` seconds raises `count` troops of kind in front of it, up to `max` alive at once
-  lifetime?: number; // seconds a summoned troop lasts
   wanders?: boolean; // no target: flies around the enemy base and drops a bomb (splash) whenever it is over a building
   resourceBonus?: number; // damage multiplier against gold mines and chicken farms
   heal?: number; // healer: hp given to one of its own damaged troops per heart (it never attacks)
@@ -383,7 +382,7 @@ export const TROOPS: Record<string, TroopDef> = {
     unlockAfter: 'whirlCroco',
   },
 
-  // Summoned only: never trained, it lasts for its lifetime.
+  // Summoned only: never trained. It stays until its hp is gone.
   skeleton: {
     name: 'Squelette',
     levels: [
@@ -397,7 +396,6 @@ export const TROOPS: Record<string, TroopDef> = {
     trainSec: 0,
     labRequired: {},
     summonOnly: true,
-    lifetime: 25,
   },
 };
 
