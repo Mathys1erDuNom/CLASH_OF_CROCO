@@ -369,7 +369,7 @@ export const TROOPS: Record<string, TroopDef> = {
     space: 4,
     cost: { emerald: 1 },
     trainSec: 4,
-    unlock: { cost: { emerald: 150 }, sec: 12 },
+    unlock: { cost: { emerald: 1 }, sec: 12 },
     labRequired: {},
     barracksRequired: 1,
     maxLevel: 1,
@@ -454,7 +454,7 @@ export function centred<T extends Placement>(list: T[]): T[] {
 export const GOBLIN_BASES: GoblinBase[] = RAW_GOBLIN_BASES.map(b => ({ ...b, buildings: centred(b.buildings) }));
 
 export function fmtCost(c: Cost): string {
-  return [c.gold && `${c.gold} or`, c.chicken && `${c.chicken} poulet${c.chicken > 1 ? 's' : ''}`].filter(Boolean).join(' + ') || 'gratuit';
+  return [c.gold && `${c.gold} or`, c.chicken && `${c.chicken} poulet${c.chicken > 1 ? 's' : ''}`, c.emerald && `${c.emerald} émeraude${c.emerald > 1 ? 's' : ''}`].filter(Boolean).join(' + ') || 'gratuit';
 }
 
 export const troopMaxLevel = (kind: string) => TROOPS[kind].maxLevel ?? TROOPS[kind].levels.length;
