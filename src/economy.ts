@@ -204,6 +204,8 @@ export const unlockSlot = (kind: string) => ({ ground: 'unlocking', air: 'unlock
 export function unlockTroop(s: Save, kind: string, now: number): boolean {
   const u = TROOPS[kind].unlock;
   if (!u || troopUnlocked(s, kind) || s[unlockSlot(kind)] || !canAfford(s, u.cost)) return false;
+  const after = TROOPS[kind].unlockAfter;
+  if (after && !troopUnlocked(s, after)) return false;
   pay(s, u.cost);
   s[unlockSlot(kind)] = { kind, doneAt: now + u.sec * 1000 };
   return true;

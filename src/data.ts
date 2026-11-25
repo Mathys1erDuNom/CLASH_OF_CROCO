@@ -145,6 +145,7 @@ export interface TroopDef {
   splash?: number; // area damage radius in tiles around the target (default: single target)
   spins?: boolean; // splash is around the troop itself; it stands between its target and a neighbour to hit both
   flying?: boolean; // flies over everything; only defenses with hitsAir can shoot it
+  unlockAfter?: string; // another troop that must be unlocked first
   barracks?: Trainer; // which barracks trains it (default: flying ones in the aerial barracks, the others in the classic one)
   summonOnly?: boolean; // never trained: only summoned by another troop
   summons?: { kind: string; every: number; count: number; max: number }; // every `every` seconds raises `count` troops of kind in front of it, up to `max` alive at once
@@ -155,6 +156,7 @@ export interface TroopDef {
 }
 
 export const TROOPS: Record<string, TroopDef> = {
+  // ---- Caserne du marais : troupes au sol ----
   croco: {
     name: 'Croco Cogneur',
     levels: [
@@ -168,44 +170,6 @@ export const TROOPS: Record<string, TroopDef> = {
     space: 5,
     cost: { chicken: 50 },
     trainSec: 12,
-    labRequired: { 2: 2, 3: 3 },
-  },
-
-  // much bigger than a croco (model scale in models.ts), to soak up damage
-  colossus: {
-    name: 'Croco Colosse',
-    levels: [
-      { hp: 1200, dps: 30, up: { cost: { chicken: 100 }, sec: 60 } },
-      { hp: 1560, dps: 39, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-      { hp: 2040, dps: 51 },
-    ],
-    range: 0.9,
-    hitEvery: 1.2,
-    speed: 0.6,
-    space: 10,
-    cost: { chicken: 300 },
-    trainSec: 6,
-    unlock: { cost: { chicken: 90 }, sec: 3 },
-    labRequired: { 2: 2, 3: 3 },
-    barracksRequired: 3,
-    maxLevel: 3,
-    prefers: 'defense',
-  },
-
-  crocoSarbacane: {
-    name: 'Croco Sarbacane',
-    levels: [
-      { hp: 90, dps: 16, up: { cost: { chicken: 100 }, sec: 60 } },
-      { hp: 117, dps: 20.8, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-      { hp: 153, dps: 27.2 },
-    ],
-    range: 3,
-    hitEvery: 0.8,
-    speed: 1.6,
-    space: 2,
-    cost: { chicken: 30 },
-    trainSec: 8,
-    unlock: { cost: { chicken: 100 }, sec: 60 },
     labRequired: { 2: 2, 3: 3 },
   },
 
@@ -226,6 +190,23 @@ export const TROOPS: Record<string, TroopDef> = {
     prefers: 'resource',
     labRequired: { 2: 2, 3: 3 },
     resourceBonus: 3,
+  },
+
+  crocoSarbacane: {
+    name: 'Croco Sarbacane',
+    levels: [
+      { hp: 90, dps: 16, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 117, dps: 20.8, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 153, dps: 27.2 },
+    ],
+    range: 3,
+    hitEvery: 0.8,
+    speed: 1.6,
+    space: 2,
+    cost: { chicken: 30 },
+    trainSec: 8,
+    unlock: { cost: { chicken: 100 }, sec: 60 },
+    labRequired: { 2: 2, 3: 3 },
   },
 
   // TEST: real value barracksRequired: 2
@@ -249,27 +230,6 @@ export const TROOPS: Record<string, TroopDef> = {
     splash: 1.5,
   },
 
-  healer: {
-    name: 'Guérisseuse',
-    levels: [
-      { hp: 180, dps: 0, up: { cost: { chicken: 100 }, sec: 60 } },
-      { hp: 234, dps: 0, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-      { hp: 306, dps: 0 },
-    ],
-    range: 4,
-    hitEvery: 1,
-    speed: 1.8,
-    space: 2,
-    cost: { chicken: 180 },
-    trainSec: 5,
-    unlock: { cost: { chicken: 700 }, sec: 10 },
-    labRequired: {},
-    barracksRequired: 3,
-    maxLevel: 1,
-    flying: true,
-    heal: 40,
-  },
-
   fireCroco: {
     name: 'Cracheur de feu',
     levels: [
@@ -290,26 +250,70 @@ export const TROOPS: Record<string, TroopDef> = {
     prefers: 'defense',
   },
 
-  // spins: hits the first building it reaches, and every building near it
-  whirlCroco: {
-    name: 'Croco Tourbillon',
+  // much bigger than a croco (model scale in models.ts), to soak up damage
+  colossus: {
+    name: 'Croco Colosse',
     levels: [
-      { hp: 600, dps: 80, up: { cost: { chicken: 100 }, sec: 60 } },
-      { hp: 780, dps: 104, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-      { hp: 1020, dps: 136 },
+      { hp: 1200, dps: 30, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 1560, dps: 39, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 2040, dps: 51 },
     ],
-    range: 1.9,
-    hitEvery: 1,
-    speed: 3,
-    space: 5,
-    cost: { chicken: 260 },
-    trainSec: 2,
-    unlock: { cost: { chicken: 500 }, sec: 120 },
-    labRequired: { 2: 2 },
+    range: 0.9,
+    hitEvery: 1.2,
+    speed: 0.6,
+    space: 10,
+    cost: { chicken: 300 },
+    trainSec: 6,
+    unlock: { cost: { chicken: 90 }, sec: 3 },
+    labRequired: { 2: 2, 3: 3 },
+    barracksRequired: 3,
+    maxLevel: 3,
+    prefers: 'defense',
+  },
+
+  // ---- Caserne aérienne : troupes volantes ----
+  // TEST: real value barracksRequired: 3
+  flyingCroco: {
+    name: 'Croco volant bombardier',
+    levels: [
+      { hp: 300, dps: 42, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 390, dps: 54.6, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 510, dps: 71.4 },
+    ],
+    range: 0,
+    hitEvery: 0.7,
+    speed: 2.5,
+    space: 6,
+    cost: { chicken: 160 },
+    trainSec: 30,
+    unlock: { cost: { chicken: 600 }, sec: 240 },
+    labRequired: { 2: 3 },
     barracksRequired: 2,
     maxLevel: 2,
-    splash: 2.2,
-    spins: true,
+    splash: 1,
+    flying: true,
+    wanders: true,
+  },
+
+  healer: {
+    name: 'Guérisseuse',
+    levels: [
+      { hp: 180, dps: 0, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 234, dps: 0, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 306, dps: 0 },
+    ],
+    range: 4,
+    hitEvery: 1,
+    speed: 1.8,
+    space: 2,
+    cost: { chicken: 180 },
+    trainSec: 5,
+    unlock: { cost: { chicken: 700 }, sec: 10 },
+    labRequired: {},
+    barracksRequired: 3,
+    maxLevel: 1,
+    flying: true,
+    heal: 40,
   },
 
   // flies over the base and breathes fire on defences
@@ -334,27 +338,28 @@ export const TROOPS: Record<string, TroopDef> = {
     flying: true,
   },
 
-  // TEST: real value barracksRequired: 3
-  flyingCroco: {
-    name: 'Croco volant bombardier',
+  // ---- Caserne des ombres : troupes invoquées et formées avec des émeraudes ----
+  // spins: hits the first building it reaches, and every building near it
+  whirlCroco: {
+    name: 'Croco Tourbillon',
     levels: [
-      { hp: 300, dps: 42, up: { cost: { chicken: 100 }, sec: 60 } },
-      { hp: 390, dps: 54.6, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
-      { hp: 510, dps: 71.4 },
+      { hp: 600, dps: 80, up: { cost: { chicken: 100 }, sec: 60 } },
+      { hp: 780, dps: 104, up: { cost: { chicken: 300, gold: 100 }, sec: 150 } },
+      { hp: 1020, dps: 136 },
     ],
-    range: 0,
-    hitEvery: 0.7,
-    speed: 2.5,
-    space: 6,
-    cost: { chicken: 160 },
-    trainSec: 30,
-    unlock: { cost: { chicken: 600 }, sec: 240 },
-    labRequired: { 2: 3 },
+    range: 1.9,
+    hitEvery: 1,
+    speed: 3,
+    space: 5,
+    cost: { chicken: 260 },
+    trainSec: 2,
+    unlock: { cost: { chicken: 500 }, sec: 120 },
+    labRequired: { 2: 2 },
     barracksRequired: 2,
     maxLevel: 2,
-    splash: 1,
-    flying: true,
-    wanders: true,
+    splash: 2.2,
+    spins: true,
+    barracks: 'necro',
   },
 
   // The necromancer raises skeletons that fight for it for a while; it is trained in the shadow barracks with emeralds.
@@ -365,7 +370,7 @@ export const TROOPS: Record<string, TroopDef> = {
     ],
     range: 4,
     hitEvery: 1.5,
-    speed: 1.0,
+    speed: 1,
     space: 4,
     cost: { emerald: 1 },
     trainSec: 4,
@@ -375,7 +380,9 @@ export const TROOPS: Record<string, TroopDef> = {
     maxLevel: 1,
     barracks: 'necro',
     summons: { kind: 'skeleton', every: 2.5, count: 4, max: 24 },
+    unlockAfter: 'whirlCroco',
   },
+
   // Summoned only: never trained, it lasts for its lifetime.
   skeleton: {
     name: 'Squelette',

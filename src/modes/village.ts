@@ -296,7 +296,7 @@ export function villageMode(): Mode {
       const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now, trainer) < req;
       const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · ${d.space} place${d.space > 1 ? 's' : ''} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
-      const canUnlock = !save[unlockSlot(k)] && !!d.unlock && canAfford(save, d.unlock.cost); // blue: can be unlocked right now
+      const canUnlock = !save[unlockSlot(k)] && !!d.unlock && canAfford(save, d.unlock.cost) && (!d.unlockAfter || troopUnlocked(save, d.unlockAfter)); // blue: can be unlocked right now
       const unlockBtn = `<button class="${canUnlock ? 'unlock' : locked ? 'off' : ''}" data-act="unlock" data-arg="${k}" ${canUnlock ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} · à débloquer<small>${d.unlock ? fmtCost(d.unlock.cost) : ''} · ${d.unlock ? secs(d.unlock.sec * 1000) : ''}</small></button>`;
       const info = `<button class="info" data-act="info" data-arg="${k}" aria-label="Stats de ${d.name}" title="Toutes les stats">${infoKind === k ? '✕' : 'i'}</button>`;
       const details = infoKind === k ? `<div class="stats"><b>${d.name}</b> · niveau ${troopLevel(save, k)}<br>Formation : ${secs(trainMs(save, k, now))}<br>${troopStats(k, troopLevel(save, k))}</div>` : '';
