@@ -590,33 +590,52 @@ function emeraldStore(level: number) {
   return g;
 }
 
-/** The necromancer: a hooded croco in a purple robe, a skull staff, and a ghost wisp in its hand. Level 2 adds skulls on the robe; level 3 a second wisp. */
+/** The necromancer: a green croco in a purple hooded robe with gold trim, a horned skull staff with a purple flame, a skull on its belt and a ghost wisp. Level 2 adds a bigger staff and more skulls; level 3 gold ornaments and a second wisp. */
 function necromancer(level: number) {
   const L2 = level >= 2, L3 = level >= 3;
-  const robe = 0x5a2a7a, trim = 0xe8a040, skin = 0x7a8a3a, bone = 0xe8dcc0, glow = 0xb060ff, wood = 0x6d4526;
+  const robe = 0x5b2a86, robeDark = 0x3d1c5c, trim = 0xd9a040, skin = 0x6fb040, belly = 0xe8c880, bone = 0xf0e8d0, glow = 0xb060ff, belt = 0x6d4526;
   const g = new THREE.Group();
-  g.add(cone(0.42, 1.0, robe, 0, 0.5, 0, 6), cyl(0.45, 0.5, 0.08, trim, 0, 0.08, 0, 6)); // robe with a trimmed hem
-  const head = crocoHead(0.7, skin); head.position.set(0.12, 1.15, 0); g.add(head);
-  g.add(rot(cone(0.3, 0.6, robe, -0.05, 1.5, 0, 6), 0, 0, -0.15), cone(0.04, 0.2, trim, -0.2, 1.8, 0, 4)); // hood with a point
-  g.add(box(0.14, 0.5, 0.14, robe, 0.35, 0.85, 0.3)); // staff arm
-  g.add(cyl(0.03, 0.03, 1.6, wood, 0.55, 0.9, 0.3, 5)); // staff
-  g.add(ball(0.16, bone, 0.55, 1.75, 0.3, 1)); // skull on the staff
-  for (const z of [0.24, 0.36]) g.add(mesh(new THREE.SphereGeometry(0.04, 6, 4), mat(glow, { emissive: glow, emissiveIntensity: 1 }), 0.66, 1.78, z)); // glowing eyes
-  g.add(mesh(new THREE.SphereGeometry(0.15, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.6 }), -0.45, 1.1, 0.4)); // ghost wisp
-  if (L2) for (const [x, y] of [[-0.12, 0.55], [0.12, 0.35]]) g.add(ball(0.09, bone, x, y, 0.4, 1)); // skulls on the robe
-  if (L3) g.add(mesh(new THREE.SphereGeometry(0.12, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.5 }), -0.3, 1.5, -0.4)); // second wisp
+  g.add(scl(cone(0.5, 1.3, robe, 0, 0.6, 0, 6), 1, 1, 0.9)); // robe
+  g.add(cyl(0.52, 0.56, 0.1, trim, 0, 0.08, 0, 6)); // gold hem
+  g.add(box(0.22, 0.9, 0.04, trim, 0.46, 0.7, 0)); // gold front panel
+  g.add(box(1.0, 0.12, 0.8, belt, 0.1, 0.55, 0)); // belt
+  g.add(ball(0.13, trim, 0.4, 0.55, 0, 1)); // belt buckle
+  g.add(ball(0.12, bone, 0.5, 0.82, 0, 1)); // skull on the chest
+  g.add(ball(0.04, 0x222222, 0.6, 0.86, -0.04, 0), ball(0.04, 0x222222, 0.6, 0.86, 0.04, 0)); // skull eyes
+  const head = crocoHead(0.95, skin); head.position.set(0.2, 1.35, 0); g.add(head);
+  g.add(rot(cone(0.42, 0.9, robe, -0.15, 1.55, 0, 6), 0, 0, -0.4)); // hood, leaning back
+  g.add(cone(0.06, 0.3, trim, -0.35, 1.75, 0, 4)); // hood point
+  g.add(box(0.2, 0.2, 0.2, skin, 0.4, 0.9, -0.5), box(0.2, 0.6, 0.2, robe, 0.45, 0.55, -0.45)); // arm holding the staff
+  g.add(box(0.2, 0.2, 0.2, skin, 0.4, 0.6, 0.35), box(0.2, 0.6, 0.2, robe, 0.5, 0.5, 0.35)); // other arm, reaching out
+  g.add(cyl(0.04, 0.05, 2.0, belt, 0.55, 1.0, -0.5, 5)); // staff
+  g.add(ball(0.22, bone, 0.55, 2.1, -0.5, 1)); // staff skull
+  for (const z of [-0.12, 0.12]) g.add(cone(0.05, 0.3, bone, 0.5, 2.4, -0.5 + z, 4)); // horns
+  for (const z of [-0.08, 0.08]) g.add(ball(0.04, glow, 0.66, 2.12, -0.5 + z, 0)); // glowing eyes
+  g.add(mesh(new THREE.ConeGeometry(0.16, 0.5, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.8 }), 0.55, 2.6, -0.5)); // purple flame
+  g.add(mesh(new THREE.SphereGeometry(0.15, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.6 }), -0.7, 1.4, 0.55)); // ghost wisp
+  if (L2) for (const [x, y, z] of [[0.28, 0.4, 0.2], [0.3, 0.7, -0.2], [0.3, 0.3, -0.2]] as const) g.add(ball(0.08, bone, x, y, z, 1)); // extra skulls
+  if (L3) { // gold ornaments and a second wisp
+    g.add(cyl(0.55, 0.6, 0.08, trim, 0, 1.4, 0, 6));
+    g.add(mesh(new THREE.SphereGeometry(0.12, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.5 }), -0.6, 2.3, 0.3));
+  }
+  g.add(rot(cone(0.1, 0.7, skin, -0.7, 0.35, 0, 5), 0, 0, Math.PI / 2 + 0.3)); // tail
   return g;
 }
 
-/** A summoned skeleton: white bones with a round skull. */
+/** A summoned skeleton: a bone-white skeleton with a glowing purple-eyed skull, a sword and a round wooden shield. */
 function skeleton() {
-  const bone = 0xe8dcc0;
+  const bone = 0xeae2cc, dark = 0x2a2236, eye = 0xb060ff, metal = 0x9aa0a8, wood = 0x7a5030;
   const g = new THREE.Group();
-  g.add(ball(0.14, bone, 0, 0.75, 0, 1)); // skull
-  g.add(box(0.06, 0.5, 0.06, bone, 0, 0.35, 0)); // spine
-  for (const y of [0.42, 0.32, 0.22]) g.add(box(0.3, 0.03, 0.04, bone, 0, y, 0)); // ribs
-  for (const z of [-0.1, 0.1]) g.add(box(0.06, 0.4, 0.06, bone, 0, 0.1, z)); // legs
-  for (const z of [-0.2, 0.2]) g.add(box(0.05, 0.35, 0.05, bone, 0, 0.5, z)); // arms
+  g.add(ball(0.22, bone, 0, 1.05, 0, 1)); // skull
+  g.add(box(0.2, 0.1, 0.18, bone, 0.04, 0.85, 0)); // jaw
+  for (const z of [-0.09, 0.09]) g.add(ball(0.06, eye, 0.17, 1.08, z, 0)); // glowing eyes
+  g.add(box(0.07, 0.6, 0.07, bone, 0, 0.6, 0)); // spine
+  for (const y of [0.7, 0.6, 0.5]) g.add(box(0.36, 0.04, 0.05, bone, 0, y, 0)); // ribs
+  for (const z of [-0.12, 0.12]) g.add(box(0.07, 0.5, 0.07, bone, 0, 0.2, z)); // legs
+  g.add(box(0.07, 0.45, 0.07, bone, 0, 0.7, -0.22), box(0.07, 0.45, 0.07, bone, 0, 0.7, 0.22)); // arms
+  g.add(box(0.05, 0.6, 0.12, metal, 0.12, 0.5, -0.36), box(0.05, 0.15, 0.3, dark, 0.12, 0.25, -0.36)); // sword blade and grip
+  g.add(cyl(0.3, 0.3, 0.06, wood, 0.05, 0.6, 0.36, 10).rotateX(Math.PI / 2)); // round wooden shield
+  g.add(mesh(new THREE.TorusGeometry(0.3, 0.03, 4, 12), metal, 0.05, 0.6, 0.38)); // metal rim
   return g;
 }
 
