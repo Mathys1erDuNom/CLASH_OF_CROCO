@@ -25,7 +25,8 @@ const hutSections = Array.from({ length: hutLevels }, (_, i) => {
 
 const troopRows = Object.entries(TROOPS).map(([k, d]) => {
   const maxLv = troopMaxLevel(k);
-  const trainer = BUILDINGS[d.flying ? 'aerialBarracks' : 'barracks'].name;
+  const home = { ground: 'barracks', air: 'aerialBarracks', necro: 'necroBarracks' }[d.barracks ?? (d.flying ? 'air' : 'ground')] as keyof typeof BUILDINGS;
+  const trainer = d.summonOnly ? 'invoquée, jamais formée' : BUILDINGS[home].name;
   const labs = Object.entries(d.labRequired).map(([lv, lab]) => `niv ${lv} : labo ${lab}`).join(', ') || '—';
   const unlock = d.unlock ? `${fmtCost(d.unlock.cost)} · ${d.unlock.sec} s` : 'de départ';
   const traits = [

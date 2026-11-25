@@ -12,6 +12,9 @@ export interface Struct {
 export interface Unit {
   id: number; kind: string; x: number; y: number; hp: number; maxHp: number; dps: number; targetId: number | null; cooldown: number; stuck: number; // seconds a spinner has been blocked on its way to its spot
   wp: { x: number; y: number } | null; // wandering units: the spot they fly to next
+  owner: number | null; // the summoner, for summoned troops
+  life: number; // seconds left for a summoned troop (Infinity for the others)
+  summonCd: number; // seconds until a summoner raises its next troop
 }
 
 const TROOP_SPACING = 0.7; // tiles between two freshly dropped troops
@@ -69,9 +72,16 @@ export class Battle {
     return this.structs.every(s => s.hp <= 0 || x < s.x - 1 || x > s.x + s.size + 1 || y < s.y - 1 || y > s.y + s.size + 1);
   }
 
-  deploy(kind: string, x: number, y: number, level = 1): Unit {
+  /** A summoner raises one of its troops every few seconds, up to its limit. */
+  summon(u: Unit, sm: { kind: string; every: number; max: number }, dt: number) {
+    if ((u.summonCd -= dt) > 0) return;
+    u.summonCd = sm.every;
+    if (this.units.filter(a => a.owner === u.id && a.hp > 0).length < sm.max) this.deploy(sm.kind, u.x + 0.5, u.y, 1, u.id);
+  }
+
+  deploy(kind: string, x: number, y: number, level = 1, owner: number | null = null): Unit {
     const st = TROOPS[kind].levels[level - 1];
-    const u = { id: this.nextId++, kind, x, y, hp: st.hp, maxHp: st.hp, dps: st.dps, targetId: null, cooldown: 0, stuck: 0, wp: null };
+    const u: Unit = { id: this.nextId++, kind, x, y, hp: st.hp, maxHp: st.hp, dps: st.dps, targetId: null, cooldown: 0, stuck: 0, wp: null, owner, life: TROOPS[kind].lifetime ?? Infinity, summonCd: TROOPS[kind].summons?.every ?? 0 };
     this.units.push(u);
     return u;
   }
@@ -137,6 +147,8 @@ export class Battle {
 
     for (const u of units) {
       const d = TROOPS[u.kind];
+      if (u.life !== Infinity && (u.life -= dt) <= 0) { u.hp = 0; continue; } // a summoned troop fades
+      if (d.summons) this.summon(u, d.summons, dt);
       if (d.heal) { this.heal(u, d, dt); continue; }
       if (d.wanders) { this.bomb(u, d, structs, dt); continue; }
       let t = structs.find(s => s.id === u.targetId && s.hp > 0);

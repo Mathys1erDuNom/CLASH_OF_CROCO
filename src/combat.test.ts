@@ -386,3 +386,14 @@ test('a whirling croco stands between two neighbouring buildings and hits both',
   for (let i = 0; i < 100; i++) b.step(0.1);
   assert.ok(b.structs.every(s => s.hp < s.maxHp), 'both buildings hit');
 });
+
+test('a necromancer raises skeletons a few at a time, and they fade after their lifetime', () => {
+  const b = new Battle([{ type: 'goldMine', x: 30, y: 30 }]);
+  const n = b.deploy('necromancer', 5, 5);
+  for (let i = 0; i < 70; i++) b.step(0.1); // 7 s: its first raise
+  const raised = b.units.filter(u => u.owner === n.id);
+  assert.ok(raised.length >= 1 && raised.length <= TROOPS.necromancer.summons!.max);
+  assert.equal(raised[0].kind, 'skeleton');
+  for (let i = 0; i < 300; i++) b.step(0.1); // 30 s: longer than a skeleton lives
+  assert.equal(raised[0].hp, 0);
+});

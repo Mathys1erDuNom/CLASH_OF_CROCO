@@ -1,5 +1,7 @@
 export type Res = 'gold' | 'chicken' | 'emerald';
 export const RESOURCES: Res[] = ['gold', 'chicken', 'emerald'];
+/** Which barracks trains a troop or a building: ground troops, flying troops, or the shadow barracks' summoners. */
+export type Trainer = 'ground' | 'air' | 'necro';
 export type Cost = Partial<Record<Res, number>>;
 
 export const GRID = 35; // tiles per side (about 3x the area of the old 20)
@@ -28,7 +30,7 @@ export interface BuildingDef {
   splash?: number; // defense: each shot damages every troop within this radius (tiles) of its target
   reload?: number; // defense: seconds between shots (default 0.5); each shot does dps × reload damage
   airOnly?: boolean; // shoots flying troops only
-  trains?: 'ground' | 'air'; // which troops it trains: ground troops, or flying ones
+  trains?: Trainer; // which troops it trains
   lab?: boolean; // upgrades troops
   workshop?: boolean; // each finished workshop adds a worker
   loot?: boolean; // goblin version holds loot
@@ -105,6 +107,9 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { gold: 1200 }, sec: 600, hp: 700, perMin: 4, cap: 200 },
     { cost: { gold: 3000 }, sec: 3600, hp: 900, perMin: 8, cap: 400 },
   ] },
+  necroBarracks: { name: 'Caserne des ombres', size: 2, max: 1, hutRequired: 3, trains: 'necro', levels: [
+    { cost: { gold: 500, emerald: 150 }, sec: 12, hp: 600 },
+  ] },
   emeraldStore: { name: "Réserve d'émeraudes", size: 2, max: 2, hutRequired: 3, store: 'emerald', loot: true, levels: [
     { cost: { gold: 300 }, sec: 60, hp: 900, store: 200 },
     { cost: { gold: 1000 }, sec: 180, hp: 1300, store: 400 },
@@ -140,6 +145,10 @@ export interface TroopDef {
   splash?: number; // area damage radius in tiles around the target (default: single target)
   spins?: boolean; // splash is around the troop itself; it stands between its target and a neighbour to hit both
   flying?: boolean; // flies over everything; only defenses with hitsAir can shoot it
+  barracks?: Trainer; // which barracks trains it (default: flying ones in the aerial barracks, the others in the classic one)
+  summonOnly?: boolean; // never trained: only summoned by another troop
+  summons?: { kind: string; every: number; max: number }; // raises up to max troops of kind, one every `every` seconds
+  lifetime?: number; // seconds a summoned troop lasts
   wanders?: boolean; // no target: flies around the enemy base and drops a bomb (splash) whenever it is over a building
   resourceBonus?: number; // damage multiplier against gold mines and chicken farms
   heal?: number; // healer: hp given to one of its own damaged troops per heart (it never attacks)
@@ -346,6 +355,42 @@ export const TROOPS: Record<string, TroopDef> = {
     splash: 1,
     flying: true,
     wanders: true,
+  },
+
+  // The necromancer raises skeletons that fight for it for a while; it is trained in the shadow barracks with emeralds.
+  necromancer: {
+    name: 'Croco Nécromancien',
+    levels: [
+      { hp: 260, dps: 14 },
+    ],
+    range: 4,
+    hitEvery: 1.5,
+    speed: 1.0,
+    space: 4,
+    cost: { emerald: 1 },
+    trainSec: 4,
+    unlock: { cost: { emerald: 150 }, sec: 12 },
+    labRequired: {},
+    barracksRequired: 1,
+    maxLevel: 1,
+    barracks: 'necro',
+    summons: { kind: 'skeleton', every: 6, max: 6 },
+  },
+  // Summoned only: never trained, it lasts for its lifetime.
+  skeleton: {
+    name: 'Squelette',
+    levels: [
+      { hp: 60, dps: 12 },
+    ],
+    range: 0.6,
+    hitEvery: 1,
+    speed: 1.4,
+    space: 0,
+    cost: {},
+    trainSec: 0,
+    labRequired: {},
+    summonOnly: true,
+    lifetime: 25,
   },
 };
 

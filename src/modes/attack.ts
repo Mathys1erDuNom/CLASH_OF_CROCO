@@ -123,6 +123,16 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
     structs.set(s.id, { model, bar });
   }
   const units = new Map<number, { model: THREE.Group; bar: Bar; last: THREE.Vector3 }>();
+  /** Adds the 3D model of a troop that has just appeared on the battlefield (deployed, or summoned). */
+  function spawnUnit(u: { id: number; kind: string; x: number; y: number }, lvl: number) {
+    const model = troop(u.kind, lvl);
+    model.position.copy(toWorld(u.x, u.y));
+    const bar = new Bar(0.5, 0x60e060);
+    world.add(model, bar.group);
+    units.set(u.id, { model, bar, last: model.position.clone() });
+    puff(toWorld(u.x, u.y, 0.2), 0xcfe8a0, 6);
+    animate(0.25, k => model.scale.setScalar(k));
+  }
 
   function ready(id: number, dt: number, period: number) {
     const left = (cd.get(id) ?? 0) - dt;
@@ -154,7 +164,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         <p class="hint">Les troupes engagées dans l’attaque sont perdues.</p>
         <button data-act="home">Retour au village</button>`;
     }
-    const troops = Object.entries(TROOPS).map(([k, d]) =>
+    const troops = Object.entries(TROOPS).filter(([, d]) => !d.summonOnly).map(([k, d]) =>
       `<button data-act="sel:${k}" class="${k === selected ? 'sel' : ''}" ${(save.troops[k] ?? 0) > 0 ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} Nv${troopLevel(save, k)} ×${save.troops[k] ?? 0}</button>`).join('');
     const def = battle.structs.filter(s => BUILDINGS[s.type].defense && s.hp > 0).length;
     return `<h1>⚔ ${base.name}</h1>
@@ -179,13 +189,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
       const u = battle.deploy(selected, tile.x, tile.y, troopLevel(save, selected));
       save.troops[selected]--;
       persist();
-      const model = troop(u.kind, lvl);
-      model.position.copy(toWorld(u.x, u.y));
-      const bar = new Bar(0.5, 0x60e060);
-      world.add(model, bar.group);
-      units.set(u.id, { model, bar, last: model.position.clone() });
-      puff(toWorld(u.x, u.y, 0.2), 0xcfe8a0, 6);
-      animate(0.25, k => model.scale.setScalar(k));
+      spawnUnit(u, lvl);
     },
 
     update(dt) {
@@ -231,6 +235,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
       }
 
       for (const u of battle.units) {
+        if (!units.has(u.id) && u.hp > 0) spawnUnit(u, 1); // summoned troops appear as they are raised
         const v = units.get(u.id);
         if (!v) continue;
         if (u.hp <= 0) {

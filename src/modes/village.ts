@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOPS, fmtCost, troopMaxLevel } from '../data.ts';
+import { BUILDINGS, GOBLIN_BASES, GRID, TRAIN_SPEEDUP_PER_LEVEL, TROOPS, fmtCost, troopMaxLevel, type Trainer } from '../data.ts';
 import {
   addTroopsToQueue, armyCap, armySize, campHousing, canAfford, canPlace, collect, countOf, hasBarracks, moveBuilding, pending, placeBuilding,
   stats, tick, trainMs, troopLevel, upgrade, upgradeBlock, barracksLevel, labNeeded, unlocked, upgradeTroop, workingLevel, type Building,
@@ -290,9 +290,9 @@ export function villageMode(): Mode {
     return `PV ${st.hp} · dégâts ${hit(k, level)} par attaque · 1 attaque toutes les ${d.hitEvery} s (${st.dps}/s)<br>portée ${d.flying ? 'au-dessus de la cible' : d.range} · vitesse ${d.speed} · ${d.space} place${d.space > 1 ? 's' : ''}<br>${traits.join(' · ')}`;
   }
 
-  function trainHtml(now: number, trainer: 'ground' | 'air'): string {
+  function trainHtml(now: number, trainer: Trainer): string {
     const canTrain = hasBarracks(save, now, trainer);
-    return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).filter(([k]) => trainerOf(k) === trainer).map(([k, d]) => {
+    return '<h2>Former des troupes</h2>' + unlockingHtml(now) + '<div class="scroll-wrap"><div class="scroll" data-scroll="train">' + Object.entries(TROOPS).filter(([k, d]) => trainerOf(k) === trainer && !d.summonOnly).map(([k, d]) => {
       const req = d.barracksRequired ?? 1, locked = barracksLevel(save, now, trainer) < req;
       const target = d.prefers === 'defense' ? 'les défenses' : d.prefers === 'resource' ? 'les ressources' : 'tout';
       const train = `<button data-act="train" data-arg="${k}" ${canTrain && !locked && armySize(save) + d.space <= armyCap(save, now) && canAfford(save, d.cost) ? '' : 'disabled'}><img src="${spriteUrl('t_' + k)}" alt="">${d.name} (${save.troops[k] ?? 0})<small>${fmtCost(d.cost)} · ${d.space} place${d.space > 1 ? 's' : ''} · vise ${target}${locked ? `<br>⚠ caserne niveau ${req} requise` : ''}</small></button>`;
@@ -305,7 +305,7 @@ export function villageMode(): Mode {
       + queueHtml(now) + (armySize(save) >= armyCap(save, now) ? '<p class="hint">Camps pleins : construis ou améliore un camp.</p>' : '');
   }
 
-  const unlockingHtml = (now: number) => ['unlocking', 'unlockingAir'].map(slot => { const u = save[slot as 'unlocking']; return u ? `<p>Déblocage : ${TROOPS[u.kind].name}, encore ${secs(u.doneAt - now)}</p>` : ''; }).join('');
+  const unlockingHtml = (now: number) => ['unlocking', 'unlockingAir', 'unlockingNecro'].map(slot => { const u = save[slot as 'unlocking']; return u ? `<p>Déblocage : ${TROOPS[u.kind].name}, encore ${secs(u.doneAt - now)}</p>` : ''; }).join('');
 
   const researchHtml = (now: number) => (save.research
     ? `<p>Recherche : ${TROOPS[save.research.kind].name} niv ${troopLevel(save, save.research.kind) + 1} · encore ${secs(save.research.doneAt - now)}</p>` : '');

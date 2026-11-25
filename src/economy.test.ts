@@ -102,3 +102,16 @@ test('emeralds: a mine makes them, a reserve holds them, a raid takes them, old 
   applyRaid(s, [], { emerald: 3 }, 'Attaquant');
   assert.equal(s.emerald, 1);
 });
+
+test('the shadow barracks trains necromancers with emeralds', () => {
+  const s = newSave(0);
+  s.gold = 10_000;
+  s.emerald = 100;
+  s.unlockedTroops.push('necromancer');
+  s.buildings.find(b => b.type === 'camp')!.level = 3;
+  s.buildings.push({ id: s.nextId++, type: 'necroBarracks', x: 30, y: 30, level: 1, readyAt: 0, collectedAt: 0 });
+  assert.equal(addTroopsToQueue(s, 'necromancer', 0), true);
+  assert.equal(s.emerald, 40); // 60 emeralds paid
+  s.unlockedTroops.push('crocoSarbacane');
+  assert.equal(addTroopsToQueue(s, 'crocoSarbacane', 0), true); // the classic barracks still trains the ground troops
+});

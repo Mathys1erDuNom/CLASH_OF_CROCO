@@ -1,5 +1,5 @@
 // Village state and timer logic. Timers are wall-clock timestamps so production continues while offline.
-import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, GRID, RESOURCES, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
+import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, GRID, RESOURCES, TROOPS, centred, troopMaxLevel, type Cost, type Trainer, type Level, type Res } from './data.ts';
 
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
@@ -11,6 +11,7 @@ export interface Save {
   unlockedTroops: string[]; // troops paid for in the barracks (troops with a unlock cost)
   unlocking: { kind: string; doneAt: number } | null; // one unlock at a time for ground troops
   unlockingAir: { kind: string; doneAt: number } | null; // and one for flying troops, so the two barracks unlock independently
+  unlockingNecro: { kind: string; doneAt: number } | null; // and one for the shadow barracks
   troopLevel: Record<string, number>; // missing = level 1
   research: { kind: string; doneAt: number } | null; // one troop upgrade at a time
   nextId: number;
@@ -22,7 +23,7 @@ export interface Raid { by: string; buildings: number; gold: number; chicken: nu
 export interface Ruin { type: string; x: number; y: number; level: number }
 
 export function newSave(now: number): Save {
-  const s: Save = { v: 1, gold: 250, chicken: 250, emerald: 0, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, unlockingAir: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
+  const s: Save = { v: 1, gold: 250, chicken: 250, emerald: 0, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, unlockingAir: null, unlockingNecro: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
   const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4], ['workshop', 9, 4]] as const;
   for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
@@ -46,12 +47,13 @@ export function migrate(s: Save): Save {
   for (const b of s.buildings) { b.type = currentType(b.type); b.level ??= 1; }
   for (const r of s.ruins ?? []) r.type = currentType(r.type); // ruins keep their old names too
   for (const m of [s.troops, s.troopLevel, s.unlockedTroops] as unknown[]) renameFrog(m); // the frog troop is now the croco sarbacane
-  for (const q of [...s.queue, s.unlocking, s.unlockingAir, s.research]) if (q?.kind === 'frog') q.kind = 'crocoSarbacane'; // queued, unlocking or upgrading frogs too
+  for (const q of [...s.queue, s.unlocking, s.unlockingAir, s.unlockingNecro, s.research]) if (q?.kind === 'frog') q.kind = 'crocoSarbacane'; // queued, unlocking or upgrading frogs too
   s.troopLevel ??= {};
   s.research ??= null;
   s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
   s.unlocking ??= null;
   s.unlockingAir ??= null;
+  s.unlockingNecro ??= null;
   s.emerald ??= 0; // saves from before emeralds
   s.ruins ??= [];
   s.raids ??= [];
@@ -163,7 +165,7 @@ export const campHousing = (b: Building, now: number) => (workingLevel(b, now) >
 export const armyCap = (s: Save, now: number) => s.buildings.reduce((n, b) => n + campHousing(b, now), 0);
 
 /** Flying troops are trained in the aerial barracks, the others in the classic barracks. */
-export const trainerOf = (kind: string) => (TROOPS[kind].flying ? 'air' : 'ground');
+export const trainerOf = (kind: string): Trainer => TROOPS[kind].barracks ?? (TROOPS[kind].flying ? 'air' : 'ground');
 
 /** Training time in ms, shortened by the best working barracks level of the right kind. */
 export function trainMs(s: Save, kind: string, now: number) {
@@ -188,15 +190,15 @@ export function upgradeTroop(s: Save, kind: string, now: number): boolean {
 /** Army places used: troops count by their space, queued troops included. */
 export const armySize = (s: Save) =>
   Object.entries(s.troops).reduce((a, [k, n]) => a + n * TROOPS[k].space, 0) + s.queue.reduce((a, q) => a + TROOPS[q.kind].space, 0);
-export const hasBarracks = (s: Save, now: number, trainer: 'ground' | 'air') => s.buildings.some(b => BUILDINGS[b.type].trains === trainer && workingLevel(b, now) > 0);
+export const hasBarracks = (s: Save, now: number, trainer: Trainer) => s.buildings.some(b => BUILDINGS[b.type].trains === trainer && workingLevel(b, now) > 0);
 
 /** Best working barracks level (0 = none). */
-export const barracksLevel = (s: Save, now: number, trainer: 'ground' | 'air') => Math.max(0, ...s.buildings.filter(b => BUILDINGS[b.type].trains === trainer).map(b => workingLevel(b, now)));
+export const barracksLevel = (s: Save, now: number, trainer: Trainer) => Math.max(0, ...s.buildings.filter(b => BUILDINGS[b.type].trains === trainer).map(b => workingLevel(b, now)));
 
 export const troopUnlocked = (s: Save, kind: string) => !TROOPS[kind].unlock || s.unlockedTroops.includes(kind);
 
 /** Which unlock slot a troop uses: flying troops and ground troops unlock side by side. */
-export const unlockSlot = (kind: string) => (TROOPS[kind].flying ? 'unlockingAir' : 'unlocking') as 'unlocking' | 'unlockingAir';
+export const unlockSlot = (kind: string) => ({ ground: 'unlocking', air: 'unlockingAir', necro: 'unlockingNecro' })[trainerOf(kind)] as 'unlocking' | 'unlockingAir' | 'unlockingNecro';
 
 /** Pays to unlock a troop; it can be trained once the unlock time has passed. */
 export function unlockTroop(s: Save, kind: string, now: number): boolean {
@@ -219,7 +221,7 @@ export function addTroopsToQueue(s: Save, kind: string, now: number): boolean {
 /** Moves finished troops from the training queue into the army. Returns true if anything changed. */
 export function tick(s: Save, now: number): boolean {
   let changed = false;
-  for (const slot of ['unlocking', 'unlockingAir'] as const) {
+  for (const slot of ['unlocking', 'unlockingAir', 'unlockingNecro'] as const) {
     const u = s[slot];
     if (u && u.doneAt <= now) { s.unlockedTroops.push(u.kind); s[slot] = null; changed = true; }
   }

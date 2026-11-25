@@ -511,7 +511,7 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'emeraldMine' ? emeraldMine(level) : type === 'emeraldStore' ? emeraldStore(level) : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'necroBarracks' ? necroBarracks() : type === 'emeraldMine' ? emeraldMine(level) : type === 'emeraldStore' ? emeraldStore(level) : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
@@ -590,6 +590,55 @@ function emeraldStore(level: number) {
   return g;
 }
 
+/** The necromancer: a hooded croco in a purple robe, a skull staff, and a ghost wisp in its hand. Level 2 adds skulls on the robe; level 3 a second wisp. */
+function necromancer(level: number) {
+  const L2 = level >= 2, L3 = level >= 3;
+  const robe = 0x5a2a7a, trim = 0xe8a040, skin = 0x7a8a3a, bone = 0xe8dcc0, glow = 0xb060ff, wood = 0x6d4526;
+  const g = new THREE.Group();
+  g.add(cone(0.42, 1.0, robe, 0, 0.5, 0, 6), cyl(0.45, 0.5, 0.08, trim, 0, 0.08, 0, 6)); // robe with a trimmed hem
+  const head = crocoHead(0.7, skin); head.position.set(0.12, 1.15, 0); g.add(head);
+  g.add(rot(cone(0.3, 0.6, robe, -0.05, 1.5, 0, 6), 0, 0, -0.15), cone(0.04, 0.2, trim, -0.2, 1.8, 0, 4)); // hood with a point
+  g.add(box(0.14, 0.5, 0.14, robe, 0.35, 0.85, 0.3)); // staff arm
+  g.add(cyl(0.03, 0.03, 1.6, wood, 0.55, 0.9, 0.3, 5)); // staff
+  g.add(ball(0.16, bone, 0.55, 1.75, 0.3, 1)); // skull on the staff
+  for (const z of [0.24, 0.36]) g.add(mesh(new THREE.SphereGeometry(0.04, 6, 4), mat(glow, { emissive: glow, emissiveIntensity: 1 }), 0.66, 1.78, z)); // glowing eyes
+  g.add(mesh(new THREE.SphereGeometry(0.15, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.6 }), -0.45, 1.1, 0.4)); // ghost wisp
+  if (L2) for (const [x, y] of [[-0.12, 0.55], [0.12, 0.35]]) g.add(ball(0.09, bone, x, y, 0.4, 1)); // skulls on the robe
+  if (L3) g.add(mesh(new THREE.SphereGeometry(0.12, 8, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.5 }), -0.3, 1.5, -0.4)); // second wisp
+  return g;
+}
+
+/** A summoned skeleton: white bones with a round skull. */
+function skeleton() {
+  const bone = 0xe8dcc0;
+  const g = new THREE.Group();
+  g.add(ball(0.14, bone, 0, 0.75, 0, 1)); // skull
+  g.add(box(0.06, 0.5, 0.06, bone, 0, 0.35, 0)); // spine
+  for (const y of [0.42, 0.32, 0.22]) g.add(box(0.3, 0.03, 0.04, bone, 0, y, 0)); // ribs
+  for (const z of [-0.1, 0.1]) g.add(box(0.06, 0.4, 0.06, bone, 0, 0.1, z)); // legs
+  for (const z of [-0.2, 0.2]) g.add(box(0.05, 0.35, 0.05, bone, 0, 0.5, z)); // arms
+  return g;
+}
+
+/** The shadow barracks: a crypt under a cluster of emerald crystals, framed by a bone arch and two skull totems, with purple wisps drifting out of the door. */
+function necroBarracks() {
+  const bone = 0xe8dcc0, dark = 0x2a2236, emerald = 0x3ddc84, purple = 0xb060ff;
+  const g = new THREE.Group();
+  g.add(cyl(1.25, 1.35, 0.2, 0x1e1a28, 0, 0.1, 0, 8)); // dark plinth
+  g.add(box(1.6, 0.9, 1.4, 0x3a2f48, 0, 0.65, 0)); // crypt
+  for (const [x, z] of [[-0.8, 0.7], [0.8, 0.7], [-0.8, -0.7], [0.8, -0.7]]) g.add(rot(cone(0.1, 0.5, emerald, x, 0.25, z, 4), z * 0.3, 0, -x * 0.3)); // emerald spikes at the corners
+  g.add(box(0.4, 0.6, 0.05, DOOR, 0, 0.4, 0.73)); // door
+  for (const x of [-0.42, 0.42]) g.add(rot(cyl(0.05, 0.05, 1.0, bone, x, 1.0, 0.82, 5), 0, 0, -x * 0.3)); // bone arch legs
+  g.add(mesh(new THREE.TorusGeometry(0.45, 0.07, 5, 12, Math.PI), bone, 0, 1.45, 0.82).rotateZ(Math.PI)); // bone arch
+  for (const x of [-1.1, 1.1]) { // skull totems
+    g.add(cyl(0.06, 0.08, 1.6, dark, x, 0.9, 0.8, 5), ball(0.18, bone, x, 1.8, 0.8, 1));
+  }
+  g.add(mesh(new THREE.OctahedronGeometry(0.5, 0), mat(emerald, { emissive: 0x20c070, emissiveIntensity: 0.9 }), 0, 1.9, 0)); // big emerald on top
+  for (const [x, y, z] of [[-0.35, 2.3, 0.2], [0.35, 2.2, -0.2], [0, 2.55, -0.3]] as const) g.add(mesh(new THREE.OctahedronGeometry(0.2, 0), mat(emerald, { emissive: 0x20c070, emissiveIntensity: 0.8 }), x, y, z));
+  for (const [x, y, z] of [[-0.6, 1.1, 1.1], [0.6, 1.5, 1.0]] as const) g.add(mesh(new THREE.SphereGeometry(0.12, 8, 6), mat(purple, { emissive: purple, emissiveIntensity: 1, transparent: true, opacity: 0.6 }), x, y, z)); // purple wisps
+  return g;
+}
+
 /** The bomb tower: a stone tower where a croco gunner lifts a lit bomb, with a basket of bombs beside him. Level 2 has a fuller basket. */
 function bombTower(goblin: boolean, level: number) {
   const stone = goblin ? 0x5a4a3a : 0x8a8478, wood = goblin ? 0x4a3020 : 0x6d4526, iron = 0x3a3a40, bomb = 0x222228;
@@ -627,7 +676,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4, emeraldMine: 1.8, emeraldStore: 2.6 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4, emeraldMine: 1.8, emeraldStore: 2.6, necroBarracks: 2.9 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];
@@ -891,7 +940,7 @@ function colossus(level: number) {
 }
 
 export function troop(kind: string, level = 1): THREE.Group {
-  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : kind === 'whirlCroco' ? whirlCroco(level) : kind === 'dragon' ? dragon(level) : babyCroco(level);
+  return kind === 'croco' ? croco(level) : kind === 'colossus' ? colossus(level) : kind === 'crocoSarbacane' ? crocoSarbacane(level) : kind === 'crocoLauncher' ? crocoLauncher(level) : kind === 'flyingCroco' ? flyingCroco(level) : kind === 'fireCroco' ? fireCroco(level) : kind === 'healer' ? healer(level) : kind === 'whirlCroco' ? whirlCroco(level) : kind === 'dragon' ? dragon(level) : kind === 'necromancer' ? necromancer(level) : kind === 'skeleton' ? skeleton() : babyCroco(level);
 }
 
 /** Returns a translucent copy of a model, for placement previews. */
