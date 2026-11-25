@@ -149,6 +149,7 @@ export class Battle {
     for (const u of units) {
       const d = TROOPS[u.kind];
       if (u.life !== Infinity && (u.life -= dt) <= 0) { u.hp = 0; continue; } // a summoned troop fades
+      if (u.owner !== null && !this.units.some(a => a.id === u.owner && a.hp > 0)) { u.hp = 0; continue; } // its summoner is dead: so is it
       if (d.summons) this.summon(u, d.summons, dt);
       if (d.heal) { this.heal(u, d, dt); continue; }
       if (d.wanders) { this.bomb(u, d, structs, dt); continue; }

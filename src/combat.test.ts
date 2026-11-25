@@ -397,3 +397,14 @@ test('a necromancer raises skeletons a few at a time, and they fade after their 
   for (let i = 0; i < 300; i++) b.step(0.1); // 30 s: longer than a skeleton lives
   assert.equal(raised[0].hp, 0);
 });
+
+test('summoned skeletons die with their necromancer', () => {
+  const b = new Battle([{ type: 'goldMine', x: 30, y: 30 }]);
+  const n = b.deploy('necromancer', 5, 5);
+  for (let i = 0; i < 30; i++) b.step(0.1); // 3 s: its first raise
+  const raised = b.units.filter(u => u.owner === n.id && u.hp > 0);
+  assert.ok(raised.length > 0);
+  n.hp = 0;
+  b.step(0.1);
+  assert.ok(raised.every(u => u.hp === 0));
+});
