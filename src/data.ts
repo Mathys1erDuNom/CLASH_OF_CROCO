@@ -1,4 +1,5 @@
-export type Res = 'gold' | 'chicken';
+export type Res = 'gold' | 'chicken' | 'emerald';
+export const RESOURCES: Res[] = ['gold', 'chicken', 'emerald'];
 export type Cost = Partial<Record<Res, number>>;
 
 export const GRID = 35; // tiles per side (about 3x the area of the old 20)
@@ -98,6 +99,16 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { chicken: 150 }, sec: 30, hp: 900, store: 1000 },
     { cost: { chicken: 600 }, sec: 90, hp: 1400, store: 2500 },
     { cost: { chicken: 1800 }, sec: 180, hp: 2000, store: 5000 },
+  ] },
+  emeraldMine: { name: "Mine d'émeraude", size: 2, max: 2, hutRequired: 3, res: 'emerald', loot: true, levels: [
+    { cost: { gold: 400 }, sec: 60, hp: 500, perMin: 2, cap: 100 },
+    { cost: { gold: 1200 }, sec: 600, hp: 700, perMin: 4, cap: 200 },
+    { cost: { gold: 3000 }, sec: 3600, hp: 900, perMin: 8, cap: 400 },
+  ] },
+  emeraldStore: { name: "Réserve d'émeraudes", size: 2, max: 2, hutRequired: 3, store: 'emerald', loot: true, levels: [
+    { cost: { gold: 300 }, sec: 60, hp: 900, store: 200 },
+    { cost: { gold: 1000 }, sec: 180, hp: 1300, store: 400 },
+    { cost: { gold: 2500 }, sec: 300, hp: 1800, store: 800 },
   ] },
   lab: { name: 'Laboratoire', size: 2, max: 1, hutRequired: 2, lab: true, levels: [
     { cost: { gold: 150, chicken: 100 }, sec: 30, hp: 500 },
@@ -346,7 +357,7 @@ export const TRAIN_SPEEDUP_PER_LEVEL = 0.5;
 /** ref: the building's id in its owner's save (a raid needs it); held: what a mine or farm holds right now, stealable. */
 export interface Placement { type: string; x: number; y: number; level?: number; ref?: number; held?: number }
 
-export interface GoblinBase { id: string; name: string; loot: Record<Res, number>; buildings: Placement[] }
+export interface GoblinBase { id: string; name: string; loot: Partial<Record<Res, number>>; buildings: Placement[] }
 
 const RAW_GOBLIN_BASES: GoblinBase[] = [
   {

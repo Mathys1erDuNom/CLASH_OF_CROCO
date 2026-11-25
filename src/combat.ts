@@ -1,5 +1,5 @@
 // Pure battle simulation (no Phaser), positions in tiles.
-import { BUILDINGS, GRID, TROOPS, type Placement, type Res, type TroopDef } from './data.ts';
+import { BUILDINGS, GRID, RESOURCES, TROOPS, type Placement, type Res, type TroopDef } from './data.ts';
 
 export interface Struct {
   id: number; type: string; level: number; x: number; y: number; size: number;
@@ -31,7 +31,7 @@ export class Battle {
       const d = BUILDINGS[p.type], level = p.level ?? 1, hp = d.levels[level - 1].hp;
       return { id: i, type: p.type, level, x: p.x, y: p.y, size: d.size, cx: p.x + d.size / 2, cy: p.y + d.size / 2, hp, maxHp: hp, targetId: null, stock: 0, held: p.held ?? 0, ref: p.ref ?? null, reload: d.reload ?? 0.5 }; // the first shot comes after one reload, like the view
     });
-    for (const res of ['gold', 'chicken'] as Res[]) {
+    for (const res of RESOURCES) {
       const stores = this.structs.filter(s => BUILDINGS[s.type].store === res);
       const holders = stores.length ? stores : this.structs.filter(s => BUILDINGS[s.type].res === res);
       const total = Math.floor(stock[res] ?? 0);

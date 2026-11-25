@@ -63,9 +63,9 @@ test('a raid removes the destroyed buildings to ruins, takes the stored stock, a
   const s = newSave(0);
   s.gold = 500;
   const store = s.buildings.find(b => b.type === 'goldStore')!;
-  applyRaid(s, [store.id], 200, 0, 'Attaquant');
+  applyRaid(s, [store.id], { gold: 200 }, 'Attaquant');
   assert.equal(s.gold, 300);
-  assert.deepEqual(s.raids, [{ by: 'Attaquant', buildings: 1, gold: 200, chicken: 0 }]);
+  assert.deepEqual(s.raids, [{ by: 'Attaquant', buildings: 1, gold: 200, chicken: 0, emerald: 0 }]);
   assert.ok(!s.buildings.some(b => b.id === store.id));
   assert.equal(s.ruins.length, 1);
   assert.equal(rebuild(s, 0), 1); // free, same place
@@ -280,7 +280,7 @@ test('a resource cannot be collected while its stock is at the storage cap', () 
 test('a village whose HQ was destroyed still loads, and the HQ comes back with the rebuild', () => {
   const s = newSave(0);
   const hq = s.buildings.find(b => b.type === 'hq')!;
-  applyRaid(s, [hq.id], 0, 0, 'Attaquant');
+  applyRaid(s, [hq.id], {}, 'Attaquant');
   assert.equal(hqLevel(s, 0), 0); // no crash: the village just has no HQ level
   assert.equal(rebuild(s, 0), 1);
   assert.equal(hqLevel(s, 0), 1);
@@ -288,7 +288,7 @@ test('a village whose HQ was destroyed still loads, and the HQ comes back with t
 
 test('loading a raided village does not hand back storages that were destroyed', () => {
   const s = newSave(0);
-  applyRaid(s, s.buildings.filter(b => b.type === 'goldStore' || b.type === 'camp').map(b => b.id), 0, 0, 'Attaquant');
+  applyRaid(s, s.buildings.filter(b => b.type === 'goldStore' || b.type === 'camp').map(b => b.id), {}, 'Attaquant');
   migrate(s);
   assert.equal(countOf(s, 'goldStore'), 0);
   assert.equal(countOf(s, 'camp'), 0);

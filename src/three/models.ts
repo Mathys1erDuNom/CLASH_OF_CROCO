@@ -511,7 +511,7 @@ function camp(level: number) {
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
   if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
-    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
+    : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'emeraldMine' ? emeraldMine(level) : type === 'emeraldStore' ? emeraldStore(level) : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
   levelParts(g, type, level, goblin);
   return g;
 }
@@ -533,6 +533,59 @@ function aerialBarracks(level = 1) {
     for (const s of [-1, 1]) g.add(rot(box(1.5, 0.05, 0.3, 0xe8d9a0, s * 0.75, 3.35, -0.2), 0, 0, s * 0.25)); // a third pair of wings
     g.add(ball(0.18, 0x40ff80, 0, 3.1, 0, 1)); // gem on the roof
     g.add(box(0.05, 1.1, 0.05, 0x8b6a44, 0.9, 1.2, 0.9), box(0.25, 0.05, 0.05, 0x8b6a44, 0.9, 1.5, 0.9), box(0.25, 0.05, 0.05, 0x8b6a44, 0.9, 1.1, 0.9)); // rope ladder
+  }
+  return g;
+}
+
+/** Emerald extractor: a metal rig over a pit. A tower holds drills that bore into an emerald vein, a pulley lifts green crystals, and a pipe carries them off.
+ * Level 2: a second drill, a crossbeam and a second pipe. Level 3: a third drill, gold bands on the legs, a glowing core and bigger crystals. */
+function emeraldMine(level: number) {
+  const L2 = level >= 2, L3 = level >= 3;
+  const gem = 0x3ddc84, metal = 0x5a5f66, dark = 0x2e3238, wood = 0x6d4526, gold = 0xe8a830;
+  const g = new THREE.Group();
+  g.add(cyl(1.0, 1.05, 0.25, 0x6a6a64, 0, 0.12, 0, 10)); // stone ring around the pit
+  g.add(cyl(0.7, 0.7, 0.05, dark, 0, 0.26, 0, 10)); // the pit
+  for (const [x, z] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) {
+    g.add(cyl(L2 ? 0.1 : 0.08, 0.1, 2.0, metal, x, 1.2, z, 6)); // tower legs
+    if (L3) g.add(cyl(0.13, 0.13, 0.12, gold, x, 1.0, z, 6), cyl(0.13, 0.13, 0.12, gold, x, 1.8, z, 6)); // gold bands
+  }
+  g.add(box(1.4, 0.1, 1.4, metal, 0, 2.25, 0)); // tower top
+  for (const x of [-0.6, 0.6]) g.add(box(0.1, 0.1, 1.3, dark, x, 1.6, 0)); // cross braces
+  if (L2) g.add(box(0.1, 0.1, 1.3, dark, 0, 2.0, 0), box(1.3, 0.1, 0.1, dark, 0, 2.0, 0)); // crossbeam
+  if (L3) g.add(mesh(new THREE.SphereGeometry(0.18, 8, 6), mat(gem, { emissive: 0x20c070, emissiveIntensity: 0.8 }), 0, 2.5, 0)); // glowing core
+  const drills = L3 ? [-0.35, 0, 0.35] : L2 ? [-0.25, 0.25] : [0];
+  for (const z of drills) {
+    g.add(cyl(0.05, 0.05, 1.4, metal, 0, 1.5, z, 6)); // drill shaft
+    g.add(cone(0.14, 0.35, 0xb8b8c0, 0, 0.5, z, 6).rotateX(Math.PI)); // drill bit into the vein
+  }
+  g.add(cyl(0.3, 0.3, 0.12, wood, 0, 2.4, 0, 12).rotateX(Math.PI / 2)); // pulley wheel
+  g.add(cyl(0.03, 0.03, 1.5, wood, 0.8, 1.2, 0, 4)); // rope to the crystal basket
+  const size = L3 ? 0.55 : 0.4;
+  for (let i = 0; i < 2 + level; i++) { // emeralds lifted out of the vein
+    const a = i * 2.1;
+    g.add(rot(cone(0.1, size, gem, 0.8 + Math.cos(a) * 0.12, 0.2 + (i % 2) * 0.15, Math.sin(a) * 0.12, 5), 0, 0, 0.2));
+  }
+  g.add(cyl(0.06, 0.06, 1.0, metal, -0.9, 0.6, 0.5, 6).rotateZ(Math.PI / 2)); // pipe carrying the crystals away
+  if (L2) g.add(cyl(0.05, 0.05, 1.0, metal, -0.9, 0.6, -0.4, 6).rotateZ(Math.PI / 2)); // second pipe
+  return g;
+}
+
+/** Emerald reserve: a stone vault with a glowing emerald crystal on a gold-trimmed roof. Level 2 adds pillars with gems; level 3 a crown of floating crystals. */
+function emeraldStore(level: number) {
+  const L2 = level >= 2, L3 = level >= 3;
+  const gem = 0x3ddc84, gold = 0xe8a830, stone = 0x8a8478, roof = 0x2f7a4a;
+  const g = new THREE.Group();
+  g.add(cyl(1.15, 1.2, 0.15, 0x6a6a64, 0, 0.08, 0, 8)); // stone plinth
+  g.add(box(1.5, 0.9, 1.2, stone, 0, 0.6, 0)); // vault
+  g.add(box(1.56, 0.08, 1.26, gold, 0, 1.08, 0)); // gold cornice
+  g.add(rot(cone(1.0, 0.5, roof, 0, 1.4, 0, 4), 0, Math.PI / 4, 0)); // green roof
+  g.add(box(0.4, 0.5, 0.04, DOOR, 0, 0.45, 0.61), box(0.5, 0.08, 0.06, gold, 0, 0.72, 0.62)); // door with a gold lintel
+  if (L2) for (const x of [-0.7, 0.7]) g.add(cyl(0.09, 0.1, 0.9, gold, x, 0.55, 0.62, 6), mesh(new THREE.OctahedronGeometry(0.12, 0), mat(gem, { emissive: 0x20c070, emissiveIntensity: 0.9 }), x, 1.1, 0.62)); // pillars topped with gems
+  // the glowing emerald in the roof's peak
+  g.add(mesh(new THREE.OctahedronGeometry(0.28 + level * 0.04, 0), mat(gem, { emissive: 0x20c070, emissiveIntensity: 1, flatShading: true }), 0, 1.9, 0));
+  if (L3) for (let i = 0; i < 4; i++) { // floating crystals around the peak
+    const a = (i / 4) * Math.PI * 2;
+    g.add(mesh(new THREE.OctahedronGeometry(0.1, 0), mat(0x5ee89a, { emissive: 0x20c070, emissiveIntensity: 0.8 }), Math.cos(a) * 1.0, 1.7 + (i % 2) * 0.2, Math.sin(a) * 1.0));
   }
   return g;
 }
@@ -574,7 +627,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4, emeraldMine: 1.8, emeraldStore: 2.6 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addTroopsToQueue, collect, countOf, gain, migrate, newSave, placeBuilding, storeCap, tick, unlockTroop, workersFree, workersTotal, type Save } from './economy.ts';
+import { addTroopsToQueue, applyRaid, collect, countOf, gain, migrate, newSave, placeBuilding, storeCap, tick, unlockTroop, workersFree, workersTotal, type Save } from './economy.ts';
 
 test('other troops are paid for and wait in the barracks before training', () => {
   const s = newSave(0);
@@ -86,4 +86,19 @@ test('ground and flying troops unlock side by side', () => {
   assert.equal(unlockTroop(s, 'crocoSarbacane', 0), false); // one ground unlock at a time
   assert.equal(unlockTroop(s, 'dragon', 0), true); // the flying one is not blocked by it
   assert.equal(unlockTroop(s, 'flyingCroco', 0), false); // but one flying unlock at a time
+});
+
+test('emeralds: a mine makes them, a reserve holds them, a raid takes them, old saves start at 0', () => {
+  const s = newSave(0);
+  assert.equal(s.emerald, 0);
+  assert.equal(migrate({ ...s, emerald: undefined } as never).emerald, 0);
+  s.gold = 10_000;
+  s.buildings.find(b => b.type === 'hq')!.level = 3;
+  assert.equal(placeBuilding(s, 'emeraldMine', 30, 30, 0), true);
+  assert.equal(placeBuilding(s, 'emeraldStore', 30, 14, 0), true);
+  const mine = s.buildings.find(b => b.type === 'emeraldMine')!; // both finish after 60 s
+  assert.equal(collect(s, mine, 180_000), 4); // two emeralds a minute, for the 2 minutes after they were ready
+  assert.equal(s.emerald, 4);
+  applyRaid(s, [], { emerald: 3 }, 'Attaquant');
+  assert.equal(s.emerald, 1);
 });

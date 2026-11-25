@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BUILDINGS, TROOPS, type Placement, type Res } from '../data.ts';
+import { BUILDINGS, RESOURCES, TROOPS, type Placement, type Res } from '../data.ts';
 import { Battle, edgeDist } from '../combat.ts';
 import { Bar, animate, floatText, toWorld, world, type Mode } from '../three/engine.ts';
 import { BUILDING_TOP, ball, bombCroco, box, cyl } from '../three/models.ts';
@@ -54,6 +54,7 @@ function bombBlast(battle: Battle, at: { x: number; y: number }, radius: number)
   });
 }
 
+const LABEL: Record<Res, string> = { gold: 'Or', chicken: 'Poulet', emerald: 'Émeraude' };
 const HEART_MAT = new THREE.MeshBasicMaterial({ color: 0xff3d7a });
 /** A heart: two round lobes and a point underneath. */
 function heart() {
@@ -90,12 +91,12 @@ function projectile(kind: 'coconut' | 'thorn' | 'dart' | 'bomb' | 'drop' | 'harp
 }
 
 /** A base to attack or visit: a goblin camp (has loot) or another player's base (no loot, no stars). */
-export interface Target { id: string; name: string; goblin: boolean; buildings: Placement[]; loot?: Record<Res, number>; uid?: string }
+export interface Target { id: string; name: string; goblin: boolean; buildings: Placement[]; loot?: Partial<Record<Res, number>>; uid?: string }
 
 /** Tells the server what this attack destroyed and stole from another player's save. */
-function reportRaid(uid: string, destroyed: number[], gold: number, chicken: number) {
+function reportRaid(uid: string, destroyed: number[], loot: Record<Res, number>) {
   // if this fails the victim keeps their base; the attacker's own result is unchanged
-  fetch(`/api/players/${encodeURIComponent(uid)}/raid`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ destroyed, gold, chicken }) }).catch(() => {});
+  fetch(`/api/players/${encodeURIComponent(uid)}/raid`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ destroyed, loot }) }).catch(() => {});
 }
 
 /** visit: read-only view of the base, no troops, no damage. */
@@ -131,10 +132,10 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
 
   function finish() {
     const stars = battle.stars(), now = Date.now(); // loot above the storage cap is lost
-    const taken = { gold: battle.taken('gold'), chicken: battle.taken('chicken') };
-    result = { stars, taken, got: { gold: gain(save, 'gold', taken.gold, now), chicken: gain(save, 'chicken', taken.chicken, now) } };
+    const taken = Object.fromEntries(RESOURCES.map(r => [r, battle.taken(r)])) as Record<Res, number>;
+    result = { stars, taken, got: Object.fromEntries(RESOURCES.map(r => [r, gain(save, r, taken[r], now)])) as Record<Res, number> };
     if (base.goblin) save.stars[base.id] = Math.max(save.stars[base.id] ?? 0, stars);
-    else if (base.uid) reportRaid(base.uid, battle.destroyedRefs(), battle.stockTaken('gold'), battle.stockTaken('chicken'));
+    else if (base.uid) reportRaid(base.uid, battle.destroyedRefs(), Object.fromEntries(RESOURCES.map(r => [r, battle.stockTaken(r)])) as Record<Res, number>);
     persist();
   }
 
@@ -148,9 +149,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
     if (result) {
       return `<h1 class="result">${result.stars ? 'Victoire !' : 'Défaite…'}</h1><p class="big">${stars(result.stars)}</p>
         <p>Destruction : ${battle.destruction()} %</p>
-        <p>Volé : <img class="i" src="${spriteUrl('i_gold')}" alt="Or"> ${result.taken.gold} · <img class="i" src="${spriteUrl('i_chicken')}" alt="Poulet"> ${result.taken.chicken}</p>
-        ${result.got.gold < result.taken.gold || result.got.chicken < result.taken.chicken
-          ? `<p class="err">Réserves pleines : tu as pu prendre ${result.got.gold} or sur ${result.taken.gold} et ${result.got.chicken} poulets sur ${result.taken.chicken}.</p>` : ''}
+        <p>Volé : ${RESOURCES.filter(r => battle.total(r) > 0).map(r => `<img class="i" src="${spriteUrl('i_' + r)}" alt="${LABEL[r]}"> ${result!.taken[r]}`).join(' · ')}</p>
+        ${RESOURCES.some(r => result!.got[r] < result!.taken[r]) ? `<p class="err">Réserves pleines : ${RESOURCES.filter(r => result!.got[r] < result!.taken[r]).map(r => `${result!.got[r]} ${LABEL[r]} sur ${result!.taken[r]}`).join(', ')}.</p>` : ''}
         <p class="hint">Les troupes engagées dans l’attaque sont perdues.</p>
         <button data-act="home">Retour au village</button>`;
     }
@@ -159,7 +159,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
     const def = battle.structs.filter(s => BUILDINGS[s.type].defense && s.hp > 0).length;
     return `<h1>⚔ ${base.name}</h1>
       <p class="status">⏱ ${secs((DURATION - battle.time) * 1000)} · 💥 ${battle.destruction()} % · ${stars(battle.stars())} · 🛡 ${def}</p>
-      <p class="status">Butin à prendre : <img class="i" src="${spriteUrl('i_gold')}" alt="Or"> ${battle.left('gold')}/${battle.total('gold')} · <img class="i" src="${spriteUrl('i_chicken')}" alt="Poulet"> ${battle.left('chicken')}/${battle.total('chicken')}</p>
+      <p class="status">Butin à prendre : ${RESOURCES.filter(r => battle.total(r) > 0).map(r => `<img class="i" src="${spriteUrl('i_' + r)}" alt="${LABEL[r]}"> ${battle.left(r)}/${battle.total(r)}`).join(' · ')}</p>
       <h2>Déployer</h2><div class="scroll-wrap"><div class="deploy" data-scroll="deploy">${troops}</div><i class="sbar h"><b></b></i></div>
       <p class="hint">Choisis une troupe puis touche la carte, hors des zones rouges.</p>
       <button data-act="retreat" class="retreat">🏳 Battre en retraite</button>`;

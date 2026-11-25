@@ -1,10 +1,10 @@
 // Village state and timer logic. Timers are wall-clock timestamps so production continues while offline.
-import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, GRID, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
+import { BUILDINGS, TRAIN_SPEEDUP_PER_LEVEL, GRID, RESOURCES, TROOPS, centred, troopMaxLevel, type Cost, type Level, type Res } from './data.ts';
 
 /** `level` is the level being built/reached; while now < readyAt the building works at level - 1 (0 = not built yet). */
 export interface Building { id: number; type: string; x: number; y: number; level: number; readyAt: number; collectedAt: number }
 export interface Save {
-  v: 1; gold: number; chicken: number;
+  v: 1; gold: number; chicken: number; emerald: number;
   buildings: Building[];
   troops: Record<string, number>;
   queue: { kind: string; doneAt: number }[];
@@ -18,11 +18,11 @@ export interface Save {
   ruins: Ruin[]; // buildings destroyed in a raid, waiting to be rebuilt for free
   raids: Raid[]; // attacks this village suffered, shown to the owner until dismissed
 }
-export interface Raid { by: string; buildings: number; gold: number; chicken: number }
+export interface Raid { by: string; buildings: number; gold: number; chicken: number; emerald: number }
 export interface Ruin { type: string; x: number; y: number; level: number }
 
 export function newSave(now: number): Save {
-  const s: Save = { v: 1, gold: 250, chicken: 250, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, unlockingAir: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
+  const s: Save = { v: 1, gold: 250, chicken: 250, emerald: 0, buildings: [], troops: { croco: 2 }, queue: [], unlockedTroops: [], unlocking: null, unlockingAir: null, troopLevel: {}, research: null, nextId: 1, stars: {}, ruins: [], raids: [] };
   const start = [['hq', 8, 8], ['goldMine', 4, 9], ['chickenFarm', 14, 9], ['barracks', 9, 13], ['camp', 4, 13], ['goldStore', 4, 4], ['chickenStore', 14, 4], ['workshop', 9, 4]] as const;
   for (const { type, x, y } of centred(start.map(([type, x, y]) => ({ type, x, y }))))
     s.buildings.push({ id: s.nextId++, type, x, y, level: 1, readyAt: now, collectedAt: now });
@@ -52,6 +52,7 @@ export function migrate(s: Save): Save {
   s.unlockedTroops ??= Object.keys(TROOPS); // saves from before troops were unlocked keep all of them
   s.unlocking ??= null;
   s.unlockingAir ??= null;
+  s.emerald ??= 0; // saves from before emeralds
   s.ruins ??= [];
   s.raids ??= [];
   for (const type of ['camp', 'goldStore', 'chickenStore', 'workshop']) { // saves from before camps and storages: give a free one
@@ -62,8 +63,8 @@ export function migrate(s: Save): Save {
   return s;
 }
 
-export const canAfford = (s: Save, c: Cost) => (c.gold ?? 0) <= s.gold && (c.chicken ?? 0) <= s.chicken;
-const pay = (s: Save, c: Cost) => { s.gold -= c.gold ?? 0; s.chicken -= c.chicken ?? 0; };
+export const canAfford = (s: Save, c: Cost) => RESOURCES.every(r => (c[r] ?? 0) <= s[r]);
+const pay = (s: Save, c: Cost) => { for (const r of RESOURCES) s[r] -= c[r] ?? 0; };
 
 export const workingLevel = (b: Building, now: number) => (now < b.readyAt ? b.level - 1 : b.level);
 export const stats = (type: string, level: number): Level => BUILDINGS[type].levels[Math.max(0, level - 1)];
@@ -236,14 +237,13 @@ export function tick(s: Save, now: number): boolean {
 }
 
 /** A raid on this village: the destroyed buildings become ruins and the stolen stock leaves the stock. */
-export function applyRaid(s: Save, destroyed: number[], gold: number, chicken: number, by: string) {
+export function applyRaid(s: Save, destroyed: number[], loot: Partial<Record<Res, number>>, by: string) {
   const hit = s.buildings.filter(b => destroyed.includes(b.id));
   s.buildings = s.buildings.filter(b => !destroyed.includes(b.id));
   s.ruins = [...(s.ruins ?? []), ...hit.map(({ type, x, y, level }) => ({ type, x, y, level }))];
-  const lostGold = Math.min(s.gold, gold), lostChicken = Math.min(s.chicken, chicken); // what was really there to lose
-  s.gold -= lostGold;
-  s.chicken -= lostChicken;
-  if (hit.length || lostGold || lostChicken) s.raids = [...(s.raids ?? []), { by, buildings: hit.length, gold: lostGold, chicken: lostChicken }];
+  const lost = Object.fromEntries(RESOURCES.map(r => [r, Math.min(s[r], loot[r] ?? 0)])) as Record<Res, number>; // what was really there to lose
+  for (const r of RESOURCES) s[r] -= lost[r];
+  if (hit.length || RESOURCES.some(r => lost[r])) s.raids = [...(s.raids ?? []), { by, buildings: hit.length, gold: lost.gold, chicken: lost.chicken, emerald: lost.emerald }];
 }
 
 /** Rebuilds ruins for free where there is room. Returns how many came back; the others stay ruins. */

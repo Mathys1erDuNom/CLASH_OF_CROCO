@@ -177,11 +177,11 @@ export function villageMode(): Mode {
   async function openBase(uid: string, visit: boolean) {
     const r = await fetch(`/api/players/${encodeURIComponent(uid)}/base`);
     if (!r.ok) throw new Error(String(r.status));
-    const { name, gold, chicken, buildings }: { name: string; gold: number; chicken: number; buildings: Building[] } = await r.json();
+    const { name, gold, chicken, emerald, buildings }: { name: string; gold: number; chicken: number; emerald: number; buildings: Building[] } = await r.json();
     const now = Date.now();
     // buildings still under construction are not targets; a mine or farm holds what it has produced and not collected yet
     const layout = buildings.filter(b => workingLevel(b, now) > 0).map(b => ({ type: currentType(b.type), x: b.x, y: b.y, level: workingLevel(b, now), ref: b.id, held: BUILDINGS[b.type].res ? pending(b, now) : 0 }));
-    setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout, loot: { gold, chicken }, uid }, () => setMode(villageMode), visit));
+    setMode(() => attackMode({ id: `p-${uid}`, name, goblin: false, buildings: layout, loot: { gold, chicken, emerald }, uid }, () => setMode(villageMode), visit));
   }
 
   const playersHtml = (ready: boolean) => players === null ? '<p class="hint">Chargement…</p>'
@@ -368,7 +368,7 @@ export function villageMode(): Mode {
     const ready = Object.values(save.troops).some(n => n > 0);
     const bases = GOBLIN_BASES.map(b => {
       const s = save.stars[b.id] ?? 0;
-      return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.chicken} poulets</small></button>`;
+      return `<button data-act="attack" data-arg="${b.id}" ${ready ? '' : 'disabled'}><img src="${spriteUrl('g_hq')}" alt="">${b.name}<small>${'★'.repeat(s)}${'☆'.repeat(3 - s)} · butin ${b.loot.gold} or / ${b.loot.chicken} poulets${b.loot.emerald ? ` / ${b.loot.emerald} émeraudes` : ''}</small></button>`;
     }).join('');
     const attackBox = `<div class="menu-box${dropping() ? ' drop' : ''}"><h2>Attaquer</h2>
       <button data-act="tab" data-arg="goblin" class="${attackTab === 'goblin' ? 'sel' : ''}">👹 Attaquer gobelin</button>
@@ -378,9 +378,9 @@ export function villageMode(): Mode {
       ${ready ? '' : '<p class="hint">Forme des troupes à la caserne pour pouvoir attaquer.</p>'}</div>`;
     return `<h1>🐊 Clash of Croco</h1>
       ${placing ? `<button data-act="cancelPlace" class="cancel-x" aria-label="Annuler">✕ <span>Annuler ${movingId ? 'le déplacement' : 'la construction'}</span></button>` : ''}
-      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><span title="Ouvriers libres">👷 ${workersFree(save, Date.now())}/${workersTotal(save, Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
+      <div class="res"><span><img src="${spriteUrl('i_gold')}" alt="Or"> ${save.gold}/${storeCap(save, 'gold', Date.now())}</span><span><img src="${spriteUrl('i_chicken')}" alt="Poulets"> ${save.chicken}/${storeCap(save, 'chicken', Date.now())}</span><span><img src="${spriteUrl('i_emerald')}" alt="Émeraudes"> ${save.emerald}/${storeCap(save, 'emerald', Date.now())}</span><span title="Ouvriers libres">👷 ${workersFree(save, Date.now())}/${workersTotal(save, Date.now())}</span><button class="armypill" data-act="army" title="Armée" aria-label="Voir l’armée">🪖 ${armySize(save)}/${cap}</button></div>
       ${selectionHtml(now)}
-      ${save.raids.length ? `<div class="sel-box"><h2>🚩 Vous avez été attaqué</h2>${save.raids.slice(-3).reverse().map(r => `<p>${esc(r.by)} : ${r.buildings} bâtiment${r.buildings > 1 ? 's' : ''} détruit${r.buildings > 1 ? 's' : ''} · −${r.gold} or · −${r.chicken} poulets</p>`).join('')}<button data-act="clearRaids">OK</button></div>` : ''}
+      ${save.raids.length ? `<div class="sel-box"><h2>🚩 Vous avez été attaqué</h2>${save.raids.slice(-3).reverse().map(r => `<p>${esc(r.by)} : ${r.buildings} bâtiment${r.buildings > 1 ? 's' : ''} détruit${r.buildings > 1 ? 's' : ''} · −${r.gold} or · −${r.chicken} poulets${r.emerald ? ` · −${r.emerald} émeraudes` : ''}</p>`).join('')}<button data-act="clearRaids">OK</button></div>` : ''}
       ${save.ruins.length ? `<button data-act="rebuild" class="unlock">🔨 Reconstruire (${save.ruins.length} bâtiment${save.ruins.length > 1 ? 's' : ''} détruit${save.ruins.length > 1 ? 's' : ''})</button>` : ''}
       <div class="menus">
         <button data-act="menu" data-arg="build" class="menu-btn ${menu === 'build' ? 'sel' : ''}">🔨 Construire<i class="arr"> ${menu === 'build' ? '▴' : '▾'}</i></button>
