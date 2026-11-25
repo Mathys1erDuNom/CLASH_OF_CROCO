@@ -260,7 +260,7 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
         v.bar.set(u.hp / u.maxHp);
         const attacking = s && edgeDist(u, s) <= TROOPS[u.kind].range;
         const arm = v.model.getObjectByName('arm');
-        if (arm) arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0;
+        if (arm && u.kind !== 'necromancer') arm.rotation.z = attacking ? -Math.abs(Math.sin(t * 8)) * 1.6 : 0; // the necromancer swings its arm only when it casts
         if (u.kind === 'whirlCroco' && attacking) v.model.rotation.y += dt * 12; // spins on the spot while it fights
         if (attacking && (u.kind === 'fireCroco' || u.kind === 'dragon') && ready(-u.id, dt, 0.05)) { // a red-orange smoke stream from the mouth toward the target, on its own clock (-id keeps it apart from the damage clock)
           const dx = s.cx - u.x, dy = s.cy - u.y, len = Math.hypot(dx, dy) || 1;
@@ -280,6 +280,8 @@ export function attackMode(base: Target, exit: () => void, visit = false): Mode 
             v.model.updateWorldMatrix(true, true);
             const m = v.model.getObjectByName('muzzle');
             if (m) projectile('shadow', m.getWorldPosition(new THREE.Vector3()), toWorld(s.cx, s.cy, 0.6));
+            const staffArm = v.model.getObjectByName('arm');
+            if (staffArm) animate(0.4, k => { staffArm.rotation.z = -Math.sin(k * Math.PI) * 1.2; }, () => { staffArm.rotation.z = 0; }); // one swing per cast
           }
           else if (u.kind !== 'fireCroco') puff(toWorld(u.x + Math.sign(s.cx - u.x) * 0.35, u.y + Math.sign(s.cy - u.y) * 0.35, 0.35), 0xffe08a, 3, 0.07);
         }

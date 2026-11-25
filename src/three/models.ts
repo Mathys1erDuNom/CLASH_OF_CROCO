@@ -617,7 +617,7 @@ function necromancer(level: number) {
   staffArm.add(mesh(new THREE.ConeGeometry(0.16, 0.5, 6), mat(glow, { emissive: glow, emissiveIntensity: 1, transparent: true, opacity: 0.8 }), 0.15, 1.6, 0)); // purple flame
   const muzzle = new THREE.Object3D(); // where the shadow bolt leaves
   muzzle.name = 'muzzle';
-  muzzle.position.set(0.4, 1.2, 0);
+  muzzle.position.set(0.15, 1.5, 0); // the top of the staff
   staffArm.add(muzzle);
   g.add(staffArm);
   g.add(box(0.2, 0.2, 0.2, skin, 0.4, 0.6, 0.35), box(0.2, 0.6, 0.2, robe, 0.5, 0.5, 0.35)); // other arm, reaching out
