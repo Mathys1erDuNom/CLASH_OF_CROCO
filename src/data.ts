@@ -103,12 +103,12 @@ export const BUILDINGS: Record<string, BuildingDef> = {
     { cost: { chicken: 1800 }, sec: 180, hp: 2000, store: 5000 },
   ] },
   emeraldMine: { name: "Mine d'émeraude", size: 2, max: 2, hutRequired: 3, res: 'emerald', loot: true, levels: [
-    { cost: { gold: 400 }, sec: 60, hp: 500, perMin: 2, cap: 100 },
+    { cost: { gold: 400 }, sec: 6, hp: 500, perMin: 2, cap: 100 },
     { cost: { gold: 1200 }, sec: 600, hp: 700, perMin: 4, cap: 200 },
     { cost: { gold: 3000 }, sec: 3600, hp: 900, perMin: 8, cap: 400 },
   ] },
   necroBarracks: { name: 'Caserne des ombres', size: 2, max: 1, hutRequired: 3, trains: 'necro', levels: [
-    { cost: { gold: 500, emerald: 150 }, sec: 12, hp: 600 },
+    { cost: { gold: 500, emerald: 1 }, sec: 12, hp: 600 },
   ] },
   emeraldStore: { name: "Réserve d'émeraudes", size: 2, max: 2, hutRequired: 3, store: 'emerald', loot: true, levels: [
     { cost: { gold: 300 }, sec: 60, hp: 900, store: 200 },
