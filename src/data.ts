@@ -147,7 +147,7 @@ export interface TroopDef {
   flying?: boolean; // flies over everything; only defenses with hitsAir can shoot it
   barracks?: Trainer; // which barracks trains it (default: flying ones in the aerial barracks, the others in the classic one)
   summonOnly?: boolean; // never trained: only summoned by another troop
-  summons?: { kind: string; every: number; max: number }; // raises up to max troops of kind, one every `every` seconds
+  summons?: { kind: string; every: number; count: number; max: number }; // every `every` seconds raises `count` troops of kind in front of it, up to `max` alive at once
   lifetime?: number; // seconds a summoned troop lasts
   wanders?: boolean; // no target: flies around the enemy base and drops a bomb (splash) whenever it is over a building
   resourceBonus?: number; // damage multiplier against gold mines and chicken farms
@@ -374,7 +374,7 @@ export const TROOPS: Record<string, TroopDef> = {
     barracksRequired: 1,
     maxLevel: 1,
     barracks: 'necro',
-    summons: { kind: 'skeleton', every: 6, max: 6 },
+    summons: { kind: 'skeleton', every: 2.5, count: 4, max: 24 },
   },
   // Summoned only: never trained, it lasts for its lifetime.
   skeleton: {

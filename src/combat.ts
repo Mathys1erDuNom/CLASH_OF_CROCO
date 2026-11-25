@@ -73,10 +73,11 @@ export class Battle {
   }
 
   /** A summoner raises one of its troops every few seconds, up to its limit. */
-  summon(u: Unit, sm: { kind: string; every: number; max: number }, dt: number) {
+  summon(u: Unit, sm: { kind: string; every: number; count: number; max: number }, dt: number) {
     if ((u.summonCd -= dt) > 0) return;
     u.summonCd = sm.every;
-    if (this.units.filter(a => a.owner === u.id && a.hp > 0).length < sm.max) this.deploy(sm.kind, u.x + 0.5, u.y, 1, u.id);
+    const room = sm.max - this.units.filter(a => a.owner === u.id && a.hp > 0).length;
+    for (let i = 0; i < Math.min(sm.count, room); i++) this.deploy(sm.kind, u.x + 1, u.y + (i - (sm.count - 1) / 2) * 0.35, 1, u.id); // a row in front of it
   }
 
   deploy(kind: string, x: number, y: number, level = 1, owner: number | null = null): Unit {
