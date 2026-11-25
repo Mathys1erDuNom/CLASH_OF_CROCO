@@ -22,6 +22,7 @@ export interface BuildingDef {
   size: number; // footprint in tiles
   max: number; // how many the player may own
   maxByHut?: number[]; // how many by Hutte du Chef level (index 0 = level 1), when that differs from max
+  maxLevelByHut?: number[]; // highest level by Hutte du Chef level (index 0 = level 1); default: the hut's level
   hutRequired?: number; // Chief's hut level needed to build it; hidden from the build menu until then (default 1)
   res?: Res; // resource produced
   store?: Res; // resource whose stock it raises the maximum of
@@ -38,91 +39,273 @@ export interface BuildingDef {
 }
 
 export const BUILDINGS: Record<string, BuildingDef> = {
-  hq: { name: 'Hutte du Chef', size: 3, max: 1, levels: [
-    { cost: {}, sec: 0, hp: 1500 },
-    { cost: { gold: 500, chicken: 500 }, sec: 60, hp: 2200 },
-    { cost: { gold: 1500, chicken: 1500 }, sec: 180, hp: 3200 },
-  ] },
-  goldMine: { name: "Mine d'or", size: 2, max: 3, maxByHut: [1, 2, 3], res: 'gold', loot: true, levels: [
-    { cost: { chicken: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
-    { cost: { chicken: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
-    { cost: { chicken: 600 }, sec: 3600, hp: 750, perMin: 12, cap: 800 },
-  ] },
-  chickenFarm: { name: 'Élevage de poulets',size: 2, max: 3, maxByHut: [1, 2, 3], res: 'gold', loot: true, levels: [
-    { cost: { gold: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
-    { cost: { gold: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
-    { cost: { gold: 600 }, sec: 3600, hp: 750, perMin: 9, cap: 800 },
-  ] },
-  barracks: { name: 'Caserne du marais', size: 2, max: 1, trains: 'ground', levels: [
-    { cost: { gold: 120 }, sec: 20, hp: 500 },
-    { cost: { gold: 400 }, sec: 600, hp: 700 },
-    { cost: { gold: 1000 }, sec: 3600, hp: 900 },
-  ] },
-  aerialBarracks: { name: 'Caserne aérienne', size: 2, max: 1, hutRequired: 3, trains: 'air', levels: [
-    { cost: { gold: 800, chicken: 300 }, sec: 120, hp: 600 },
-    { cost: { gold: 1500, chicken: 600 }, sec: 600, hp: 800 },
-    { cost: { gold: 3000, chicken: 1200 }, sec: 3600, hp: 1000 },
-  ] },
-  camp: { name: 'Camp des troupes', size: 3, max: 3, levels: [
-    { cost: { gold: 100 }, sec: 30, hp: 400, housing: 20 },
-    { cost: { gold: 350 }, sec: 600, hp: 550, housing: 35 },
-    { cost: { gold: 900 }, sec: 3600, hp: 700, housing: 50 },
-  ] },
-  cannon: { name: 'Canon à noix de coco', size: 2, max: 4, defense: true, reload: 0.9, levels: [
-    { cost: { gold: 150 }, sec: 300, hp: 600, dps: 40, range: 6 },
-    { cost: { gold: 450 }, sec: 500, hp: 850, dps: 60, range: 6 },
-    { cost: { gold: 1100 }, sec: 3500, hp: 1100, dps: 85, range: 6 },
-  ] },
-  mortar: { name: 'Mortier', size: 2, max: 2, hutRequired: 2, defense: true, splash: 1.5, reload: 1.2, levels: [
-    { cost: { gold: 400, chicken: 100 }, sec: 60, hp: 600, dps: 60, range: 17 },
-    { cost: { gold: 1000, chicken: 300 }, sec: 120, hp: 850, dps: 80, range: 17 },
-    { cost: { gold: 2200, chicken: 700 }, sec: 240, hp: 1100, dps: 100, range: 17 },
-  ] },
-  sarbacaneTower: { name: 'Tour à sarbacanes', size: 2, max: 4, hutRequired: 2, defense: true, hitsAir: true, levels: [
-    { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 8 },
-    { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 8 },
-    { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 8 },
-  ] },
-  airDefense: { name: 'Lance-harpons anti-air', size: 2, max: 2, hutRequired: 3, defense: true, hitsAir: true, airOnly: true, reload: 0.7, levels: [
-    { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 8 },
-    { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 8 },
-    { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 8 },
-  ] },
-  bombTower: { name: 'Tour à bombes', size: 2, max: 2, hutRequired: 3, defense: true, splash: 2, reload: 1, levels: [
-    { cost: { gold: 500, chicken: 150 }, sec: 60, hp: 700, dps: 50, range: 6 },
-    { cost: { gold: 1100, chicken: 400 }, sec: 150, hp: 950, dps: 80, range: 6 },
-  ] },
-  goldStore: { name: "Réserve d'or", size: 2, max: 4, store: 'gold', loot: true, levels: [
-    { cost: { gold: 150 }, sec: 30, hp: 900, store: 1000 },
-    { cost: { gold: 600 }, sec: 90, hp: 1400, store: 2500 },
-    { cost: { gold: 1800 }, sec: 180, hp: 2000, store: 5000 },
-  ] },
-  chickenStore: { name: 'Réserve de poulets', size: 2, max: 4, store: 'chicken', loot: true, levels: [
-    { cost: { chicken: 150 }, sec: 30, hp: 900, store: 1000 },
-    { cost: { chicken: 600 }, sec: 90, hp: 1400, store: 2500 },
-    { cost: { chicken: 1800 }, sec: 180, hp: 2000, store: 5000 },
-  ] },
-  emeraldMine: { name: "Mine d'émeraude", size: 2, max: 2, hutRequired: 3, res: 'emerald', loot: true, levels: [
-    { cost: { gold: 400 }, sec: 6, hp: 500, perMin: 2, cap: 100 },
-    { cost: { gold: 1200 }, sec: 600, hp: 700, perMin: 4, cap: 200 },
-    { cost: { gold: 3000 }, sec: 3600, hp: 900, perMin: 8, cap: 400 },
-  ] },
-  necroBarracks: { name: 'Caserne des ombres', size: 2, max: 1, hutRequired: 3, trains: 'necro', levels: [
-    { cost: { gold: 500, emerald: 1 }, sec: 12, hp: 600 },
-  ] },
-  emeraldStore: { name: "Réserve d'émeraudes", size: 2, max: 2, hutRequired: 3, store: 'emerald', loot: true, levels: [
-    { cost: { gold: 300 }, sec: 60, hp: 900, store: 200 },
-    { cost: { gold: 1000 }, sec: 180, hp: 1300, store: 400 },
-    { cost: { gold: 2500 }, sec: 300, hp: 1800, store: 800 },
-  ] },
-  lab: { name: 'Laboratoire', size: 2, max: 1, hutRequired: 2, lab: true, levels: [
-    { cost: { gold: 150, chicken: 100 }, sec: 30, hp: 500 },
-    { cost: { gold: 500, chicken: 400 }, sec: 90, hp: 700 },
-    { cost: { gold: 1200, chicken: 1000 }, sec: 200, hp: 900 },
-  ] },
-  workshop: { name: "Atelier de l'ouvrier", size: 2, max: 2, maxByHut: [1, 1, 2], hutRequired: 1, workshop: true, levels: [
-    { cost: { gold: 100 }, sec: 20, hp: 450 },
-  ] },
+  // ---- La base ----
+  hq: {
+    name: 'Hutte du Chef',
+    size: 3,
+    max: 1,
+    levels: [
+      { cost: {}, sec: 0, hp: 1500 },
+      { cost: { gold: 500, chicken: 500 }, sec: 300, hp: 2200 },
+      { cost: { gold: 1500, chicken: 1500 }, sec: 600, hp: 3200 },
+      { cost: { gold: 4000, chicken: 4000 }, sec: 3600, hp: 4500 },
+      { cost: { gold: 10000, chicken: 10000 }, sec: 7200, hp: 6000 },
+    ],
+  },
+
+  // ---- Ressources : mines et réserves ----
+  goldMine: {
+    name: 'Mine d\'or',
+    size: 2,
+    max: 4,
+    maxByHut: [1, 2, 3, 4, 4],
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    res: 'gold',
+    loot: true,
+    levels: [
+      { cost: { chicken: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
+      { cost: { chicken: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
+      { cost: { chicken: 600 }, sec: 3600, hp: 750, perMin: 12, cap: 800 },
+      { cost: { chicken: 1500, gold: 300 }, sec: 7200, hp: 950, perMin: 24, cap: 1600 },
+      { cost: { chicken: 4000, gold: 1000 }, sec: 14400, hp: 1200, perMin: 48, cap: 3200 },
+    ],
+  },
+
+  chickenFarm: {
+    name: 'Élevage de poulets',
+    size: 2,
+    max: 4,
+    maxByHut: [1, 2, 3, 4, 4],
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    res: 'gold',
+    loot: true,
+    levels: [
+      { cost: { gold: 60 }, sec: 30, hp: 400, perMin: 3, cap: 200 },
+      { cost: { gold: 200 }, sec: 600, hp: 550, perMin: 6, cap: 400 },
+      { cost: { gold: 600 }, sec: 3600, hp: 750, perMin: 12, cap: 800 },
+      { cost: { gold: 1500, chicken: 300 }, sec: 7200, hp: 950, perMin: 24, cap: 1600 },
+      { cost: { gold: 4000, chicken: 1000 }, sec: 14400, hp: 1200, perMin: 48 , cap: 3200 },
+    ],
+  },
+
+  emeraldMine: {
+    name: 'Mine d\'émeraude',
+    size: 2,
+    max: 2,
+    maxByHut: [0, 0, 0, 0, 1],
+    maxLevelByHut: [0, 0, 0, 0, 2],
+    hutRequired: 5,
+    res: 'emerald',
+    loot: true,
+    levels: [
+      { cost: { gold: 400 }, sec: 6, hp: 500, perMin: 2, cap: 100 },
+      { cost: { gold: 1200 }, sec: 600, hp: 700, perMin: 4, cap: 200 },
+      { cost: { gold: 3000 }, sec: 3600, hp: 900, perMin: 8, cap: 400 },
+    ],
+  },
+
+  goldStore: {
+    name: 'Réserve d\'or',
+    size: 2,
+    max: 3,
+    maxByHut: [1, 2, 2, 3, 3],
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    store: 'gold',
+    loot: true,
+    levels: [
+      { cost: { gold: 150 }, sec: 30, hp: 900, store: 1000 },
+      { cost: { gold: 600 }, sec: 90, hp: 1400, store: 2500 },
+      { cost: { gold: 1800 }, sec: 180, hp: 2000, store: 5000 },
+      { cost: { gold: 4000 }, sec: 360, hp: 2600, store: 10000 },
+      { cost: { gold: 10000 }, sec: 720, hp: 3300, store: 20000 },
+    ],
+  },
+
+  chickenStore: {
+    name: 'Réserve de poulets',
+    size: 2,
+    max: 3,
+    maxByHut: [1, 2, 3, 4, 4],
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    store: 'chicken',
+    loot: true,
+    levels: [
+      { cost: { chicken: 150 }, sec: 30, hp: 900, store: 1000 },
+      { cost: { chicken: 600 }, sec: 90, hp: 1400, store: 2500 },
+      { cost: { chicken: 1800 }, sec: 180, hp: 2000, store: 5000 },
+      { cost: { chicken: 4000 }, sec: 360, hp: 2600, store: 10000 },
+      { cost: { chicken: 10000 }, sec: 720, hp: 3300, store: 20000 },
+    ],
+  },
+
+  emeraldStore: {
+    name: 'Réserve d\'émeraudes',
+    size: 2,
+    max: 2,
+    maxByHut: [0, 0, 0, 0, 1],
+    maxLevelByHut: [0, 0, 0, 0, 2],
+    hutRequired: 5,
+    store: 'emerald',
+    loot: true,
+    levels: [
+      { cost: { gold: 300 }, sec: 60, hp: 900, store: 500 },
+      { cost: { gold: 1000 }, sec: 180, hp: 1300, store: 1000 },
+      { cost: { gold: 2500 }, sec: 300, hp: 1800, store: 800 },
+    ],
+  },
+
+  // ---- Casernes et laboratoire ----
+  barracks: {
+    name: 'Caserne du marais',
+    size: 2,
+    max: 1,
+    trains: 'ground',
+    levels: [
+      { cost: { gold: 120 }, sec: 20, hp: 500 },
+      { cost: { gold: 400 }, sec: 600, hp: 700 },
+      { cost: { gold: 1000 }, sec: 3600, hp: 900 },
+    ],
+  },
+
+  aerialBarracks: {
+    name: 'Caserne aérienne',
+    size: 2,
+    max: 1,
+    hutRequired: 4,
+    trains: 'air',
+    levels: [
+      { cost: { gold: 800, chicken: 300 }, sec: 600, hp: 600 },
+      { cost: { gold: 1500, chicken: 600 }, sec: 3600, hp: 800 },
+      { cost: { gold: 3000, chicken: 1200 }, sec: 7200, hp: 1000 },
+    ],
+  },
+
+  necroBarracks: {
+    name: 'Caserne des ombres',
+    size: 2,
+    max: 1,
+    hutRequired: 5,
+    trains: 'necro',
+    levels: [
+      { cost: { gold: 500, emerald: 100 }, sec: 7200, hp: 600 },
+    ],
+  },
+
+  camp: {
+    name: 'Camp des troupes',
+    size: 3,
+    max: 4,
+    maxByHut: [1, 2, 2, 3, 4],
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    levels: [
+      { cost: { gold: 100 }, sec: 30, hp: 400, housing: 20 },
+      { cost: { gold: 350 }, sec: 600, hp: 550, housing: 35 },
+      { cost: { gold: 900 }, sec: 3600, hp: 700, housing: 50 },
+      { cost: { gold: 2000 }, sec: 7200, hp: 850, housing: 70 },
+      { cost: { gold: 4500 }, sec: 14400, hp: 1000, housing: 100 },
+    ],
+  },
+
+  lab: {
+    name: 'Laboratoire',
+    size: 2,
+    max: 1,
+    hutRequired: 2,
+    lab: true,
+    maxLevelByHut: [1, 2, 3, 4, 5],
+    levels: [
+      { cost: { gold: 150, chicken: 100 }, sec: 30, hp: 500 },
+      { cost: { gold: 500, chicken: 400 }, sec: 300, hp: 700 },
+      { cost: { gold: 1200, chicken: 1000 }, sec: 600, hp: 900 },
+      { cost: { gold: 3000, chicken: 2500 }, sec: 3600, hp: 1100 },
+      { cost: { gold: 6000, chicken: 5000 }, sec: 7200, hp: 1300 },
+    ],
+  },
+
+  workshop: {
+    name: 'Atelier de l\'ouvrier',
+    size: 2,
+    max: 3,
+    maxByHut: [1, 1, 2, 2, 3],
+    hutRequired: 1,
+    workshop: true,
+    levels: [
+      { cost: { gold: 100 }, sec: 60, hp: 450 },
+    ],
+  },
+
+  // ---- Défenses ----
+  cannon: {
+    name: 'Canon à noix de coco',
+    size: 2,
+    max: 4,
+    defense: true,
+    reload: 0.9,
+    levels: [
+      { cost: { gold: 150 }, sec: 300, hp: 600, dps: 40, range: 6 },
+      { cost: { gold: 450 }, sec: 500, hp: 850, dps: 60, range: 6 },
+      { cost: { gold: 1100 }, sec: 3500, hp: 1100, dps: 85, range: 6 },
+    ],
+  },
+
+  mortar: {
+    name: 'Mortier',
+    size: 2,
+    max: 2,
+    hutRequired: 2,
+    defense: true,
+    splash: 1.5,
+    reload: 1.2,
+    levels: [
+      { cost: { gold: 400, chicken: 100 }, sec: 60, hp: 600, dps: 60, range: 17 },
+      { cost: { gold: 1000, chicken: 300 }, sec: 120, hp: 850, dps: 80, range: 17 },
+      { cost: { gold: 2200, chicken: 700 }, sec: 240, hp: 1100, dps: 100, range: 17 },
+    ],
+  },
+
+  sarbacaneTower: {
+    name: 'Tour à sarbacanes',
+    size: 2,
+    max: 4,
+    hutRequired: 2,
+    defense: true,
+    hitsAir: true,
+    levels: [
+      { cost: { gold: 100, chicken: 50 }, sec: 25, hp: 450, dps: 22, range: 8 },
+      { cost: { gold: 300, chicken: 150 }, sec: 60, hp: 600, dps: 32, range: 8 },
+      { cost: { gold: 800, chicken: 400 }, sec: 150, hp: 800, dps: 45, range: 8 },
+    ],
+  },
+
+  airDefense: {
+    name: 'Lance-harpons anti-air',
+    size: 2,
+    max: 2,
+    hutRequired: 3,
+    defense: true,
+    hitsAir: true,
+    airOnly: true,
+    reload: 0.7,
+    levels: [
+      { cost: { gold: 300, chicken: 100 }, sec: 40, hp: 500, dps: 110, range: 8 },
+      { cost: { gold: 700, chicken: 300 }, sec: 90, hp: 700, dps: 160, range: 8 },
+      { cost: { gold: 1500, chicken: 700 }, sec: 180, hp: 900, dps: 230, range: 8 },
+    ],
+  },
+
+  bombTower: {
+    name: 'Tour à bombes',
+    size: 2,
+    max: 2,
+    hutRequired: 3,
+    defense: true,
+    splash: 2,
+    reload: 1,
+    levels: [
+      { cost: { gold: 500, chicken: 150 }, sec: 60, hp: 700, dps: 50, range: 6 },
+      { cost: { gold: 1100, chicken: 400 }, sec: 150, hp: 950, dps: 80, range: 6 },
+    ],
+  },
 };
 
 export interface TroopLevel { hp: number; dps: number; up?: { cost: Cost; sec: number } } // dps: average damage per second; up: cost to go one level higher

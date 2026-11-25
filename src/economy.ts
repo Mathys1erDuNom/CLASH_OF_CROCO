@@ -144,7 +144,8 @@ export function upgradeBlock(s: Save, b: Building, now: number): string | null {
   if (now < b.readyAt) return 'Travaux en cours';
   if (!next) return 'Niveau maximum';
   if (workersFree(s, now) < 1) return 'Aucun ouvrier libre';
-  if (b.type !== 'hq' && b.level >= hqLevel(s, now)) return `Hutte du Chef niveau ${b.level + 1} requise`;
+  const hut = hqLevel(s, now), cap = BUILDINGS[b.type].maxLevelByHut?.[hut - 1] ?? hut; // how high this building may go at this hut level
+  if (b.type !== 'hq' && b.level >= cap) return `Hutte du Chef niveau ${b.level + 1} requise`;
   if (!canAfford(s, next.cost)) return 'Pas assez de ressources';
   return null;
 }

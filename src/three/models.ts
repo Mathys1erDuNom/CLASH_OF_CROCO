@@ -144,6 +144,16 @@ function chickenFarm(level: number) {
     g.add(box(0.3, 0.22, 0.22, STRAW, 0.7, 0.11, 0.2), box(0.3, 0.22, 0.22, STRAW, 0.7, 0.11, 0.45));
     g.add(lantern(-0.85, 0, 0.4));
   }
+  if (level >= 4) { // a second silo beside the first, and a feed trough by the door
+    g.add(cyl(0.2, 0.22, 1.4, WOOD, 1.3, 0.7, -0.5, 10));
+    for (const by of [0.2, 0.7, 1.2]) g.add(cyl(0.225, 0.225, 0.04, IRON, 1.3, by, -0.5, 10));
+    g.add(cone(0.26, 0.3, RED, 1.3, 1.55, -0.5, 10));
+    g.add(box(0.7, 0.1, 0.2, WOOD, hx - 0.2, 0.05, front + 0.7));
+  }
+  if (level >= 5) { // a golden roof on the hen house
+    const apex = y0 + h * 1.425;
+    g.add(gold(new THREE.ConeGeometry(0.75, 0.55, 4), hx, apex + 0.1, hz).rotateY(Math.PI / 4));
+  }
   if (level === 1) g.add(lantern(0.8, 0, 0.1));
 
   g.add(eggBasket(0.55, 0.15), hen(0.1, 0.5), hen(-0.6, 0.55));
@@ -188,7 +198,19 @@ function goldStore(level: number) {
     }
     g.add(box(0.9, 0.1, 0.3, STONE, 0, 0.05, 1.0), box(0.9, 0.1, 0.3, STONE, 0, 0.15, 0.85)); // stairs
   }
-  if (level === 3) { // a gold vault: a golden dome on stone pillars, a heap of coins and two chests
+  if (level >= 4) { // the same vault, richer: red gems on the pillars, a gold door frame and a bigger coin heap
+    for (const [x, z] of [[-0.8, -0.55], [0.8, -0.55], [-0.8, 0.55], [0.8, 0.55]]) g.add(ball(0.09, RED, x, 1.25, z, 1)); // gems on the pillar caps
+    for (let i = 0; i < 18; i++) g.add(ball(0.12, GOLD, -0.95 + (i % 6) * 0.38, 0.12 + Math.floor(i / 6) * 0.1, 1.08 + (i % 2) * 0.06, 0)); // bigger coin heap
+    g.add(box(1.0, 0.06, 0.06, GOLD, 0, 0.68, 0.74), box(0.06, 0.6, 0.06, GOLD, -0.5, 0.3, 0.74), box(0.06, 0.6, 0.06, GOLD, 0.5, 0.3, 0.74)); // gold door frame
+    for (const x of [-1.1, 1.1]) g.add(ball(0.1, GOLD, x, 0.46, 0.2, 0), ball(0.1, RED, x + 0.1, 0.46, 0.25, 0)); // coins and a gem on the chests
+  }
+  if (level >= 5) { // a second, taller dome stacked on the first, with a gold finial and a red gem
+    g.add(mesh(new THREE.SphereGeometry(0.9, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), goldMat(), 0, 2.05, 0)); // upper dome
+    g.add(cyl(0.9, 0.9, 0.1, DARK_WOOD, 0, 2.05, 0, 12)); // upper dome base
+    g.add(cone(0.14, 0.7, GOLD, 0, 3.05, 0, 6)); // finial
+    g.add(ball(0.1, RED, 0, 3.45, 0, 1)); // red gem on top
+  }
+  if (level >= 3) { // a gold vault: a golden dome on stone pillars, a heap of coins and two chests
     for (const [x, z] of [[-0.8, -0.55], [0.8, -0.55], [-0.8, 0.55], [0.8, 0.55]]) g.add(cyl(0.12, 0.14, 1.0, STONE, x, 0.5, z, 8), box(0.34, 0.12, 0.34, GOLD, x, 1.06, z));
     g.add(mesh(new THREE.SphereGeometry(1.05, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), goldMat(), 0, 1.0, 0)); // golden dome
     g.add(cyl(1.1, 1.1, 0.12, DARK_WOOD, 0, 1.0, 0, 14)); // dome base
@@ -211,6 +233,16 @@ function chickenStore(level: number) {
   if (level >= 2) {
     g.add(box(0.45, 0.3, 0.3, STRAW, 0.9, 0.15, 0.3), box(0.45, 0.3, 0.3, STRAW, 0.9, 0.15, -0.1));
     g.add(cyl(0.3, 0.32, 1.4, STONE, -0.95, 0.7, -0.4, 10), cone(0.34, 0.3, RED, -0.95, 1.55, -0.4, 10));
+  }
+  if (level >= 4) { // a coop wing on the left with its own red roof, and a fence round the yard
+    g.add(box(0.8, 0.75, 0.9, WOOD, -1.2, 0.375, 0.2), box(0.42, 0.3, 0.02, DOOR, -1.2, 0.25, 0.66));
+    g.add(cone(0.62, 0.45, RED, -1.2, 0.97, 0.2, 4).rotateY(Math.PI / 4));
+    g.add(fence(1.5, 12));
+  }
+  if (level >= 5) { // golden trim on the barn and roof, a golden weathervane hen on top
+    g.add(box(1.46, 0.07, 1.26, GOLD, 0, h, 0), box(0.6, 0.07, 0.06, GOLD, 0, 0.7, 0.66));
+    g.add(gold(new THREE.ConeGeometry(0.12, 0.3, 4), 0, h + 0.75, 0));
+    g.add(gold(new THREE.SphereGeometry(0.16, 8, 6), 0, h + 1.0, 0));
   }
   if (level === 3) {
     for (let i = 0; i < 5; i++) g.add(box(0.25, 0.04, 0.4, i % 2 ? EGG : RED, -0.5 + i * 0.25, 0.9, 0.85).rotateX(-0.3)); // awning
@@ -413,13 +445,45 @@ function levelParts(g: THREE.Group, type: string, level: number, goblin: boolean
         g.add(crown);
         for (const [x, z] of [[-1.3, -1.3], [-1.3, 1.3], [1.3, 1.3]]) g.add(flag(goblin, x, 0.87, z, 1.4));
       }
+      if (level >= 4) { // a fourth banner and a stone wall ring
+        g.add(flag(goblin, 1.3, 0.87, -1.3, 1.4));
+        for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.add(box(0.3, 0.25, 0.25, STONE, Math.cos(a) * 1.75, 0.12, Math.sin(a) * 1.75).rotateY(-a)); }
+      }
+      if (level >= 5) { // a gold spire on top
+        g.add(cone(0.35, 1.2, goblin ? 0x523a68 : 0xf2c230, 0, 5.2, 0, 8));
+        g.add(flag(goblin, 0, 6.2, 0, 1));
+      }
       break;
     case 'goldMine':
-      if (L2) { // reinforced entrance, lantern, second cart
-        g.add(box(1.0, 0.14, 0.18, IRON, 0, 0.92, 0.62), lantern(-0.55, 0, 0.75));
-        g.add(rot(box(1.1, 0.06, 0.6, 0xa0522d, 0, 1.05, 0.75), 0.35, 0, 0)); // shed roof over the entrance
-        const cart = box(0.4, 0.22, 0.3, DARK_WOOD, -0.55, 0.15, -0.75);
-        g.add(cart, gold(new THREE.IcosahedronGeometry(0.12, 0), -0.55, 0.32, -0.75));
+      if (L2) { // a stone-framed tunnel with rails running out, a winch, lanterns, and a cart brimming with gold
+        for (const x of [-0.42, 0.42]) g.add(box(0.26, 0.26, 0.22, STONE, x, 0.13, 0.6), box(0.26, 0.26, 0.22, STONE, x, 0.39, 0.6)); // stone blocks framing the door
+        g.add(rot(box(1.2, 0.05, 0.7, 0x8b5a2b, 0, 1.08, 0.7), 0.3, 0, 0), rot(box(1.2, 0.05, 0.7, 0x6d4526, 0, 1.08, 0.7), -0.3, 0, 0)); // plank roof over the door
+        for (const x of [-0.12, 0.12]) g.add(box(0.07, 0.03, 1.8, IRON, x, 0.02, 1.4)); // rails running out of the mine
+        for (let i = 0; i < 5; i++) g.add(box(0.36, 0.03, 0.1, DARK_WOOD, 0, 0.01, 0.6 + i * 0.35)); // sleepers
+        const cart = new THREE.Group(); // a full ore cart
+        cart.add(box(0.5, 0.22, 0.4, DARK_WOOD, 0, 0.22, 0));
+        for (const [x, z] of [[-0.2, -0.16], [0.2, -0.16], [-0.2, 0.16], [0.2, 0.16]]) cart.add(rot(cyl(0.07, 0.07, 0.04, 0x333333, x, 0.07, z, 8), Math.PI / 2, 0, 0));
+        for (const [x, y, z] of [[-0.12, 0.42, 0.05], [0.1, 0.4, -0.04], [0.0, 0.46, 0.12]]) cart.add(gold(new THREE.IcosahedronGeometry(0.11, 0), x, y, z));
+        cart.position.set(-0.55, 0, 1.2);
+        g.add(cart);
+        g.add(cyl(0.05, 0.05, 1.3, WOOD, 0.8, 0.65, 0.25, 6), rot(mesh(new THREE.TorusGeometry(0.2, 0.03, 4, 10), IRON, 0.8, 1.3, 0.25), 0, Math.PI / 2, 0)); // winch post and its wheel
+        g.add(lantern(-0.6, 0.5, 0.75), lantern(0.6, 0.5, 0.75));
+      }
+      if (level >= 4) { // an ore cart stacked with gold on a spur, and gold bands round the roof
+        const cart2 = new THREE.Group();
+        cart2.add(box(0.5, 0.22, 0.4, DARK_WOOD, 0, 0.22, 0));
+        for (const [x, y, z] of [[-0.12, 0.42, 0.06], [0.12, 0.44, -0.04], [0, 0.5, 0.1], [0.05, 0.4, -0.12]]) cart2.add(gold(new THREE.IcosahedronGeometry(0.12, 0), x, y, z));
+        cart2.position.set(0.9, 0, -0.7);
+        g.add(cart2);
+        g.add(gold(new THREE.BoxGeometry(1.3, 0.06, 0.9), 0, 1.12, 0.7)); // gold band on the roof
+      }
+      if (level >= 5) { // a golden tower: tiered gold spire, a crown ring and gold trim
+        g.add(gold(new THREE.CylinderGeometry(0.42, 0.5, 0.3, 8), 0, 1.25, -0.25)); // tower base
+        g.add(gold(new THREE.CylinderGeometry(0.3, 0.36, 0.5, 8), 0, 1.65, -0.25)); // second tier
+        g.add(gold(new THREE.ConeGeometry(0.34, 0.7, 8), 0, 2.2, -0.25)); // spire
+        for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.add(gold(new THREE.ConeGeometry(0.05, 0.14, 4), Math.cos(a) * 0.44, 1.42, -0.25 + Math.sin(a) * 0.44)); } // crown points
+        for (const [x, z] of [[-0.5, 0.8], [0.5, 0.8]]) g.add(gold(new THREE.BoxGeometry(0.22, 0.14, 0.22), x, 0.12, z)); // gold ingots by the door
+        g.add(gold(new THREE.BoxGeometry(1.3, 0.06, 0.9), 0, 1.12, 0.7)); // gold band on the roof
       }
       if (L3) { // glowing gold veins and a crane
         for (const [x, y, z] of [[-0.2, 1.1, 0.1], [0.4, 0.9, -0.3], [-0.6, 0.8, -0.4], [0.2, 0.7, 0.35]]) g.add(gold(new THREE.OctahedronGeometry(0.16, 0), x, y, z));
@@ -505,11 +569,19 @@ function camp(level: number) {
     const head = crocoHead(0.7); head.position.set(0, 1.15, -1.3); head.rotation.y = -Math.PI / 2; g.add(head);
     g.add(flag(false, -1.45, 0, -0.2, 1.4), flag(false, 1.45, 0, -0.2, 1.4));
   }
+  if (level >= 4) { // a palisade round the camp and two more tents
+    g.add(fence(1.55, 16));
+    for (const [x, z] of [[-1.1, 1.1], [1.1, 1.1]]) g.add(rot(cone(0.45, 0.7, 0x9c6a3c, x, 0.35, z, 4), 0, Math.PI / 4, 0));
+  }
+  if (level >= 5) { // gold trim on the totem and golden banners
+    g.add(gold(new THREE.SphereGeometry(0.18, 8, 6), 0, 1.5, -1.3));
+    g.add(flag(false, 0, 0, 1.45, 1.6), flag(false, 0, 0, -1.6, 1.6));
+  }
   return g;
 }
 
 export function building(type: string, goblin: boolean, level = 1): THREE.Group {
-  if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06][level - 1]); return g; }
+  if (type === 'camp') { const g = camp(level); g.scale.setScalar([1, 1.03, 1.06, 1.09, 1.12][level - 1]); return g; }
   const g = type === 'hq' ? hq(goblin) : type === 'goldMine' ? goldMine(level) : type === 'chickenFarm' ? chickenFarm(level) : type === 'goldStore' ? goldStore(level) : type === 'chickenStore' ? chickenStore(level)
     : type === 'barracks' ? barracks(goblin) : type === 'lab' ? lab(level) : type === 'airDefense' ? airDefense(goblin) : type === 'cannon' ? cannon(goblin, level) : type === 'mortar' ? mortar(goblin, level) : type === 'workshop' ? workshop() : type === 'necroBarracks' ? necroBarracks() : type === 'emeraldMine' ? emeraldMine(level) : type === 'emeraldStore' ? emeraldStore(level) : type === 'aerialBarracks' ? aerialBarracks(level) : type === 'bombTower' ? bombTower(goblin, level) : sarbacaneTower(goblin, level);
   levelParts(g, type, level, goblin);
@@ -704,7 +776,7 @@ function workshop() {
 }
 
 /** Height where to float the bar above a building. */
-export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 2.4, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4, emeraldMine: 1.8, emeraldStore: 2.6, necroBarracks: 2.9 };
+export const BUILDING_TOP: Record<string, number> = { hq: 4.6, sarbacaneTower: 4.3, goldMine: 1.6, chickenFarm: 2.4, goldStore: 3.8, chickenStore: 2.2, barracks: 2.0, cannon: 1.5, mortar: 1.5, camp: 1.9, airDefense: 2.2, lab: 2.2, workshop: 2.0, bombTower: 3.0, aerialBarracks: 3.4, emeraldMine: 1.8, emeraldStore: 2.6, necroBarracks: 2.9 };
 
 // Troop looks per level: skin colours shift and each level adds gear and size.
 const CROCO_SKIN = [[0x4c9a3f, 0x3f8f3a, BELLY], [0x3f8a5e, 0x2f7050, 0xd8e0b0], [0x2e6a52, 0x214d3c, 0xe8d890]];
@@ -827,6 +899,16 @@ function lab(level: number) {
   if (level >= 3) { // bubbling cauldron and a copper antenna
     g.add(cyl(0.32, 0.25, 0.35, 0x2a2a30, 1.1, 0.18, -0.6, 10), mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.04, 10), mat(0x40ffd0, { emissive: 0x20c0a0, emissiveIntensity: 0.8 }), 1.1, 0.36, -0.6));
     g.add(cyl(0.03, 0.03, 0.9, 0xb87333, 0, 2.0, 0, 5), ball(0.09, 0x7dff6a, 0, 2.48, 0, 1));
+  }
+  if (level >= 4) { // a third flask and a second cauldron, matching the first
+    flask(-1.15, 0.45, 0xffd060);
+    g.add(cyl(0.32, 0.25, 0.35, 0x2a2a30, -1.1, 0.18, -1.15, 10), mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.04, 10), mat(0x40ffd0, { emissive: 0x20c0a0, emissiveIntensity: 0.8 }), -1.1, 0.36, -1.15)); // behind the pink flask
+  }
+  if (level >= 5) { // gold rings on the antenna, flask rims and cauldron rims
+    for (const y of [1.8, 2.2]) g.add(gold(new THREE.TorusGeometry(0.1, 0.025, 4, 10), 0, y, 0).rotateX(Math.PI / 2));
+    for (const [x, z] of [[1.15, 0.45], [-1.15, -0.45], [-1.15, 0.45]]) g.add(gold(new THREE.TorusGeometry(0.22, 0.03, 4, 10), x, 0.84, z).rotateX(Math.PI / 2));
+    for (const [x, z] of [[1.1, -0.6], [-1.1, -1.15]]) g.add(gold(new THREE.TorusGeometry(0.3, 0.04, 4, 10), x, 0.37, z).rotateX(Math.PI / 2));
+    g.add(gold(new THREE.BoxGeometry(1.7, 0.07, 1.7), 0, 0.92, 0));
   }
   return g;
 }

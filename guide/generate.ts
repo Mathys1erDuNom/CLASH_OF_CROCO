@@ -14,7 +14,7 @@ const hutSections = Array.from({ length: hutLevels }, (_, i) => {
   const newOnes = buildings.filter(([, d]) => (d.hutRequired ?? 1) === lvl).map(([, d]) => d.name);
   const rows = unlocked.map(([k, d]) => {
     const max = d.maxByHut?.[lvl - 1] ?? d.max;
-    return row([esc(d.name), String(max), `${Math.min(d.levels.length, lvl)} / ${d.levels.length}`, d.trains ? `forme : ${d.trains === 'air' ? 'troupes volantes' : 'troupes au sol'}` : d.defense ? 'défense' : d.res || d.store ? 'ressource' : d.lab ? 'laboratoire' : d.workshop ? 'ouvriers' : '']);
+    return row([esc(d.name), String(max), `${Math.min(d.levels.length, d.maxLevelByHut?.[lvl - 1] ?? lvl)} / ${d.levels.length}`, d.trains ? `forme : ${d.trains === 'air' ? 'troupes volantes' : 'troupes au sol'}` : d.defense ? 'défense' : d.res || d.store ? 'ressource' : d.lab ? 'laboratoire' : d.workshop ? 'ouvriers' : '']);
   }).join('');
   return `<section>
   <h2>Hutte du Chef niveau ${lvl}</h2>
